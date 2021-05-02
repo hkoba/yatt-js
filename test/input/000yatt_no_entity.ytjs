@@ -1,0 +1,16 @@
+<!--#yatt -*- mode: yatt -*- #-->
+<yatt:foo/>
+
+<!yatt:widget foo>
+<yatt:bar/>
+<h2>Foo</h2>
+
+<!--#yatt
+
+<!yatt:widget bar>
+<h2>Bar</h2>
+
+#-->
+
+<!yatt:widget baz>
+<h2>Baz</h2>

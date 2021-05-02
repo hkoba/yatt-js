@@ -1,0 +1,12 @@
+<!yatt:args title = "text?Hello world"
+ author='?hkoba'>
+
+<title>&yatt:title;</title>
+<author>&yatt:author;</author>
+
+<h2>&yatt:title;</h2>
+
+<!yatt:widget test  foo="!" bar="!" baz>
+hoehoe
+
+
