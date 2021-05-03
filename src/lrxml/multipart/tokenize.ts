@@ -31,12 +31,12 @@ function re_decl_open(ns: string[]): RegExp {
     return new RegExp(pat, 'g')
 }
 
-const re_decl_end = /^>\r?\n/;
-
 export type ChunkGenerator = Generator<Chunk, any, any>
 
 export function* tokenize(ctx: ParserContext): ChunkGenerator {
     let re_decls = ctx.re('decls', () => re_decl_open(ctx.session.params.namespace))
+    let re_comment_end = /(?<prefix>.*?)#-->/sy;
+    let re_decl_end = />\r?\n/y;
     
     let globalMatch: GlobalMatch | null = null
     while ((globalMatch = ctx.global_match(re_decls)) !== null) {
@@ -47,12 +47,12 @@ export function* tokenize(ctx: ParserContext): ChunkGenerator {
         if (globalMatch.match.groups) {
             const dm: DeclMatch = globalMatch.match.groups
             if (dm.comment != null) {
-                const end = ctx.match_index(/#-->/)
+                const end = ctx.global_match(re_comment_end)
                 if (! end) {
                     ctx.throw_error("Comment is not closed by '#-->'!", {index: globalMatch.match.index})
                 }
-                const contentRange = ctx.contained_range(globalMatch, end)
-                const comment = ctx.tab(globalMatch, end)
+                const contentRange = ctx.contained_range(globalMatch, end.match)
+                const comment = ctx.tab(globalMatch, end.match)
                 yield {kind: "comment", contentRange, ...comment}
             } else if (dm.declname != null)  {
                 // <!yatt:widget ...

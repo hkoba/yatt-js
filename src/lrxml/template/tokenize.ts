@@ -28,7 +28,7 @@ function re_body(ns: string[]): RegExp {
         entOpen,
         `<${inTagOpen}\\b`
     )
-    return new RegExp(`^(?<prefix>.*?)${body}`, 's')
+    return new RegExp(`(?<prefix>.*?)${body}`, 'sy')
 }
 
 type BodyMatch = {
@@ -60,7 +60,7 @@ export function* tokenize(outerCtx: ParserContext, payloadList: Payload[]): Gene
                 else if (bm.elem != null) {
                     yield {kind: "elem_open", value: ctx.tab_string(match[0])}
                     yield* tokenize_attlist(ctx)
-                    const end = ctx.match_index(/^(?<empty_elem>\/)?>(\r?\n)?/)
+                    const end = ctx.match_index(/(?<empty_elem>\/)?>(\r?\n)?/y)
                     if (! end) {
                         const gbg = ctx.match_index(/^\S*\s*?\/?>/)
                         if (gbg) {

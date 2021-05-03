@@ -8,7 +8,7 @@ function re_att(ns: string[]): RegExp {
         '(?<equal>=\\s*)',
         re_att_literal(ns)
     )
-    return new RegExp('^' + pat, 's');
+    return new RegExp(pat, 'sy');
 }
 
 function re_att_literal(ns: string[]): string {

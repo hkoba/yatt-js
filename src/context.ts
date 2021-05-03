@@ -76,11 +76,14 @@ export class ParserContext {
     }
     
     match_index(re: RegExp): RegExpExecArray | null {
-        const str = this.session.source.substring(this.start + this.index, this.end)
+        if (re.flags.charAt(re.flags.length-1) !== 'y') {
+            throw new Error("BUG: regexp for match_index should have y flag")
+        }
+        re.lastIndex = this.index
         if (this.debug >= 2) {
             console.log("# match_index regexp: ", re.source)
         }
-        const match = re.exec(str)
+        const match = re.exec(this.session.source)
         if (this.debug) {
             console.log("# match: ", trim_input(match))
         }
