@@ -61,10 +61,8 @@ export function* tokenize(ctx: ParserContext): ChunkGenerator {
                        ...ctx.tab(globalMatch)}
 
                 // name name="value" name=[name name="value"...]...
-                for (const att of tokenize_attlist(ctx)) {
-                    yield att
-                }
-                
+                yield* tokenize_attlist(ctx)
+
                 // console.log("REST: ", ctx.remainder(3))
 
                 const end = ctx.match_index(re_decl_end)
