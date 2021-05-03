@@ -65,16 +65,13 @@ export class ParserContext {
     }
 
     global_match(re: RegExp): GlobalMatch | null {
-        re.lastIndex = this.index
-        const match = re.exec(this.session.source)
-        if (this.debug) {
-            console.log("# globalMatch: ", trim_input(match))
-        }
-        if (! match)
+        const match = this.match_index(re)
+        if (match == null) {
             return null
-        return {match: match, lastIndex: re.lastIndex}
+        }
+        return {lastIndex: re.lastIndex, match}
     }
-    
+
     match_index(re: RegExp): RegExpExecArray | null {
         if (re.flags.indexOf('y') < 0) {
             throw new Error("BUG: regexp for match_index should have y flag")
