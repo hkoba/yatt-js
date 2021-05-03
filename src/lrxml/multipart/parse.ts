@@ -83,14 +83,17 @@ function push_payload(ctx: ParserContext, partList: [number, PartBase][], kind: 
 
 if (module.id === ".") {
     const { readFileSync } = require('fs')
-    const [_cmd, _script, fn, ...args] = process.argv;
+    const [_cmd, _script, ...args] = process.argv;
     
-    let ctx = parserContext(parserSession({
-        filename: fn, source: readFileSync(fn, {encoding: "utf-8"}), config: {
+    for (const fn of args) {
+        let ctx = parserContext(parserSession({
+            filename: fn, source: readFileSync(fn, { encoding: "utf-8" }), config: {
+            }
+        }))
+
+        for (const part of parse(ctx)) {
+            console.log(part)
         }
-    }))
-    
-    for (const part of parse(ctx)) {
-        console.log(part)
     }
+
 }

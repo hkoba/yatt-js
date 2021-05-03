@@ -89,24 +89,27 @@ export function* tokenize(outerCtx: ParserContext, payloadList: Payload[]): Gene
 
 if (module.id === ".") {
     const { readFileSync } = require('fs')
-    const [_cmd, _script, fn, ...args] = process.argv;
+    const [_cmd, _script, ...args] = process.argv;
     const { parse } = require('../multipart/parse')
     
-    let ctx = parserContext(parserSession({
-        filename: fn, source: readFileSync(fn, {encoding: "utf-8"}), config: {
-            debug: {
-                parser: 0
+    for (const fn of args) {
+        let ctx = parserContext(parserSession({
+            filename: fn, source: readFileSync(fn, { encoding: "utf-8" }), config: {
+                debug: {
+                    parser: 0
+                }
             }
-        }
-    }))
-    
-    for (const part of parse(ctx)) {
-        console.log(part.kind, part.attlist)
+        }))
 
-        for (const tok of tokenize(ctx, part.payload)) {
-            console.log(tok)
+        for (const part of parse(ctx)) {
+            console.log(part.kind, part.attlist)
+
+            for (const tok of tokenize(ctx, part.payload)) {
+                console.log(tok)
+            }
+
+            console.log("\n")
         }
-        
-        console.log("\n")
     }
+
 }

@@ -85,15 +85,17 @@ export function* tokenize(ctx: ParserContext): ChunkGenerator {
 
 if (module.id === ".") {
     const { readFileSync } = require("fs")
-    const [_cmd, _script, fn, ...args] = process.argv;
+    const [_cmd, _script, ...args] = process.argv;
     
-    let ctx = parserContext(parserSession({
-        filename: fn, source: readFileSync(fn, {encoding: "utf-8"}), config: {
-            debug: {parser: 1}
+    for (const fn of args) {
+        let ctx = parserContext(parserSession({
+            filename: fn, source: readFileSync(fn, { encoding: "utf-8" }), config: {
+                debug: { parser: 1 }
+            }
+        }));
+
+        for (const tok of tokenize(ctx)) {
+            console.log("TOKEN: ", tok, "\nPAYLOAD: ", ctx.range_text(tok), "\n\n")
         }
-    }));
-    
-    for (const tok of tokenize(ctx)) {
-        console.log("TOKEN: ", tok, "\nPAYLOAD: ", ctx.range_text(tok), "\n\n")
     }
 }
