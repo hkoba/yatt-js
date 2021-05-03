@@ -113,8 +113,10 @@ export class ParserContext {
         return matched
     }
     
-    tab_string(str: string) {
+    tab_string(str: string) : Range {
+        const start = this.index;
         this.index += str.length
+        return {start, end: this.index}
     }
     
     tab_match_prefix(globalMatch: GlobalMatch): Range | null {

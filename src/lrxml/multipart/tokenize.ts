@@ -14,7 +14,7 @@ export type DeclEnd   = {kind: "decl_end"}   & Range
 
 export type Chunk = Text | Comment | DeclBegin | AttToken | DeclEnd
 
-type DeclMatch = { comment?: string, declname?: string }
+type DeclMatch = { comment?: string, declname?: string, prefix?: string }
 
 function re_decl_open(ns: string[]): RegExp {
     const nspat = ns.join("|")
@@ -28,7 +28,7 @@ function re_decl_open(ns: string[]): RegExp {
         `(?<declname>${nspat}:\\w+(?::\\w+)*)`
     )
     
-    return new RegExp(pat, 'g')
+    return new RegExp('(?<prefix>.*)' + pat, 'sy')
 }
 
 export type ChunkGenerator = Generator<Chunk, any, any>
@@ -40,40 +40,44 @@ export function* tokenize(ctx: ParserContext): ChunkGenerator {
     
     let globalMatch: GlobalMatch | null = null
     while ((globalMatch = ctx.global_match(re_decls)) !== null) {
-        const prefix = ctx.tab_match_prefix(globalMatch)
-        if (prefix) {
-            yield {kind: "text", ...prefix}
+
+        if (globalMatch.match.groups == null) continue
+
+        const dm: DeclMatch = globalMatch.match.groups
+
+        if (dm.prefix) {
+            yield { kind: "text", ...ctx.tab_string(dm.prefix) }
         }
-        if (globalMatch.match.groups) {
-            const dm: DeclMatch = globalMatch.match.groups
-            if (dm.comment != null) {
-                const end = ctx.global_match(re_comment_end)
-                if (! end) {
-                    ctx.throw_error("Comment is not closed by '#-->'!", {index: globalMatch.match.index})
-                }
-                const contentRange = ctx.contained_range(globalMatch, end.match)
-                const comment = ctx.tab(globalMatch, end.match)
-                yield {kind: "comment", contentRange, ...comment}
-            } else if (dm.declname != null)  {
-                // <!yatt:widget ...
-                yield {kind: "decl_begin", detail: dm.declname,
-                       lineNo: ctx.line_number(globalMatch.match.index),
-                       ...ctx.tab(globalMatch)}
 
-                // name name="value" name=[name name="value"...]...
-                yield* tokenize_attlist(ctx)
-
-                // console.log("REST: ", ctx.remainder(3))
-
-                const end = ctx.match_index(re_decl_end)
-                if (! end) {
-                    ctx.throw_error("yatt declaration is not closed", {index: globalMatch.match.index})
-                }
-                
-                yield {kind: "decl_end", ...ctx.tab(globalMatch, end)}
-            } else {
-                ctx.throw_error("Unknown case!")
+        if (dm.comment != null) {
+            const end = ctx.match_index(re_comment_end)
+            if (!end) {
+                ctx.throw_error("Comment is not closed by '#-->'!", { index: globalMatch.match.index })
             }
+            const contentRange = ctx.contained_range(globalMatch, end)
+            const comment = ctx.tab(globalMatch, end)
+            yield { kind: "comment", contentRange, ...comment }
+        } else if (dm.declname != null) {
+            // <!yatt:widget ...
+            yield {
+                kind: "decl_begin", detail: dm.declname,
+                lineNo: ctx.line_number(globalMatch.match.index),
+                ...ctx.tab(globalMatch)
+            }
+
+            // name name="value" name=[name name="value"...]...
+            yield* tokenize_attlist(ctx)
+
+            // console.log("REST: ", ctx.remainder(3))
+
+            const end = ctx.match_index(re_decl_end)
+            if (!end) {
+                ctx.throw_error("yatt declaration is not closed", { index: globalMatch.match.index })
+            }
+
+            yield { kind: "decl_end", ...ctx.tab(globalMatch, end) }
+        } else {
+            ctx.throw_error("Unknown case!")
         }
     }
     
