@@ -113,19 +113,13 @@ export class ParserContext {
         return matched
     }
     
-    tab_string(str: string) : Range {
+    tab_string(str: string, diff?: number) : Range {
         const start = this.index;
         this.index += str.length
-        return {start, end: this.index}
-    }
-    
-    tab_match_prefix(globalMatch: GlobalMatch): Range | null {
-        if (this.index >= globalMatch.match.index) {
-            return null;
+        if (diff != null) {
+            this.index += diff
         }
-        const start = this.index;
-        this.index = globalMatch.lastIndex;
-        return {start, end: globalMatch.match.index}
+        return {start, end: this.index}
     }
     
     line_number(index: number): number {
@@ -141,6 +135,14 @@ export class ParserContext {
         const fileInfo = this.session.filename ? ` at ${this.session.filename}` : ""
         const longMessage = `${message}${fileInfo} line ${lineNo} column ${colNo}`
         throw new Error(longMessage)
+    }
+    
+    NEVER(): never {
+        this.throw_error("BUG! why reached here!")
+    }
+
+    NIMPL(): never {
+        this.throw_error("Not yet implemented")
     }
 }
 

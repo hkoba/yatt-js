@@ -8,6 +8,8 @@ import { Payload } from '../multipart/parse'
 
 import { tokenize_attlist } from '../attlist/tokenize'
 
+import { tokenize_entpath } from '../entity/tokenize'
+
 import { re_join } from '../../utils/regexp'
 
 function re_entity_open(ns: string[]): string {
@@ -55,7 +57,10 @@ export function* tokenize(outerCtx: ParserContext, payloadList: Payload[]): Gene
                     yield {kind: "prefix", value: bm.prefix}
                 }
                 if (bm.entity != null) {
-                    yield {kind: "entity", value: ctx.tab_string(match[0])}
+                    yield {kind: "entpath_open", value: ctx.tab_string(match[0])}
+                    
+                    yield* tokenize_entpath(ctx)
+
                 }
                 else if (bm.elem != null) {
                     yield {kind: "elem_open", value: ctx.tab_string(match[0])}
