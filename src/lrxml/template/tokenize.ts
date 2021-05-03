@@ -40,29 +40,26 @@ type BodyMatch = {
     pi?: string
 }
 
-export function tokenize(outerCtx: ParserContext, payloadList: Payload[]) {
+export function* tokenize(outerCtx: ParserContext, payloadList: Payload[]): Generator<any,any,any>
+{
     let re = outerCtx.re('body', () => re_body(outerCtx.session.params.namespace))
     for (const tok of payloadList) {
         if (tok.kind === "comment") {
-            console.log("comment", tok)
+            yield tok
         } else if (tok.kind === "text") {
             let ctx = outerCtx.narrowed(tok)
             let match
             while ((match = ctx.match_index(re))) {
                 let bm = match.groups as BodyMatch
                 if (bm.prefix.length) {
-                    console.log("prefix", bm.prefix)
+                    yield {kind: "prefix", value: bm.prefix}
                 }
                 if (bm.entity != null) {
-                    console.log("entity", bm)
-                    ctx.tab_string(match[0])
+                    yield {kind: "entity", value: ctx.tab_string(match[0])}
                 }
                 else if (bm.elem != null) {
-                    console.log("elem_open", bm)
-                    ctx.tab_string(match[0])
-                    for (const att of tokenize_attlist(ctx)) {
-                        console.log("att tok", att)
-                    }
+                    yield {kind: "elem_open", value: ctx.tab_string(match[0])}
+                    yield* tokenize_attlist(ctx)
                     const end = ctx.match_index(/^(?<empty_elem>\/)?>(\r?\n)?/)
                     if (! end) {
                         const gbg = ctx.match_index(/^\S*\s*?\/?>/)
@@ -72,11 +69,10 @@ export function tokenize(outerCtx: ParserContext, payloadList: Payload[]) {
                             ctx.throw_error("Missing CLO(>)")
                         }
                     }
-                    console.log("elem_close", end)
+                    yield {kind: "elem_close"}
                 }
                 else if (bm.pi != null) {
-                    console.log("pi", bm)
-                    ctx.tab_string(match[0])
+                    yield {kind: "pi", value: ctx.tab_string(match[0])}
                 }
                 else {
                     // never
@@ -99,12 +95,18 @@ if (module.id === ".") {
     let ctx = parserContext(parserSession({
         filename: fn, source: readFileSync(fn, {encoding: "utf-8"}), config: {
             debug: {
-                parser: 2
+                parser: 0
             }
         }
     }))
     
     for (const part of parse(ctx)) {
-        tokenize(ctx, part.payload)
+        console.log(part.kind, part.attlist)
+
+        for (const tok of tokenize(ctx, part.payload)) {
+            console.log(tok)
+        }
+        
+        console.log("\n")
     }
 }
