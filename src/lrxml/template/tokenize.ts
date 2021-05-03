@@ -62,7 +62,7 @@ export function* tokenize(outerCtx: ParserContext, payloadList: Payload[]): Gene
                     yield* tokenize_attlist(ctx)
                     const end = ctx.match_index(/(?<empty_elem>\/)?>(\r?\n)?/y)
                     if (! end) {
-                        const gbg = ctx.match_index(/^\S*\s*?\/?>/)
+                        const gbg = ctx.match_index(/\S*\s*?\/?>/y)
                         if (gbg) {
                             ctx.throw_error("Garbage before CLO(>)")
                         } else {
