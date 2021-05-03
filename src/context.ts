@@ -76,7 +76,7 @@ export class ParserContext {
     }
     
     match_index(re: RegExp): RegExpExecArray | null {
-        if (re.flags.charAt(re.flags.length-1) !== 'y') {
+        if (re.flags.indexOf('y') < 0) {
             throw new Error("BUG: regexp for match_index should have y flag")
         }
         re.lastIndex = this.index
