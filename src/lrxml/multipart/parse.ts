@@ -85,15 +85,22 @@ if (module.id === ".") {
     const { readFileSync } = require('fs')
     const [_cmd, _script, ...args] = process.argv;
     
+    const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
+
     for (const fn of args) {
         let ctx = parserContext(parserSession({
             filename: fn, source: readFileSync(fn, { encoding: "utf-8" }), config: {
+                debug: {
+                    parser: debugLevel
+                }
             }
         }))
 
+        process.stdout.write(JSON.stringify({FILENAME: fn}) + "\n")
         for (const part of parse(ctx)) {
-            console.log(part)
+            process.stdout.write(JSON.stringify(part) + "\n")
         }
+        process.stdout.write("\n")
     }
 
 }
