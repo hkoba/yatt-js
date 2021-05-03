@@ -44,14 +44,14 @@ export class ParserContext {
     }
     
     rest_range(): Range | null {
-        if (this.session.source.length <= this.index) {
+        if (this.end <= this.index) {
             return null
         }
-        return {start: this.index, end: this.session.source.length}
+        return {start: this.index, end: this.end}
     }
 
     rest_string(): string {
-        return this.session.source.substring(this.start + this.index, this.end)
+        return this.session.source.substring(this.index, this.end)
     }
     
     rest_line(num: number = 1): string {
