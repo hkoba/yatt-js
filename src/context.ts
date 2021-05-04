@@ -59,7 +59,7 @@ export class ParserContext {
     }
 
     narrowed(range: Range): ParserContext {
-        let subCtx = new ParserContext(this.session, 0, range.start, range.end, this)
+        let subCtx = new ParserContext(this.session, range.start, range.start, range.end, this)
         subCtx.debug = this.debug
         return subCtx
     }
@@ -87,7 +87,7 @@ export class ParserContext {
         if (this.debug >= 2) {
             console.log("# match_index regexp: ", re.source)
         }
-        const match = re.exec(this.session.source)
+        const match = re.exec(this.session.source.substr(0, this.end))
         if (this.debug) {
             console.log("# match: ", trim_input(match))
         }

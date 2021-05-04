@@ -30,7 +30,7 @@ function re_body(ns: string[]): RegExp {
         entOpen,
         `<${inTagOpen}\\b`
     )
-    return new RegExp(`(?<prefix>.*?)${body}`, 'sy')
+    return new RegExp(body, 'g')
 }
 
 type BodyMatch = {
@@ -50,34 +50,40 @@ export function* tokenize(outerCtx: ParserContext, payloadList: Payload[]): Gene
             yield tok
         } else if (tok.kind === "text") {
             let ctx = outerCtx.narrowed(tok)
-            let match
-            while ((match = ctx.match_index(re))) {
-                let bm = match.groups as BodyMatch
-                if (bm.prefix.length) {
-                    yield {kind: "prefix", value: bm.prefix}
+            let globalMatch
+            while ((globalMatch = ctx.global_match(re))) {
+                const prefix = ctx.tab_match_prefix(globalMatch)
+                if (prefix != null) {
+                    yield { kind: "text", ...prefix }
                 }
+                
+                let bm = globalMatch.match.groups as BodyMatch
                 if (bm.entity != null) {
-                    yield {kind: "entpath_open", value: ctx.tab_string(match[0])}
+                    const range = ctx.tab(globalMatch)
+                    yield {kind: "entpath_open", value: ctx.range_text(range), range}
                     
                     yield* tokenize_entpath(ctx)
 
                 }
                 else if (bm.elem != null) {
-                    yield {kind: "elem_open", value: ctx.tab_string(match[0])}
+                    const range = ctx.tab(globalMatch)
+                    yield {kind: "elem_open", value: ctx.range_text(range), range}
                     yield* tokenize_attlist(ctx)
                     const end = ctx.match_index(/(?<empty_elem>\/)?>(\r?\n)?/y)
-                    if (! end) {
+                    if (end == null) {
                         const gbg = ctx.match_index(/\S*\s*?\/?>/y)
                         if (gbg) {
                             ctx.throw_error("Garbage before CLO(>)")
                         } else {
                             ctx.throw_error("Missing CLO(>)")
                         }
+                        return; // NOT REACHED
                     }
-                    yield {kind: "elem_close"}
+                    yield {kind: "elem_close", value: end[0], range: ctx.tab_string(end[0])}
                 }
                 else if (bm.pi != null) {
-                    yield {kind: "pi", value: ctx.tab_string(match[0])}
+                    const range = ctx.tab(globalMatch)
+                    yield {kind: "pi", value: ctx.range_text(range), range}
                 }
                 else {
                     // never
@@ -86,7 +92,7 @@ export function* tokenize(outerCtx: ParserContext, payloadList: Payload[]): Gene
             
             const rest = ctx.rest_range()
             if (rest != null) {
-                yield {kind: "text", value: ctx.range_text(rest), ...rest}
+                yield {kind: "text", value: ctx.range_text(rest), range: rest, ...rest}
             }
 
         } else {
