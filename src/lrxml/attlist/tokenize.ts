@@ -68,8 +68,8 @@ export function* tokenize_attlist(ctx: ParserContext): Generator<AttToken> {
             const [key, val] = kv
             yield {kind: key
                    , text: val
-                   , start: ctx.index + match.index
-                   , end: ctx.index + val.length}
+                   , start: match.index
+                   , end: re.lastIndex}
         }
         ctx.advance(match)
     }

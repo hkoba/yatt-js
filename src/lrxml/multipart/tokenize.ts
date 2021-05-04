@@ -75,7 +75,7 @@ export function* tokenize(ctx: ParserContext): ChunkGenerator {
                 ctx.throw_error("yatt declaration is not closed", { index: globalMatch.match.index })
             }
 
-            yield { kind: "decl_end", ...ctx.tab(globalMatch, end) }
+            yield { kind: "decl_end", ...ctx.tab_string(end[0]) }
         } else {
             ctx.throw_error("Unknown case!")
         }
