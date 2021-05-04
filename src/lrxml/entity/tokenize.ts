@@ -46,7 +46,7 @@ export function* tokenize_entpath(ctx: ParserContext): Generator<any, any, any> 
         }
     }
 
-    const end = ctx.global_match(/;/y);
+    const end = ctx.global_match(/;/g);
 
     if (! end) {
         console.log("REST: [[" + ctx.rest_line(3) + "]]")
