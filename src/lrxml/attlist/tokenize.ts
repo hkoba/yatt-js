@@ -32,7 +32,7 @@ export type AttEqual = "equal"
 export type AttKind = AttComment | AttSq | AttDq | AttNest |
     AttNestClo | AttBare | AttEqual
 
-export type AttToken = {kind: AttKind, text: string} & Range
+export type AttToken = {kind: AttKind, text: string, contentRange?: Range} & Range
 
 type AttMatch = {
     [x: string]: string | undefined

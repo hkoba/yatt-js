@@ -100,9 +100,12 @@ export class ParserContext {
         return {start, end}
     }
 
-    contained_range(from: GlobalMatch, to: RegExpExecArray): Range {
+    contained_string_range(from: GlobalMatch, str: string | undefined): Range | undefined {
+        if (str == null) {
+            return undefined
+        }
         const start = from.lastIndex
-        const end = this.index + to.index
+        const end = start + str.length
         return {start, end}
     }
 

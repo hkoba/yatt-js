@@ -8,7 +8,7 @@ import { re_join } from '../../utils/regexp'
 import { AttToken, tokenize_attlist } from '../attlist/tokenize'
 
 export type Text      = {kind: "text"}       & Range
-export type Comment   = {kind: "comment", contentRange: Range}    & Range
+export type Comment   = {kind: "comment", contentRange?: Range}    & Range
 export type DeclBegin = {kind: "decl_begin", detail: string, lineNo: number} & Range
 export type DeclEnd   = {kind: "decl_end"}   & Range
 
@@ -28,7 +28,7 @@ function re_decl_open(ns: string[]): RegExp {
         `(?<declname>${nspat}:\\w+(?::\\w+)*)`
     )
     
-    return new RegExp('(?<prefix>.*)' + pat, 'sy')
+    return new RegExp('(?<prefix>.*?)' + pat, 'sy')
 }
 
 export type ChunkGenerator = Generator<Chunk, any, any>
@@ -50,11 +50,12 @@ export function* tokenize(ctx: ParserContext): ChunkGenerator {
         }
 
         if (dm.comment != null) {
+            ctx.tab_string(globalMatch.match[0])
             const end = ctx.match_index(re_comment_end)
-            if (!end) {
+            if (!end || !end.groups) {
                 ctx.throw_error("Comment is not closed by '#-->'!", { index: globalMatch.match.index })
             }
-            const contentRange = ctx.contained_range(globalMatch, end)
+            const contentRange = ctx.contained_string_range(globalMatch, end.groups.prefix)
             const comment = ctx.tab(globalMatch, end)
             yield { kind: "comment", contentRange, ...comment }
         } else if (dm.declname != null) {
