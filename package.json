@@ -5,11 +5,17 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "tap"
   },
   "author": "buribullet@gmail.com",
   "license": "MIT",
   "files": [
-      "/dist"
-  ]
+    "/dist"
+  ],
+  "devDependencies": {
+    "tap": "^15.0.6"
+  },
+  "dependencies": {
+    "typescript": "^4.2.4"
+  }
 }
