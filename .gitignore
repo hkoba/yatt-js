@@ -1,2 +1,4 @@
 /.log
 package-lock.json
+/.nyc_output
+/node_modules
