@@ -65,7 +65,10 @@ export class ParserContext {
     }
 
     global_match(re: RegExp): GlobalMatch | null {
-        const match = this.match_index(re)
+        if (re.flags.indexOf('g') < 0) {
+            throw new Error("BUG: regexp for global_match should have g flag")
+        }
+        const match = this._match(re)
         if (match == null) {
             return null
         }
@@ -76,6 +79,10 @@ export class ParserContext {
         if (re.flags.indexOf('y') < 0) {
             throw new Error("BUG: regexp for match_index should have y flag")
         }
+        return this._match(re)
+    }
+
+    _match(re: RegExp): RegExpExecArray | null {
         re.lastIndex = this.index
         if (this.debug >= 2) {
             console.log("# match_index regexp: ", re.source)
@@ -96,7 +103,7 @@ export class ParserContext {
 
     matched_range(from: GlobalMatch, to: RegExpExecArray): Range {
         const start = from.match.index
-        const end = this.index + to.index + to[0].length
+        const end = to.index + to[0].length
         return {start, end}
     }
 
@@ -125,6 +132,15 @@ export class ParserContext {
         return {start, end: this.index}
     }
     
+    tab_match_prefix(globalMatch: GlobalMatch): Range | null {
+        if (this.index >= globalMatch.match.index) {
+            return null;
+        }
+        const start = this.index;
+        this.index = globalMatch.lastIndex;
+        return { start, end: globalMatch.match.index }
+    }
+
     line_number(index: number): number {
         return lineNumber(this.session.source.substr(0, this.index))
     }

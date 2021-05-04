@@ -28,7 +28,7 @@ function re_decl_open(ns: string[]): RegExp {
         `(?<declname>${nspat}:\\w+(?::\\w+)*)`
     )
     
-    return new RegExp('(?<prefix>.*?)' + pat, 'sy')
+    return new RegExp(pat, 'g')
 }
 
 export type ChunkGenerator = Generator<Chunk, any, any>
@@ -41,13 +41,14 @@ export function* tokenize(ctx: ParserContext): ChunkGenerator {
     let globalMatch: GlobalMatch | null = null
     while ((globalMatch = ctx.global_match(re_decls)) !== null) {
 
+        const prefix = ctx.tab_match_prefix(globalMatch)
+        if (prefix != null) {
+            yield { kind: "text", ...prefix }
+        }
+
         if (globalMatch.match.groups == null) continue
 
         const dm: DeclMatch = globalMatch.match.groups
-
-        if (dm.prefix) {
-            yield { kind: "text", ...ctx.tab_string(dm.prefix) }
-        }
 
         if (dm.comment != null) {
             ctx.tab_string(globalMatch.match[0])
