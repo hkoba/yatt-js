@@ -1,7 +1,7 @@
 #!/usr/bin/env ts-node
 
 import {
-    Range, ParserContext, parserContext, parserSession
+    Range, ParserContext, parserContext
 } from '../../context'
 
 import { Payload } from '../multipart/parse'
@@ -84,7 +84,10 @@ export function* tokenize(outerCtx: ParserContext, payloadList: Payload[]): Gene
                 }
             }
             
-            // XXX: match しなかった残り
+            const rest = ctx.rest_range()
+            if (rest != null) {
+                yield {kind: "text", value: ctx.range_text(rest), ...rest}
+            }
 
         } else {
             // never
@@ -99,13 +102,13 @@ if (module.id === ".") {
     const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
     
     for (const fn of args) {
-        let ctx = parserContext(parserSession({
+        let ctx = parserContext({
             filename: fn, source: readFileSync(fn, { encoding: "utf-8" }), config: {
                 debug: {
                     parser: debugLevel
                 }
             }
-        }))
+        })
 
         process.stdout.write(JSON.stringify({FILENAME: fn}) + "\n")
         for (const part of parse(ctx)) {

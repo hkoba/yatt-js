@@ -1,7 +1,7 @@
 #!/usr/bin/env ts-node
 
 import {
-    Range, ParserContext, parserContext, parserSession
+    Range, ParserContext, parserContext
 } from '../../context'
 
 import { tokenize } from './tokenize'
@@ -88,13 +88,13 @@ if (module.id === ".") {
     const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
 
     for (const fn of args) {
-        let ctx = parserContext(parserSession({
+        let ctx = parserContext({
             filename: fn, source: readFileSync(fn, { encoding: "utf-8" }), config: {
                 debug: {
                     parser: debugLevel
                 }
             }
-        }))
+        })
 
         process.stdout.write(JSON.stringify({FILENAME: fn}) + "\n")
         for (const part of parse(ctx)) {

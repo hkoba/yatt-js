@@ -155,11 +155,10 @@ function trim_input(match: RegExpExecArray | null) {
     return clone
 }
 
-export function parserSession(v: {source: string, filename?: string, config: YattConfig}): ParserSession {
-    return {source: v.source, filename: v.filename, params: yattParams(v.config), patterns: {}}
-}
-
-export function parserContext(session: ParserSession): ParserContext {
+export function parserContext(v: {source: string, filename?: string, config: YattConfig}): ParserContext {
+    
+    const session = {source: v.source, filename: v.filename, params: yattParams(v.config), patterns: {}}
     
     return new ParserContext(session, 0, 0, session.source.length)
 }
+

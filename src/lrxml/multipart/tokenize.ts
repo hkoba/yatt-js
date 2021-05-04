@@ -1,7 +1,7 @@
 #!/usr/bin/env ts-node
 
 import {
-    Range, GlobalMatch, ParserContext, parserContext, parserSession
+    Range, GlobalMatch, ParserContext, parserContext
 } from '../../context'
 import { re_join } from '../../utils/regexp'
 
@@ -94,11 +94,11 @@ if (module.id === ".") {
     const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
 
     for (const fn of args) {
-        let ctx = parserContext(parserSession({
+        let ctx = parserContext({
             filename: fn, source: readFileSync(fn, { encoding: "utf-8" }), config: {
                 debug: { parser: debugLevel }
             }
-        }));
+        });
 
         process.stdout.write(JSON.stringify({FILENAME: fn}) + "\n")
         for (const tok of tokenize(ctx)) {
