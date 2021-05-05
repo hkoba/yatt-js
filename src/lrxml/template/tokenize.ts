@@ -60,14 +60,14 @@ export function* tokenize(outerCtx: ParserContext, payloadList: Payload[]): Gene
                 let bm = globalMatch.match.groups as BodyMatch
                 if (bm.entity != null) {
                     const range = ctx.tab(globalMatch)
-                    yield {kind: "entpath_open", value: ctx.range_text(range), range}
+                    yield {kind: "entpath_open", value: ctx.range_text(range), ...range}
                     
                     yield* tokenize_entpath(ctx)
 
                 }
                 else if (bm.elem != null) {
                     const range = ctx.tab(globalMatch)
-                    yield {kind: "elem_open", value: ctx.range_text(range), range}
+                    yield {kind: "elem_open", value: ctx.range_text(range), ...range}
                     yield* tokenize_attlist(ctx)
                     const end = ctx.match_index(/(?<empty_elem>\/)?>(\r?\n)?/y)
                     if (end == null) {
@@ -79,11 +79,11 @@ export function* tokenize(outerCtx: ParserContext, payloadList: Payload[]): Gene
                         }
                         return; // NOT REACHED
                     }
-                    yield {kind: "elem_close", value: end[0], range: ctx.tab_string(end[0])}
+                    yield {kind: "elem_close", value: end[0], ...ctx.tab_string(end[0])}
                 }
                 else if (bm.pi != null) {
                     const range = ctx.tab(globalMatch)
-                    yield {kind: "pi", value: ctx.range_text(range), range}
+                    yield {kind: "pi", value: ctx.range_text(range), ...range}
                 }
                 else {
                     // never
@@ -92,7 +92,7 @@ export function* tokenize(outerCtx: ParserContext, payloadList: Payload[]): Gene
             
             const rest = ctx.rest_range()
             if (rest != null) {
-                yield {kind: "text", value: ctx.range_text(rest), range: rest, ...rest}
+                yield {kind: "text", value: ctx.range_text(rest), ...rest}
             }
 
         } else {
@@ -120,7 +120,8 @@ if (module.id === ".") {
         for (const part of parse(ctx)) {
             process.stdout.write(JSON.stringify({part: part.kind, attlist: part.attlist}) + "\n")
             for (const tok of tokenize(ctx, part.payload)) {
-                process.stdout.write(JSON.stringify(tok) + "\n")
+                const text = ctx.range_text(tok)
+                process.stdout.write(JSON.stringify([tok, text]) + "\n")
             }
         }
         process.stdout.write("\n")
