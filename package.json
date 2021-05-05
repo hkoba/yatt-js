@@ -7,6 +7,9 @@
   "scripts": {
     "test": "tap"
   },
+  "tap": {
+    "ts": true
+  },
   "author": "buribullet@gmail.com",
   "license": "MIT",
   "files": [
