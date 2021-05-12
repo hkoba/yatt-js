@@ -2,8 +2,6 @@ import {
     Range, ParserContext
 } from '../../context'
 
-import { ChunkGenerator } from '../multipart/tokenize'
-
 import { AttBare, AttSq, AttDq, AttNest } from '../attlist/tokenize'
 
 type Term = ({kind: AttBare | AttSq | AttDq, value: string, comment: string[]}
@@ -12,15 +10,21 @@ type Term = ({kind: AttBare | AttSq | AttDq, value: string, comment: string[]}
             ) & Range
 export type AttItem = {label?: Term} & Term
 
-export function parse_attlist(ctx: ParserContext, lex: ChunkGenerator
-                              , end_kind: string): AttItem[] {
+export function parse_attlist<T>(ctx: ParserContext, lex: Generator<T,any,any>
+                                 , end_kind: string): [AttItem[], T] {
     let attList: AttItem[] = []
     let pendingTerm: Term | undefined = undefined
     let had_equal: boolean = false
     let cur
     while (!(cur = lex.next()).done) {
         if (cur.value.kind === end_kind) {
-            break;
+            if (pendingTerm) {
+                if (had_equal) {
+                    ctx.throw_error("Lack of attribute value")
+                }
+                attList.push({ ...pendingTerm })
+            }
+            return [attList, cur.value];
         }
         switch (cur.value.kind) {
             case "comment": {
@@ -82,11 +86,6 @@ export function parse_attlist(ctx: ParserContext, lex: ChunkGenerator
             default:
         }
     }
-    if (pendingTerm) {
-        if (had_equal) {
-            ctx.throw_error("Lack of attribute value")
-        }
-        attList.push({...pendingTerm})        
-    }
-    return attList;
+    
+    ctx.NEVER();
 }

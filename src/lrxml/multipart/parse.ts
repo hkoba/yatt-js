@@ -4,7 +4,7 @@ import {
     Range, ParserContext, parserContext
 } from '../../context'
 
-import { tokenize } from './tokenize'
+import { tokenize, Chunk } from './tokenize'
 
 import { AttItem, parse_attlist} from '../attlist/parse'
 
@@ -48,7 +48,7 @@ export function parse(ctx: ParserContext): Part[] {
             }
             case "decl_begin": {
                 let [namespace, kind, ...subkind] = tok.detail.split(/:/);
-                const attlist = parse_attlist(ctx, lex, "decl_end")
+                const [attlist, end] = parse_attlist(ctx, lex, "decl_end")
                 let part: PartBase = {
                     filename: ctx.session.filename,
                     lineno: tok.lineNo,

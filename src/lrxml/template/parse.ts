@@ -2,17 +2,19 @@
 
 import { Range, ParserContext, parserContext } from '../../context'
 
-import { tokenize } from './tokenize'
+import { tokenize, Token } from './tokenize'
 
 import { Part, parse as parse_multipart } from '../multipart/parse'
 
 import { parse_attlist, AttItem } from '../attlist/parse'
 
+import { parse_entpath } from '../entity/parse'
+
 type Element = Range & {
     kind: "element"
     path: string[]
     attlist: AttItem[]
-    // body
+    children?: Node[]
     // containedRange
 }
 
@@ -22,32 +24,60 @@ type PI = Range & {kind: "pi"}
 
 type Node = Text | Comment | PI | Element ; // Entity
 
-export function parse(ctx: ParserContext, part: Part, sink?: Node[]): Node[] {
-    let result: Node[] = sink ?? []
-
+export function parse(ctx: ParserContext, part: Part): Node[] {
     let lex = tokenize(ctx, part.payload)
+    let nodes = parse_tokens(ctx, part, lex, []);
+    return nodes
+}
+
+function parse_tokens(ctx: ParserContext, part: Part
+                      , lex: Generator<Token, any, any>, sink: Node[], close?: string) {
+
     for (const tok of lex) {
         switch (tok.kind) {
             case "text": case "comment": case "pi": {
-                result.push({kind: tok.kind, ...(tok as Range)})
+                sink.push({kind: tok.kind, ...(tok as Range)})
                 break;
             }
             case "entpath_open": {
-                // parse_entpath(ctx, lex)
+                const entpath = parse_entpath(ctx, lex)
+                console.log(entpath)
+                // sink.push(entpath)
                 break;
             }
             case "tag_open": {
-                const attlist = parse_attlist(ctx, lex, "tag_close");
-                
+                if (tok.is_close) {
+                    if (close == null) {
+                        ctx.throw_error(`close tag without open: ${tok.name}`)
+                    }
+                    if (tok.name !== close) {
+                        ctx.throw_error(`tag mismatch! EXPECT ${close}, GOT ${tok.name}`)
+                    }
+                    break
+                }
+                const [attlist, end] = parse_attlist(ctx, lex, "tag_close");
+                if (end.kind !== "tag_close") {
+                    ctx.NEVER()
+                }
+                let elem: Element = {
+                    kind: "element", path: tok.name.split(/:/), attlist,
+                    start: tok.start, end: tok.end
+                }
+                sink.push(elem)
+                if (! end.is_empty_element) {
+                    let body = elem.children = []
+                    parse_tokens(ctx, part, lex, body, tok.name)
+                }
                 break;
             }
             default: {
+                console.log("INVALID token:", tok)
                 ctx.NEVER()
             }
         }
     }
     
-    return result
+    return sink
 }
 
 if (module.id === ".") {
@@ -65,7 +95,7 @@ if (module.id === ".") {
         })
         
         for (const part of parse_multipart(ctx)) {
-            parse(ctx, part)
+            console.log(parse(ctx, part))
         }
     }
 }

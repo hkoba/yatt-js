@@ -23,7 +23,7 @@ function re_body(ns: string[]): RegExp {
     const nspat = ns.join("|")
     const entOpen = re_entity_open(ns)
     const inTagOpen = re_join(
-        `(?<clo>/?)(?<opt>:?)(?<tag>${nspat}(?::\\w+)+)`,
+        `(?<clo>/)?(?<opt>:)?(?<tag>${nspat}(?::\\w+)+)`,
         `\\?(?<pi>${nspat}(?::\\w+)*)`
     )
     const body = re_join(
@@ -46,15 +46,17 @@ type Text = Range & {kind: "text"}
 type Comment = Range & {kind: "comment", innerRange: Range}
 type PI = Range & {kind: "pi", innerRange: Range}
 
-type TagOpen  = Range & {kind: "tag_open", name: string, is_option: boolean}
-type TagClose = Range & {kind: "tag_close", is_empty_element: boolean}
+type TagOpen  = Range & {kind: "tag_open", name: string,
+                         is_close: boolean, is_option: boolean}
+export type TagClose = Range & {kind: "tag_close", is_empty_element: boolean}
 
 // Entity
 type EntOpen = Range & {kind: "entpath_open", name: string}
+type EntClose = Range & {kind: "entpath_close"}
 // XXX: entpath
 
 export type Token = Text | Comment | PI |
-    TagOpen | AttToken | TagClose | EntOpen; // Entity
+    TagOpen | AttToken | TagClose | EntOpen | EntClose; // Entity
 
 export function* tokenize(outerCtx: ParserContext, payloadList: Payload[]): Generator<Token,any,any>
 {
@@ -84,8 +86,9 @@ export function* tokenize(outerCtx: ParserContext, payloadList: Payload[]): Gene
                     
                     const range = ctx.tab(globalMatch)
                     yield {kind: "tag_open",
+                           is_close: bm.clo != null,
                            is_option: bm.opt != null,
-                           name: ctx.range_text(range), ...range}
+                           name: bm.tag, ...range}
                     yield* tokenize_attlist(ctx)
                     const end = ctx.match_index(/(?<empty_tag>\/)?>(\r?\n)?/y)
                     if (end == null) {
