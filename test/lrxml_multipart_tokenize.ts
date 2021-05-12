@@ -11,9 +11,9 @@ import { tokenize } from '../src/lrxml/multipart/tokenize'
 const it = (source: string) => {
     let ctx = parserContext({source, config: {}})
     return Array.from(tokenize(ctx)).map((tok) => {
-        if (tok.kind === "comment" && tok.contentRange != null) {
+        if (tok.kind === "comment" && tok.innerRange != null) {
             return {kind: tok.kind, "text": ctx.range_text(tok),
-                    contentRange: ctx.range_text(tok.contentRange)}
+                    innerRange: ctx.range_text(tok.innerRange)}
         } else {
             return {kind: tok.kind, "text": ctx.range_text(tok)}
         }
@@ -61,7 +61,7 @@ tap.same(it(`<!--#yatt
 
 <!yatt:bar>
 
-#-->`, contentRange: `
+#-->`, innerRange: `
 
 <!yatt:foo>
 

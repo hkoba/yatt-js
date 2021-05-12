@@ -1,27 +1,53 @@
 #!/usr/bin/env ts-node
 
-import { ParserContext, parserContext } from '../../context'
+import { Range, ParserContext, parserContext } from '../../context'
 
 import { tokenize } from './tokenize'
 
 import { Part, parse as parse_multipart } from '../multipart/parse'
 
-import { parse_attlist } from '../attlist/parse'
+import { parse_attlist, AttItem } from '../attlist/parse'
 
-export function parse(ctx: ParserContext, part: Part) {
+type Element = Range & {
+    kind: "element"
+    path: string[]
+    attlist: AttItem[]
+    // body
+    // containedRange
+}
+
+type Text = Range & {kind: "text"}
+type Comment = Range & {kind: "comment"}
+type PI = Range & {kind: "pi"}
+
+type Node = Text | Comment | PI | Element ; // Entity
+
+export function parse(ctx: ParserContext, part: Part, sink?: Node[]): Node[] {
+    let result: Node[] = sink ?? []
+
     let lex = tokenize(ctx, part.payload)
     for (const tok of lex) {
         switch (tok.kind) {
-            case "text": case "comment":
+            case "text": case "comment": case "pi": {
+                result.push({kind: tok.kind, ...(tok as Range)})
+                break;
+            }
             case "entpath_open": {
+                // parse_entpath(ctx, lex)
+                break;
             }
-            case "elem_open": {
-                const attlist = parse_attlist(ctx, lex, "elem_close");
+            case "tag_open": {
+                const attlist = parse_attlist(ctx, lex, "tag_close");
+                
+                break;
             }
-            case "pi":
-            default:
+            default: {
+                ctx.NEVER()
+            }
         }
     }
+    
+    return result
 }
 
 if (module.id === ".") {

@@ -15,10 +15,10 @@ const it = (source: string) => {
         return {
             part: part.kind, attlist: part.attlist.map((att) => ctx.range_text(att)),
             tokens: Array.from(tokenize(ctx, part.payload)).map((tok) => {
-                if (tok.kind === "comment" && tok.contentRange != null) {
+                if (tok.kind === "comment" && tok.innerRange != null) {
                     return {
                         kind: tok.kind, "text": ctx.range_text(tok),
-                        contentRange: ctx.range_text(tok.contentRange)
+                        innerRange: ctx.range_text(tok.innerRange)
                     }
                 } else {
                     return { kind: tok.kind, "text": ctx.range_text(tok) }

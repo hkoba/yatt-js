@@ -8,7 +8,8 @@ import { tokenize } from './tokenize'
 
 import { AttItem, parse_attlist} from '../attlist/parse'
 
-export type Payload = {kind: "text" | "comment", data: string} & Range
+export type Payload = {kind: "text", data: string} & Range |
+    {kind: "comment", data: string, innerRange: Range} & Range
 
 export type PartBase = {
     filename?: string
@@ -27,8 +28,22 @@ export function parse(ctx: ParserContext): Part[] {
     let lex = tokenize(ctx)
     for (const tok of lex) {
         switch (tok.kind) {
-            case "text": case "comment": {
-                push_payload(ctx, partList, tok.kind, tok)
+            case "text": {
+                push_payload(ctx, partList, {
+                    kind: tok.kind, data: ctx.range_text(tok),
+                    ...(tok as Range)
+                })
+                break;
+            }
+            case "comment": {
+                if (tok.innerRange == null) {
+                    ctx.NEVER()
+                }
+                push_payload(ctx, partList, {
+                    kind: tok.kind, data: ctx.range_text(tok),
+                    innerRange: tok.innerRange,
+                    ...(tok as Range)
+                })
                 break;
             }
             case "decl_begin": {
@@ -65,7 +80,7 @@ function add_range<T>(list: [number, T][], end: number): (T & Range)[] {
     return result
 }
 
-function push_payload(ctx: ParserContext, partList: [number, PartBase][], kind: "text" | "comment", range: Range) {
+function push_payload(ctx: ParserContext, partList: [number, PartBase][], payload: Payload) {
     if (! partList.length) {
         // May fill default kind/namespace
         partList.push([0,{
@@ -74,9 +89,7 @@ function push_payload(ctx: ParserContext, partList: [number, PartBase][], kind: 
             kind: "", namespace: "", subkind: [], attlist: [], payload: []
         }])
     }
-    partList[partList.length-1][1].payload.push({
-        kind, data: ctx.range_text(range), ...range
-    })
+    partList[partList.length-1][1].payload.push(payload)
 }
 
 // console.log(this)

@@ -6,7 +6,7 @@ import {
 
 import { Payload } from '../multipart/parse'
 
-import { tokenize_attlist } from '../attlist/tokenize'
+import { tokenize_attlist, AttToken } from '../attlist/tokenize'
 
 import { tokenize_entpath } from '../entity/tokenize'
 
@@ -23,7 +23,7 @@ function re_body(ns: string[]): RegExp {
     const nspat = ns.join("|")
     const entOpen = re_entity_open(ns)
     const inTagOpen = re_join(
-        `(?<clo>/?)(?<opt>:?)(?<elem>${nspat}(?::\\w+)+)`,
+        `(?<clo>/?)(?<opt>:?)(?<tag>${nspat}(?::\\w+)+)`,
         `\\?(?<pi>${nspat}(?::\\w+)*)`
     )
     const body = re_join(
@@ -38,11 +38,25 @@ type BodyMatch = {
     prefix: string
     clo?: string
     opt?: string
-    elem?: string
+    tag?: string
     pi?: string
 }
 
-export function* tokenize(outerCtx: ParserContext, payloadList: Payload[]): Generator<any,any,any>
+type Text = Range & {kind: "text"}
+type Comment = Range & {kind: "comment", innerRange: Range}
+type PI = Range & {kind: "pi", innerRange: Range}
+
+type TagOpen  = Range & {kind: "tag_open", name: string, is_option: boolean}
+type TagClose = Range & {kind: "tag_close", is_empty_element: boolean}
+
+// Entity
+type EntOpen = Range & {kind: "entpath_open", name: string}
+// XXX: entpath
+
+export type Token = Text | Comment | PI |
+    TagOpen | AttToken | TagClose | EntOpen; // Entity
+
+export function* tokenize(outerCtx: ParserContext, payloadList: Payload[]): Generator<Token,any,any>
 {
     let re = outerCtx.re('body', () => re_body(outerCtx.session.params.namespace))
     for (const tok of payloadList) {
@@ -60,16 +74,20 @@ export function* tokenize(outerCtx: ParserContext, payloadList: Payload[]): Gene
                 let bm = globalMatch.match.groups as BodyMatch
                 if (bm.entity != null) {
                     const range = ctx.tab(globalMatch)
-                    yield {kind: "entpath_open", value: ctx.range_text(range), ...range}
+                    yield {kind: "entpath_open", name: ctx.range_text(range), ...range}
                     
+                    // 
                     yield* tokenize_entpath(ctx)
 
                 }
-                else if (bm.elem != null) {
+                else if (bm.tag != null) {
+                    
                     const range = ctx.tab(globalMatch)
-                    yield {kind: "elem_open", value: ctx.range_text(range), ...range}
+                    yield {kind: "tag_open",
+                           is_option: bm.opt != null,
+                           name: ctx.range_text(range), ...range}
                     yield* tokenize_attlist(ctx)
-                    const end = ctx.match_index(/(?<empty_elem>\/)?>(\r?\n)?/y)
+                    const end = ctx.match_index(/(?<empty_tag>\/)?>(\r?\n)?/y)
                     if (end == null) {
                         const gbg = ctx.match_index(/\S*\s*?\/?>/y)
                         if (gbg) {
@@ -79,11 +97,19 @@ export function* tokenize(outerCtx: ParserContext, payloadList: Payload[]): Gene
                         }
                         return; // NOT REACHED
                     }
-                    yield {kind: "elem_close", value: end[0], ...ctx.tab_string(end[0])}
+                    yield {kind: "tag_close",
+                           is_empty_element: end.groups && end.groups.empty_tag != null ? true : false,
+                           ...ctx.tab_string(end[0])}
                 }
                 else if (bm.pi != null) {
                     const range = ctx.tab(globalMatch)
-                    yield {kind: "pi", value: ctx.range_text(range), ...range}
+                    const end = ctx.match_index(/\?>/y)
+                    if (end == null) {
+                        ctx.throw_error("Missing ?>")
+                        return; // NOT REACHED
+                    }
+                    const innerRange = {start: range.end, end: end.index}
+                    yield {kind: "pi", innerRange, ...range}
                 }
                 else {
                     // never
@@ -92,7 +118,7 @@ export function* tokenize(outerCtx: ParserContext, payloadList: Payload[]): Gene
             
             const rest = ctx.rest_range()
             if (rest != null) {
-                yield {kind: "text", value: ctx.range_text(rest), ...rest}
+                yield {kind: "text", ...rest}
             }
 
         } else {

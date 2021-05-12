@@ -32,7 +32,7 @@ export function* tokenize_entpath(ctx: ParserContext): Generator<any, any, any> 
                 ctx.NIMPL()
             }
             else {
-                yield {kind: "var", value: mg.var, ...ctx.tab_string(mg.var, 1)}
+                yield {kind: "var", name: mg.var, ...ctx.tab_string(mg.var, 1)}
             }
         }
         else if (mg.array_open != null) {
