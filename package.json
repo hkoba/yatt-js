@@ -8,7 +8,7 @@
     "test": "tap"
   },
   "tap": {
-    "ts": true
+    "ts": true, "coverage": false
   },
   "author": "buribullet@gmail.com",
   "license": "MIT",
