@@ -1,0 +1,11 @@
+{
+  "name": "lrxml-js",
+  "version": "1.0.0",
+  "description": "Loose but Recursive XML",
+  "main": "lib/index.js",
+  "scripts": {
+    "test": "tap"
+  },
+  "author": "",
+  "license": "MIT"
+}

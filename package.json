@@ -4,6 +4,11 @@
   "description": "Yet Another Template Transpiler to TypeScript",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "workspaces": {
+    "packages": [
+      "packages/*"
+    ]
+  },
   "scripts": {
     "test": "tap"
   },
