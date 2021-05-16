@@ -1,6 +1,6 @@
 #!/usr/bin/env ts-node
 
-import { Range, ParserContext } from '../../context'
+import { Range, ParserContext } from '../context'
 
 // tokenize_entpath should provide the type
 

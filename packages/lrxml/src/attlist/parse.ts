@@ -1,6 +1,6 @@
 import {
     Range, ParserContext
-} from '../../context'
+} from '../context'
 
 import { AttBare, AttSq, AttDq, AttNest } from '../attlist/tokenize'
 

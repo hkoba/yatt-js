@@ -4,8 +4,8 @@ import tap from 'tap'
 
 import { parserContext } from '../src/context'
 
-import { parse } from '../src/lrxml/multipart/parse'
-import { tokenize } from '../src/lrxml/template/tokenize'
+import { parse } from '../src/multipart/parse'
+import { tokenize } from '../src/template/tokenize'
 
 // import { createInterface } from 'readline'
 

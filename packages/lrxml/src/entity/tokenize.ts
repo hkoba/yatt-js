@@ -1,8 +1,8 @@
 #!/usr/bin/env ts-node
 
-import { ParserContext } from '../../context'
+import { ParserContext } from '../context'
 
-import { re_join } from '../../utils/regexp'
+import { re_join } from '../utils/regexp'
 
 function re_entpath_open() {
     const str = re_join(

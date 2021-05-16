@@ -2,7 +2,7 @@
 
 import {
     Range, ParserContext, parserContext
-} from '../../context'
+} from '../context'
 
 import { Payload } from '../multipart/parse'
 
@@ -10,7 +10,7 @@ import { tokenize_attlist, AttToken } from '../attlist/tokenize'
 
 import { tokenize_entpath } from '../entity/tokenize'
 
-import { re_join } from '../../utils/regexp'
+import { re_join } from '../utils/regexp'
 
 function re_entity_open(ns: string[]): string {
     const nspat = ns.join("|")

@@ -2,7 +2,7 @@
 
 import {
     Range, ParserContext, parserContext
-} from '../../context'
+} from '../context'
 
 import { tokenize, Chunk } from './tokenize'
 

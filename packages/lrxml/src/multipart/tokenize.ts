@@ -2,8 +2,8 @@
 
 import {
     Range, GlobalMatch, ParserContext, parserContext
-} from '../../context'
-import { re_join } from '../../utils/regexp'
+} from '../context'
+import { re_join } from '../utils/regexp'
 
 import { AttToken, tokenize_attlist } from '../attlist/tokenize'
 

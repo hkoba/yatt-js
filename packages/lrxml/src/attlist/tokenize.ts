@@ -1,5 +1,5 @@
-import { Range, ParserContext } from '../../context'
-import { re_join } from '../../utils/regexp'
+import { Range, ParserContext } from '../context'
+import { re_join } from '../utils/regexp'
 
 function re_att(ns: string[]): RegExp {
     const pat = re_join(

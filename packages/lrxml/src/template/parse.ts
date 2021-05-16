@@ -1,6 +1,6 @@
 #!/usr/bin/env ts-node
 
-import { Range, ParserContext, parserContext } from '../../context'
+import { Range, ParserContext, parserContext } from '../context'
 
 import { tokenize, Token } from './tokenize'
 
