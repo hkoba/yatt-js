@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "Loose but Recursive XML",
   "main": "lib/index.js",
+  "tap": {
+    "ts": true, "coverage": false
+  },
   "scripts": {
     "test": "tap"
   },
