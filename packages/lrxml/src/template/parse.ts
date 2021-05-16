@@ -22,7 +22,7 @@ type Text = Range & {kind: "text"}
 type Comment = Range & {kind: "comment"}
 type PI = Range & {kind: "pi"}
 
-type Node = Text | Comment | PI | Element ; // Entity
+export type Node = Text | Comment | PI | Element ; // Entity
 
 export function parse(ctx: ParserContext, part: Part): Node[] {
     let lex = tokenize(ctx, part.payload)
