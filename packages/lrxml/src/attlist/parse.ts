@@ -10,7 +10,7 @@ type Term = ({kind: AttBare | AttSq | AttDq, value: string, comment: string[]}
             ) & Range
 export type AttItem = {label?: Term} & Term
 
-export function parse_attlist<T>(ctx: ParserContext, lex: Generator<T,any,any>
+export function parse_attlist<T extends {kind: string} & Range>(ctx: ParserContext, lex: Generator<T,any,any>
                                  , end_kind: string): [AttItem[], T] {
     let attList: AttItem[] = []
     let pendingTerm: Term | undefined = undefined
