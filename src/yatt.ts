@@ -6,6 +6,8 @@ import {
     parse
 } from 'lrxml-js'
 
+import {builderDict} from './declaration/builder'
+
 const { readFileSync } = require('fs')
 const [_cmd, _script, ...args] = process.argv;
 const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
@@ -20,6 +22,12 @@ for (const fn of args) {
     })
 
     for (const part of parse_multipart(ctx)) {
-        console.log(parse(ctx, part))
+
+        let builder = builderDict[part.kind]
+        if (! builder)
+            continue
+
+        let result = builder.build(ctx, part.kind, part)
+        console.log(result)
     }
 }
