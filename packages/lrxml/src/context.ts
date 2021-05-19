@@ -169,9 +169,12 @@ function trim_input(match: RegExpExecArray | null) {
     if (match == null) {
         return null
     }
-    let clone = {...match}
-    delete clone.input
-    return clone
+    let obj: any = {}
+    for (const [k, v] of Object.entries(match)) {
+        if (k === "input") continue
+        obj[k] = v;
+    }
+    return obj
 }
 
 export function parserContext(v: {source: string, filename?: string, config: YattConfig}): ParserContext {
