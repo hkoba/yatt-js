@@ -87,7 +87,7 @@ export class ParserContext {
         if (this.debug >= 2) {
             console.log("# match_index regexp: ", re.source)
         }
-        const match = re.exec(this.session.source.substr(0, this.end))
+        const match = re.exec(this.session.source.substring(0, this.end))
         if (this.debug) {
             console.log("# match: ", trim_input(match))
         }
@@ -142,12 +142,12 @@ export class ParserContext {
     }
 
     line_number(index: number): number {
-        return lineNumber(this.session.source.substr(0, this.index))
+        return lineNumber(this.session.source.substring(0, this.index))
     }
 
     throw_error(message: string, options?: {index?: number}): never {
         const index = this.start + (options?.index ?? this.index);
-        const prefix = this.session.source.substr(0, index)
+        const prefix = this.session.source.substring(0, index)
         const lastNl = prefix.lastIndexOf('\n')
         const lineNo = lineNumber(prefix)
         const colNo = index - lastNl
