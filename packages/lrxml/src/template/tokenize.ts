@@ -106,7 +106,7 @@ export function* tokenize(outerCtx: ParserContext, payloadList: Payload[]): Gene
                 }
                 else if (bm.pi != null) {
                     const range = ctx.tab(globalMatch)
-                    const end = ctx.match_index(/\?>/y)
+                    const end = ctx.match_index(/.*?\?>/sy)
                     if (end == null) {
                         ctx.throw_error("Missing ?>")
                         return; // NOT REACHED
