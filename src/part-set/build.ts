@@ -12,6 +12,7 @@ export type Part = {
     name: string
     is_public: boolean
     arg_dict: ArgDict
+    raw_part: RawPart
 }
 
 export type Widget = Part & {
@@ -56,7 +57,7 @@ export function build(ctx: ParserContext): PartSet {
     for (const rawPart of parse_multipart(ctx)) {
         const kind = rawPart.kind
         if (kind === "") {
-            result[""] = default_widget(true); // XXX: is_public
+            result[""] = default_widget(rawPart, true); // XXX: is_public
         } else {
             const builder = builderDict[rawPart.kind]
             if (!builder)
@@ -75,15 +76,15 @@ export interface DeclarationBuilder {
     build(ctx: ParserContext, keyword: string, part: RawPart): Part;
 }
 
-export function default_widget(is_public: boolean) {
-    return {type: "widget", name: "", is_public, arg_dict: {}, tree: []}
+export function default_widget(raw_part: RawPart, is_public: boolean) {
+    return {type: "widget", name: "", is_public, raw_part, arg_dict: {}, tree: []}
 }
 
 class WidgetBuilder implements DeclarationBuilder {
     constructor(readonly is_named: boolean, readonly is_public: boolean) {}
 
-    build(ctx: ParserContext, keyword: string, part: RawPart): Widget {
-        let attlist = Object.assign([], part.attlist)
+    build(ctx: ParserContext, keyword: string, raw_part: RawPart): Widget {
+        let attlist = Object.assign([], raw_part.attlist)
         let name: string
         let route: string|undefined;
         let is_public: boolean
@@ -100,14 +101,14 @@ class WidgetBuilder implements DeclarationBuilder {
         }
         let arg_dict = build_arg_dict(ctx, attlist)
         // XXX: keyword
-        return {type: "widget", name, route, is_public, arg_dict, tree: []}
+        return {type: "widget", name, route, is_public, arg_dict, raw_part, tree: []}
     }
 }
 
 
 class ActionBuilder implements DeclarationBuilder {
-    build(ctx: ParserContext, keyword: string, part: RawPart): Action {
-        let attlist = Object.assign([], part.attlist)
+    build(ctx: ParserContext, keyword: string, raw_part: RawPart): Action {
+        let attlist = Object.assign([], raw_part.attlist)
         let head = cut_name_and_route(ctx, attlist)
         if (head == null) {
             ctx.throw_error(`Action name is not given`)
@@ -116,7 +117,7 @@ class ActionBuilder implements DeclarationBuilder {
         let arg_dict = build_arg_dict(ctx, attlist)
 
         return {type: "action", name, route, arg_dict,
-                is_public: true, data: ""}
+                is_public: true, raw_part, data: ""}
     }
 }
 
