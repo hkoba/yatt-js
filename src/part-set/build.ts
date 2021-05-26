@@ -1,18 +1,14 @@
 #!/usr/bin/env ts-node
 
-import {Part as RawPart, ParserContext, Node, AttItem} from 'lrxml-js'
+import {
+    parserContext, parse_multipart, YattConfig,
+    Part as RawPart, ParserContext, Node, AttItem
+} from 'lrxml-js'
 
-export type DefaultFlag = "?" | "|" | "/"
-
-export type VarDecl = {
-    name: string
-    type: string
-    default?: [DefaultFlag, string]
-}
-
-export type ArgDict = {[k: string]: VarDecl}
+export type PartSet = {[k: string]: Part}
 
 export type Part = {
+    type: string
     name: string
     is_public: boolean
     arg_dict: ArgDict
@@ -35,8 +31,52 @@ export type Entity = Part & {
     data: string
 }
 
-interface DeclarationBuilder {
+export type DefaultFlag = "?" | "|" | "/"
+
+export type VarDecl = {
+    name: string
+    type: string
+    default?: [DefaultFlag, string]
+}
+
+export type ArgDict = {[k: string]: VarDecl}
+
+//========================================
+
+export function build_from_file(fn: string, config: YattConfig): PartSet {
+    const { readFileSync } = require('fs')
+    let ctx = parserContext({
+        filename: fn, source: readFileSync(fn, { encoding: "utf-8" }), config
+    })
+    return build(ctx)
+}
+
+export function build(ctx: ParserContext): PartSet {
+    let result: PartSet = {}
+    for (const rawPart of parse_multipart(ctx)) {
+        const kind = rawPart.kind
+        if (kind === "") {
+            result[""] = default_widget(true); // XXX: is_public
+        } else {
+            const builder = builderDict[rawPart.kind]
+            if (!builder)
+                ctx.throw_error(`Unknown part: ${rawPart.kind}`)
+
+            const part = builder.build(ctx, rawPart.kind, rawPart)
+            result[part.name] = part
+        }
+    }
+    return result
+}
+
+//========================================
+
+export interface DeclarationBuilder {
     build(ctx: ParserContext, keyword: string, part: RawPart): Part;
+}
+
+export function default_widget(is_public: boolean) {
+    return {type: "widget", name: "", is_public, arg_dict: {}, tree: []}
 }
 
 class WidgetBuilder implements DeclarationBuilder {
@@ -157,3 +197,17 @@ function cut_name_and_route(
     }
 }
 
+
+if (module.id === ".") {
+    const [_cmd, _script, ...args] = process.argv;
+
+    const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
+
+    for (const fn of args) {
+        const part = build_from_file(fn, {debug: {
+            parser: debugLevel
+        }})
+
+        console.log(part)
+    }
+}
