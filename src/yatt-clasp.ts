@@ -10,6 +10,8 @@ const pGlob = promisify(glob)
 import { parserContext, parse } from 'lrxml-js'
 import {build} from './part-set/build'
 
+import {generate_widget} from './codegen'
+
 const [_cmd, _script, ...args] = process.argv;
 const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0;
 
@@ -23,6 +25,7 @@ function rootname(fn: string): string {
         return fn.substring(0, fn.length - ext.length)
     }
 }
+
 
 (async () => {
     for (const tmplDir of args) {
@@ -45,14 +48,9 @@ function rootname(fn: string): string {
 
                 switch (part.type) {
                     case "widget": {
-                        const args = Object.keys(part.arg_dict).join(", ")
                         const ast = parse(ctx, part.raw_part)
-                        process.stdout.write(`export function render_${name} (${args}) {\n`)
-                        console.log("// ", part.arg_dict, "\n")
-                        for (const item of ast) {
-                            console.log(item)
-                        }
-                        process.stdout.write(`}\n`);
+                        const script = generate_widget(ctx, name, part, ast)
+                        process.stdout.write(script);
                         break;
                     }
                     case "entity": {
