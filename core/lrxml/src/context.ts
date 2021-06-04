@@ -170,8 +170,13 @@ export class ParserContext {
         this.throw_error("BUG! why reached here!")
     }
 
-    NIMPL(): never {
-        this.throw_error("Not yet implemented")
+    NIMPL(item?: any): never {
+        if (item !== undefined) {
+            const json = JSON.stringify(item)
+            this.throw_error(`Unhandled element: ${json}`)
+        } else {
+            this.throw_error("Not yet implemented")
+        }
     }
 }
 
