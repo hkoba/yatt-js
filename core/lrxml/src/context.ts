@@ -35,6 +35,10 @@ export class ParserContext {
         return this.session.source.substring(range.start, range.end)
     }
 
+    empty(): boolean {
+        return this.end <= this.index
+    }
+
     re(key: string, fn: () => RegExp): RegExp {
         let re = this.session.patterns[key]
         if (! re) {
@@ -121,6 +125,12 @@ export class ParserContext {
             {start: from.match.index, end: from.lastIndex}
         this.index = matched.end
         return matched
+    }
+
+    tab_match(match: RegExpExecArray): Range {
+        const start = this.index
+        this.index += match[0].length
+        return {start, end: this.index}
     }
     
     tab_string(str: string, diff?: number) : Range {
