@@ -16,19 +16,19 @@ type ValueOf<T> = T[keyof T]
 type OpenChars = keyof typeof open_head
 type EntPathOpenKind = ValueOf<typeof open_head> | ValueOf<typeof open_rest>;
 
-type EntPathText = {kind: "text" | "expr",
-                    text: string, is_paren: boolean, innerRange: Range} & Range
+export type EntText = {kind: "text" | "expr",
+                       text: string, is_paren: boolean,
+                       innerRange: Range} & Range
 
-type EntPath = EntPathItem[]
+export type EntPath = EntPathItem[]
 
-type EntElement = EntPathText | EntPath
+export type EntTerm = EntText | EntPath
 
-type EntPathItem = {kind: "var" | "prop", name: string} & Range |
-    {kind: "call" | "invoke", name: string, elements: EntElement[]} & Range |
-    {kind: "array" | "aref" | "hash" | "href", elements: EntElement[]} & Range |
-    EntPathText
+export type EntPathItem = {kind: "var" | "prop", name: string} & Range |
+    {kind: "call" | "invoke", name: string, elements: EntTerm[]} & Range |
+    {kind: "array" | "aref" | "hash" | "href", elements: EntTerm[]} & Range
 
-export type EntNode = {kind: "entity", elements: EntPathItem[]} & Range
+export type EntNode = {kind: "entity", path: EntPath} & Range
 
 function re_entpath_open() {
     const str = re_join(
@@ -59,7 +59,7 @@ type EntMatch = {
 export function parse_entpath(ctx: ParserContext): EntNode {
 
     const start = ctx.index
-    const elements = parse_pipeline(ctx);
+    const path = parse_pipeline(ctx);
 
     const end = ctx.global_match(/;/g);
     if (! end) {
@@ -67,7 +67,7 @@ export function parse_entpath(ctx: ParserContext): EntNode {
         ctx.throw_error("entity is not terminated by ;")
     }
 
-    return {kind: "entity", start, end: ctx.index, elements}
+    return {kind: "entity", start, end: ctx.index, path}
 }
 
 function parse_pipeline(ctx: ParserContext): EntPath {
@@ -106,11 +106,11 @@ function _is_open(mg: EntMatch): OpenChars | undefined {
     return (mg.call_open ?? mg.array_open ?? mg.dict_open) as OpenChars | undefined
 }
 
-function parse_entgroup(ctx: ParserContext, close: RegExp): EntElement[] {
-    let elements: EntElement[] = [];
+function parse_entgroup(ctx: ParserContext, close: RegExp): EntTerm[] {
+    let elements: EntTerm[] = [];
     let lastIndex = ctx.index
     while (! ctx.empty()) {
-        const term: EntElement | undefined = parse_entterm(ctx)
+        const term: EntTerm | undefined = parse_entterm(ctx)
         if (term) {
             elements.push(term)
         }
@@ -127,7 +127,7 @@ function parse_entgroup(ctx: ParserContext, close: RegExp): EntElement[] {
     return elements
 }
 
-function parse_entterm(ctx: ParserContext): EntElement | undefined {
+function parse_entterm(ctx: ParserContext): EntTerm | undefined {
     const re_text = ctx.re('entpath_text', () => re_enttext([]))
     const re_text_cont = ctx.re('entpath_text_cont', () =>
                                 re_enttext(['(?=(?<close>[\\])};,]))']))
@@ -136,7 +136,7 @@ function parse_entterm(ctx: ParserContext): EntElement | undefined {
     if (match = ctx.match_index(/,/y)) {
         // yield empty string
         let range = {start: match.index, end: match.index}
-        let term: EntPathText = {kind: "text", text: "",
+        let term: EntText = {kind: "text", text: "",
                                  ...range, is_paren: false, innerRange: range}
         ctx.tab_match(match);
         return term;
@@ -145,7 +145,7 @@ function parse_entterm(ctx: ParserContext): EntElement | undefined {
         // lookahead, end of term
         return;
     }
-    let term: EntPathText | EntPathItem[] | undefined
+    let term: EntText | EntPathItem[] | undefined
     if (match = ctx.match_index(re_text)) {
         const start = ctx.index
         const is_paren = match.groups && match.groups.paren ? true : false;

@@ -7,3 +7,5 @@ export {parse as parse_multipart, Part} from './multipart/parse'
 export {parse, Node} from './template/parse'
 
 export {AttItem} from './attlist/parse'
+
+export {EntNode, EntTerm, EntPath} from './entity/parse'
