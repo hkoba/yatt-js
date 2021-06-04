@@ -8,7 +8,7 @@ import { Payload } from '../multipart/parse'
 
 import { tokenize_attlist, AttToken } from '../attlist/tokenize'
 
-import { tokenize_entpath } from '../entity/tokenize'
+import { parse_entpath, EntNode } from '../entity/parse'
 
 import { re_join } from '../utils/regexp'
 
@@ -52,11 +52,9 @@ export type TagClose = Range & {kind: "tag_close", is_empty_element: boolean}
 
 // Entity
 type EntOpen = Range & {kind: "entpath_open", name: string}
-type EntClose = Range & {kind: "entpath_close"}
-// XXX: entpath
 
 export type Token = Text | Comment | PI |
-    TagOpen | AttToken | TagClose | EntOpen | EntClose; // Entity
+    TagOpen | AttToken | TagClose | EntOpen | EntNode
 
 export function* tokenize(outerCtx: ParserContext, payloadList: Payload[]): Generator<Token,any,any>
 {
@@ -77,9 +75,8 @@ export function* tokenize(outerCtx: ParserContext, payloadList: Payload[]): Gene
                 if (bm.entity != null) {
                     const range = ctx.tab(globalMatch)
                     yield {kind: "entpath_open", name: ctx.range_text(range), ...range}
-                    
-                    // 
-                    yield* tokenize_entpath(ctx)
+
+                    yield parse_entpath(ctx)
 
                 }
                 else if (bm.tag != null) {

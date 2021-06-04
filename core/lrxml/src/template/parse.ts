@@ -8,7 +8,7 @@ import { Part, parse as parse_multipart } from '../multipart/parse'
 
 import { parse_attlist, AttItem } from '../attlist/parse'
 
-import { parse_entpath } from '../entity/parse'
+import { parse_entpath, EntNode } from '../entity/parse'
 
 type Element = Range & {
     kind: "element"
@@ -22,7 +22,7 @@ type Text = Range & {kind: "text"}
 type Comment = Range & {kind: "comment"}
 type PI = Range & {kind: "pi"}
 
-export type Node = Text | Comment | PI | Element ; // Entity
+export type Node = Text | Comment | PI | Element | EntNode
 
 export function parse(ctx: ParserContext, part: Part): Node[] {
     let lex = tokenize(ctx, part.payload)
@@ -34,15 +34,15 @@ function parse_tokens(ctx: ParserContext, part: Part
                       , lex: Generator<Token, any, any>, sink: Node[], close?: string) {
 
     for (const tok of lex) {
+        ctx.index = tok.start
         switch (tok.kind) {
             case "text": case "comment": case "pi": {
                 sink.push({kind: tok.kind, ...(tok as Range)})
                 break;
             }
-            case "entpath_open": {
-                const entpath = parse_entpath(ctx, lex)
-                console.log(entpath)
-                // sink.push(entpath)
+            case "entpath_open": break;
+            case "entity": {
+                sink.push(tok)
                 break;
             }
             case "tag_open": {
@@ -51,9 +51,12 @@ function parse_tokens(ctx: ParserContext, part: Part
                         ctx.throw_error(`close tag without open: ${tok.name}`)
                     }
                     if (tok.name !== close) {
-                        ctx.throw_error(`tag mismatch! EXPECT ${close}, GOT ${tok.name}`)
+                        ctx.throw_error(`tag mismatch! EXPECT ${close}, GOT ${tok.name} at index=${ctx.index}`)
                     }
-                    break
+                    const nx = lex.next().value
+                    if (!nx || nx.kind !== 'tag_close')
+                        ctx.throw_error(`tag is not closed by '>'`)
+                    return sink
                 }
                 const [attlist, end] = parse_attlist(ctx, lex, "tag_close");
                 if (end.kind !== "tag_close") {
@@ -95,7 +98,8 @@ if (module.id === ".") {
         })
         
         for (const part of parse_multipart(ctx)) {
-            console.log(parse(ctx, part))
+            console.dir(part, {colors: true, depth: null})
+            console.dir(parse(ctx, part), {colors: true, depth: null})
         }
     }
 }
