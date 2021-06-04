@@ -4,11 +4,16 @@
   "description": "Loose but Recursive XML",
   "main": "lib/index.js",
   "tap": {
-    "ts": true, "coverage": false
+    "ts": true,
+    "coverage": false
   },
   "scripts": {
     "test": "tap"
   },
   "author": "",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "@types/tap": "^15.0.2",
+    "ts-node": "^10.0.0"
+  }
 }
