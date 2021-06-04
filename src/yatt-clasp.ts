@@ -15,7 +15,7 @@ import {generate_widget} from './codegen'
 const [_cmd, _script, ...args] = process.argv;
 const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0;
 
-const baseNS = 'template';
+const baseNS = 'templates';
 
 function rootname(fn: string): string {
     const ext = path.extname(fn)
