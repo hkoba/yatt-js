@@ -29,4 +29,10 @@ tap.same(
 tap.same(
     it(['-d', '-v'], {alias: {d: "debug", v: "verbose"}}),
     [{debug: true, verbose: true}, []]
-)
+);
+
+(() => {
+    let target = {foo: false, bar: "BAR"}
+    parse_long_options(['--foo'], {target: target})
+    tap.same(target, {foo: true, bar: "BAR"})
+})()
