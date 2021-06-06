@@ -1,5 +1,6 @@
 #!/usr/bin/env ts-node
 
+import {YattConfig} from '../yatt-config'
 import {
     Range, ParserContext, parserContext
 } from '../context'
@@ -130,20 +131,21 @@ export function* tokenize(outerCtx: ParserContext, payloadList: Payload[]): Gene
 if (module.id === ".") {
     const { readFileSync } = require('fs')
     const [_cmd, _script, ...args] = process.argv;
-    const { parse } = require('../multipart/parse')
+    const { parse_multipart } = require('../multipart/parse')
+    const { parse_long_options } = require("../utils/long-options")
     const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
+    const config: YattConfig = {
+        debug: { parser: debugLevel }
+    }
+    parse_long_options(args, {target: config})
     
     for (const fn of args) {
         let ctx = parserContext({
-            filename: fn, source: readFileSync(fn, { encoding: "utf-8" }), config: {
-                debug: {
-                    parser: debugLevel
-                }
-            }
+            filename: fn, source: readFileSync(fn, { encoding: "utf-8" }), config
         })
 
         process.stdout.write(JSON.stringify({FILENAME: fn}) + "\n")
-        for (const part of parse(ctx)) {
+        for (const part of parse_multipart(ctx)) {
             process.stdout.write(JSON.stringify({part: part.kind, attlist: part.attlist}) + "\n")
             for (const tok of tokenize(ctx, part.payload)) {
                 const text = ctx.range_text(tok)

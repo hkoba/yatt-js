@@ -1,5 +1,7 @@
 #!/usr/bin/env ts-node
 
+import {YattConfig} from '../yatt-config'
+
 import {
     Range, GlobalMatch, ParserContext, parserContext
 } from '../context'
@@ -35,7 +37,9 @@ export type ChunkGenerator = Generator<Chunk, any, any>
 
 export function* tokenize(ctx: ParserContext): ChunkGenerator {
     let re_decls = ctx.re('decls', () => re_decl_open(ctx.session.params.namespace))
-    let re_comment_end = /(?<prefix>.*?)#-->/sy;
+    let re_comment_end = ctx.session.params.compat_end_of_comment ?
+        /(?<prefix>.*?)-->/sy :
+        /(?<prefix>.*?)#-->/sy;
     let re_decl_end = />\r?\n/y;
     
     let globalMatch: GlobalMatch | null = null
@@ -95,14 +99,17 @@ export function* tokenize(ctx: ParserContext): ChunkGenerator {
 if (module.id === ".") {
     const { readFileSync } = require("fs")
     const [_cmd, _script, ...args] = process.argv;
-    
+    const { parse_long_options } = require("../utils/long-options")
     const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
+
+    const config: YattConfig = {
+        debug: { parser: debugLevel }
+    }
+    parse_long_options(args, {target: config})
 
     for (const fn of args) {
         let ctx = parserContext({
-            filename: fn, source: readFileSync(fn, { encoding: "utf-8" }), config: {
-                debug: { parser: debugLevel }
-            }
+            filename: fn, source: readFileSync(fn, { encoding: "utf-8" }), config
         });
 
         process.stdout.write(JSON.stringify({FILENAME: fn}) + "\n")
