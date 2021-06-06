@@ -4,11 +4,11 @@ import { Range, ParserContext, parserContext } from '../context'
 
 import { tokenize, Token } from './tokenize'
 
-import { Part, parse as parse_multipart } from '../multipart/parse'
+import { Part, parse_multipart } from '../multipart/parse'
 
 import { parse_attlist, AttItem } from '../attlist/parse'
 
-import { parse_entpath, EntNode } from '../entity/parse'
+import { EntNode } from '../entity/parse'
 
 type Element = Range & {
     kind: "element"
@@ -99,7 +99,7 @@ if (module.id === ".") {
         
         for (const part of parse_multipart(ctx)) {
             console.dir(part, {colors: true, depth: null})
-            console.dir(parse(ctx, part), {colors: true, depth: null})
+            console.dir(parse_template(ctx, part), {colors: true, depth: null})
         }
     }
 }
