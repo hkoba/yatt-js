@@ -33,17 +33,23 @@ export function parse_attlist<T extends {kind: string} & Range>(ctx: ParserConte
                 }
                 break
             }
-            case "nest": {
-                ctx.throw_error("Not yet implemented")
-                break
-            }
-
+            case "nest":
             case "bare": case "sq": case "dq": {
-                const term = {
-                    kind: cur.value.kind, value: ctx.range_text(cur.value),
-                    start: cur.value.start, end: cur.value.end,
-                    comment: []
+                const start = cur.value.start
+                let term;
+                if (cur.value.kind === "nest") {
+                    const [value, end] = parse_attlist(ctx, lex, "nestclo")
+                    term = {
+                        kind: "nest", value, start, end: end.end, comment: []
+                    }
+                } else {
+                    term = {
+                        kind: cur.value.kind, value: ctx.range_text(cur.value),
+                        start, end: cur.value.end,
+                        comment: []
+                    }
                 }
+
                 if (ctx.debug) {
                     console.log("term: ", term)
                 }
