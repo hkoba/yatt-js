@@ -1,5 +1,6 @@
 #!/usr/bin/env ts-node
 
+import {YattConfig} from '../yatt-config'
 import { Range, ParserContext, parserContext } from '../context'
 
 import { tokenize, Token } from './tokenize'
@@ -86,15 +87,17 @@ function parse_tokens(ctx: ParserContext, part: Part
 if (module.id === ".") {
     const { readFileSync } = require('fs')
     const [_cmd, _script, ...args] = process.argv;
+
+    const { parse_long_options } = require("../utils/long-options")
     const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
+    const config: YattConfig = {
+        debug: { parser: debugLevel }
+    }
+    parse_long_options(args, {target: config})
     
     for (const fn of args) {
         let ctx = parserContext({
-            filename: fn, source: readFileSync(fn, { encoding: "utf-8" }), config: {
-                debug: {
-                    parser: debugLevel
-                }
-            }
+            filename: fn, source: readFileSync(fn, { encoding: "utf-8" }), config
         })
         
         for (const part of parse_multipart(ctx)) {
