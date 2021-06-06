@@ -23,7 +23,7 @@ export type PartBase = {
 
 export type Part = PartBase & Range
 
-export function parse(ctx: ParserContext): Part[] {
+export function parse_multipart(ctx: ParserContext): Part[] {
     let partList: [number, PartBase][] = []
     let lex = tokenize(ctx)
     for (const tok of lex) {
@@ -110,7 +110,7 @@ if (module.id === ".") {
         })
 
         process.stdout.write(JSON.stringify({FILENAME: fn}) + "\n")
-        for (const part of parse(ctx)) {
+        for (const part of parse_multipart(ctx)) {
             process.stdout.write(JSON.stringify(part) + "\n")
         }
         process.stdout.write("\n")
