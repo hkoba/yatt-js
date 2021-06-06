@@ -4,7 +4,7 @@ export {parserContext, Range, ParserContext} from './context'
 
 export {parse_multipart, Part} from './multipart/parse'
 
-export {parse, Node} from './template/parse'
+export {parse_template, Node} from './template/parse'
 
 export {AttItem} from './attlist/parse'
 

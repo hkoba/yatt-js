@@ -24,7 +24,7 @@ type PI = Range & {kind: "pi"}
 
 export type Node = Text | Comment | PI | Element | EntNode
 
-export function parse(ctx: ParserContext, part: Part): Node[] {
+export function parse_template(ctx: ParserContext, part: Part): Node[] {
     let lex = tokenize(ctx, part.payload)
     let nodes = parse_tokens(ctx, part, lex, []);
     return nodes
