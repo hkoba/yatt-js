@@ -113,7 +113,7 @@ export function* tokenize(outerCtx: ParserContext, payloadList: Payload[]): Gene
                     yield {kind: "pi", innerRange, ...range}
                 }
                 else {
-                    // never
+                    ctx.NEVER()
                 }
             }
             

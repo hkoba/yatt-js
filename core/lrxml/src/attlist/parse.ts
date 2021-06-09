@@ -89,7 +89,9 @@ export function parse_attlist<T extends {kind: string} & Range>(ctx: ParserConte
                 had_equal = true
                 break
             }
-            default:
+            default: {
+                ctx.NIMPL(cur.value)
+            }
         }
     }
     
