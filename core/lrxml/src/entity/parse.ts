@@ -4,6 +4,16 @@ import { Range, ParserContext, parserContext } from '../context'
 
 import { re_join } from '../utils/regexp'
 
+export type EntPrefixChar = '&' | '%'
+
+// `(?<entity>(?:${nspat}))(?=:|(?<lcmsg>(?<msgopn>(?:\\#\\w+)?\\[{2,})|(?<msgsep>\\|{2,})|(?<msgclo>\\]{2,})))`
+
+export function re_entity_open(ns: string[], entPrefixChar: EntPrefixChar): string {
+    const nspat = ns.join("|")
+    let entbase = `(?<entity>${nspat})`
+    return `${entPrefixChar}(?:${entbase})`
+}
+
 const open_head: {[k: string]: "call" | "array" | "hash"} =
     {"(": "call",   "[": "array", "{": "hash"}
 const open_rest: {[k: string]: "invoke" | "aref" | "href"} =

@@ -13,12 +13,6 @@ import { parse_entpath, EntNode } from '../entity/parse'
 
 import { re_join } from '../utils/regexp'
 
-function re_entity_open(ns: string[]): string {
-    const nspat = ns.join("|")
-    const entbase = `(?<entity>${nspat})`
-    // XXX: lcmsg, special_entities
-    return `&(?:${entbase})`
-} 
 
 function re_body(ns: string[]): RegExp {
     const nspat = ns.join("|")
