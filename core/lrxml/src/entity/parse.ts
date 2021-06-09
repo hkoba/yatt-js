@@ -63,10 +63,9 @@ export function parse_entpath(ctx: ParserContext): EntNode {
 
     const end = ctx.global_match(/;/g);
     if (! end) {
-        console.log("REST: [[" + ctx.rest_line(3) + "]]")
         ctx.throw_error("entity is not terminated by ;")
     }
-
+    ctx.tab(end)
     return {kind: "entity", start, end: ctx.index, path}
 }
 
