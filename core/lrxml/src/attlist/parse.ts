@@ -4,10 +4,14 @@ import {
 
 import { AttBare, AttSq, AttDq, AttNest } from '../attlist/tokenize'
 
+import { EntNode } from '../entity/parse'
+
 type Term = ({kind: AttBare | AttSq | AttDq, value: string, comment: string[]}
              |
              {kind: AttNest, value: AttItem[], comment: string[]}
-            ) & Range
+            ) & Range |
+    (EntNode & {comment: string[]})
+
 export type AttItem = {label?: Term} & Term
 
 export function parse_attlist<T extends {kind: string} & Range>(ctx: ParserContext, lex: Generator<T,any,any>
@@ -33,6 +37,7 @@ export function parse_attlist<T extends {kind: string} & Range>(ctx: ParserConte
                 }
                 break
             }
+            case "entity":
             case "nest":
             case "bare": case "sq": case "dq": {
                 const start = cur.value.start
@@ -42,7 +47,11 @@ export function parse_attlist<T extends {kind: string} & Range>(ctx: ParserConte
                     term = {
                         kind: "nest", value, start, end: end.end, comment: []
                     }
-                } else {
+                }
+                else if (cur.value.kind === "entity") {
+                    term = {comment: [], ...cur.value}
+                }
+                else {
                     term = {
                         kind: cur.value.kind, value: ctx.range_text(cur.value),
                         start, end: cur.value.end,

@@ -9,14 +9,13 @@ import { Payload } from '../multipart/parse'
 
 import { tokenize_attlist, AttToken } from '../attlist/tokenize'
 
-import { parse_entpath, EntNode } from '../entity/parse'
+import { parse_entpath, re_entity_open, re_lcmsg, EntNode, EntPrefixMatch } from '../entity/parse'
 
-import { re_join } from '../utils/regexp'
-
+import { re_join, re_lookahead } from '../utils/regexp'
 
 function re_body(ns: string[]): RegExp {
     const nspat = ns.join("|")
-    const entOpen = re_entity_open(ns)
+    const entOpen = re_entity_open(ns, '&')
     const inTagOpen = re_join(
         `(?<clo>/)?(?<opt>:)?(?<tag>${nspat}(?::\\w+)+)`,
         `\\?(?<pi>${nspat}(?::\\w+)*)`
@@ -29,13 +28,12 @@ function re_body(ns: string[]): RegExp {
 }
 
 type BodyMatch = {
-    [x: string]: string | undefined
     prefix: string
     clo?: string
     opt?: string
     tag?: string
     pi?: string
-}
+} & EntPrefixMatch
 
 type Text = Range & {kind: "text"}
 type Comment = Range & {kind: "comment", innerRange: Range}
@@ -81,7 +79,7 @@ export function* tokenize(outerCtx: ParserContext, payloadList: Payload[]): Gene
                            is_close: bm.clo != null,
                            is_option: bm.opt != null,
                            name: bm.tag, ...range}
-                    yield* tokenize_attlist(ctx)
+                    yield* tokenize_attlist(ctx, '&')
                     const end = ctx.match_index(/(?<empty_tag>\/)?>(\r?\n)?/y)
                     if (end == null) {
                         const gbg = ctx.match_index(/\S*\s*?\/?>/y)

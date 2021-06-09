@@ -75,7 +75,7 @@ export function* tokenize(ctx: ParserContext): ChunkGenerator {
             }
 
             // name name="value" name=[name name="value"...]...
-            yield* tokenize_attlist(ctx)
+            yield* tokenize_attlist(ctx, '%')
 
             // console.log("REST: ", ctx.remainder(3))
 

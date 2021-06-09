@@ -1,24 +1,22 @@
 import { Range, ParserContext } from '../context'
 import { re_join } from '../utils/regexp'
 
-function re_att(ns: string[]): RegExp {
+import { re_entity_open, EntPrefixChar, parse_entpath, EntNode } from '../entity/parse'
+
+function re_att(ns: string[], entPrefixChar: EntPrefixChar): RegExp {
     const pat = re_join(
         '(?<ws>[ \\t\\r\\n]+)',
         '(?<comment>--.*?--)',
         '(?<equal>=\\s*)',
-        re_att_literal(ns)
+        re_join(
+            "(?<sq>'[^']*')",
+            '(?<dq>"[^"]*")',
+            '(?<nest>\\[)', '(?<nestclo>\\])',
+            re_entity_open(ns, entPrefixChar),
+            '(?<bare>[^\\s\'\"<>\\[\\]/=;]+)'
+        )
     )
     return new RegExp(pat, 'sy');
-}
-
-function re_att_literal(ns: string[]): string {
-    return re_join(
-        "(?<sq>'[^']*')",
-        '(?<dq>"[^"]*")',
-        '(?<nest>\\[)', '(?<nestclo>\\])',
-        // pat_entOpen(ns), // XXX: 要らんのでは ← 細かいエラー通知のためか
-        '(?<bare>[^\\s\'\"<>\\[\\]/=;]+)'
-    )
 }
 
 export type AttComment = "comment"
@@ -32,7 +30,7 @@ export type AttEqual = "equal"
 export type AttKind = AttComment | AttSq | AttDq | AttNest |
     AttNestClo | AttBare | AttEqual
 
-export type AttToken = {kind: AttKind, text: string, innerRange?: Range} & Range
+export type AttToken = {kind: AttKind, text: string, innerRange?: Range} & Range | EntNode
 
 type AttMatch = {
     [x: string]: string | undefined
@@ -44,6 +42,7 @@ type AttMatch = {
     nestclo?: string
     bare?: string
     equal?: string
+    entity?: string
 }
 
 export function extractMatch(am: AttMatch): [AttKind, string] | null {
@@ -59,10 +58,15 @@ export function extractMatch(am: AttMatch): [AttKind, string] | null {
     return null
 }
 
-export function* tokenize_attlist(ctx: ParserContext): Generator<AttToken> {
-    let re = ctx.re('attlist', () => re_att(ctx.session.params.namespace))
+export function* tokenize_attlist(ctx: ParserContext, entPrefixChar: EntPrefixChar): Generator<AttToken> {
+    let re = ctx.re('attlist' + entPrefixChar, () => re_att(ctx.session.params.namespace, entPrefixChar))
     let match
     while ((match = ctx.match_index(re)) !== null) {
+        if (match.groups && (match.groups as AttMatch).entity) {
+            ctx.advance(match)
+            yield parse_entpath(ctx)
+            continue
+        }
         const kv = extractMatch(match.groups as AttMatch)
         if (kv) {
             const [key, val] = kv

@@ -59,7 +59,7 @@ function re_enttext(other: string[]) {
     return new RegExp(re_str, 'y')
 }
 
-type EntMatch = {
+type EntPathMatch = {
     var?: string
     call_open?: string
     array_open?: string
@@ -85,7 +85,7 @@ function parse_pipeline(ctx: ParserContext): EntPath {
 
     let match: RegExpExecArray | null
     while ((match = ctx.match_index(re_open)) != null) {
-        let mg = match.groups as EntMatch
+        let mg = match.groups as EntPathMatch
         const is_open = _is_open(mg)
         const is_head: boolean = pipe.length == 0
         if (! is_open) {
@@ -111,7 +111,7 @@ function parse_pipeline(ctx: ParserContext): EntPath {
     return pipe
 }
 
-function _is_open(mg: EntMatch): OpenChars | undefined {
+function _is_open(mg: EntPathMatch): OpenChars | undefined {
     return (mg.call_open ?? mg.array_open ?? mg.dict_open) as OpenChars | undefined
 }
 
