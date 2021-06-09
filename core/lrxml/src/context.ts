@@ -142,12 +142,11 @@ export class ParserContext {
         return {start, end: this.index}
     }
     
-    tab_match_prefix(globalMatch: GlobalMatch): Range | null {
+    prefix_of(globalMatch: GlobalMatch): Range | null {
         if (this.index >= globalMatch.match.index) {
             return null;
         }
         const start = this.index;
-        this.index = globalMatch.lastIndex;
         return { start, end: globalMatch.match.index }
     }
 

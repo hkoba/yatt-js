@@ -67,7 +67,7 @@ export function* tokenize(outerCtx: ParserContext, payloadList: Payload[]): Gene
             let ctx = outerCtx.narrowed(tok)
             let globalMatch
             while ((globalMatch = ctx.global_match(re))) {
-                const prefix = ctx.tab_match_prefix(globalMatch)
+                const prefix = ctx.prefix_of(globalMatch)
                 if (prefix != null) {
                     yield { kind: "text", ...prefix }
                 }

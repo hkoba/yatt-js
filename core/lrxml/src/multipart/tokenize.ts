@@ -45,7 +45,7 @@ export function* tokenize(ctx: ParserContext): ChunkGenerator {
     let globalMatch: GlobalMatch | null = null
     while ((globalMatch = ctx.global_match(re_decls)) !== null) {
 
-        const prefix = ctx.tab_match_prefix(globalMatch)
+        const prefix = ctx.prefix_of(globalMatch)
         if (prefix != null) {
             yield { kind: "text", ...prefix }
         }
