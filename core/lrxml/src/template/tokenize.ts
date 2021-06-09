@@ -9,13 +9,14 @@ import { Payload } from '../multipart/parse'
 
 import { tokenize_attlist, AttToken } from '../attlist/tokenize'
 
-import { parse_entpath, re_entity_open, re_lcmsg, EntNode, EntPrefixMatch } from '../entity/parse'
+import { parse_entpath, re_entity_open, re_lcmsg, EntNode, EntPrefixMatch, LCMsg } from '../entity/parse'
 
 import { re_join, re_lookahead } from '../utils/regexp'
 
 function re_body(ns: string[]): RegExp {
     const nspat = ns.join("|")
-    const entOpen = re_entity_open(ns, '&')
+    const entOpen = re_entity_open(ns, '&') +
+        re_lookahead(':', re_lcmsg())
     const inTagOpen = re_join(
         `(?<clo>/)?(?<opt>:)?(?<tag>${nspat}(?::\\w+)+)`,
         `\\?(?<pi>${nspat}(?::\\w+)*)`
@@ -47,7 +48,7 @@ export type TagClose = Range & {kind: "tag_close", is_empty_element: boolean}
 type EntOpen = Range & {kind: "entpath_open", name: string}
 
 export type Token = Text | Comment | PI |
-    TagOpen | AttToken | TagClose | EntOpen | EntNode
+    TagOpen | AttToken | TagClose | EntOpen | EntNode | LCMsg
 
 export function* tokenize(outerCtx: ParserContext, payloadList: Payload[]): Generator<Token,any,any>
 {
@@ -66,11 +67,28 @@ export function* tokenize(outerCtx: ParserContext, payloadList: Payload[]): Gene
                 
                 let bm = globalMatch.match.groups as BodyMatch
                 if (bm.entity != null) {
-                    const range = ctx.tab(globalMatch)
-                    yield {kind: "entpath_open", name: ctx.range_text(range), ...range}
+                    // XXX: This must be handled in attlist too.
+                    if (bm.lcmsg != null) {
+                        const range = ctx.tab(globalMatch, undefined, bm.lcmsg)
+                        const end = ctx.match_index(/;/y);
+                        if (end == null) {
+                            // XXX: never type
+                            throw ctx.throw_error("lcmsg entity is not terminated with ;")
+                        }
+                        const kind = bm.msgopn ? "lcmsg_open"
+                            : bm.msgsep ? "lcmsg_sep"
+                            : bm.msgclo ? "lcmsg_close" : null;
+                        if (kind == null) {
+                            throw ctx.throw_error("BUG: unknown condition");
+                        }
 
-                    yield parse_entpath(ctx)
+                        yield {kind, start: range.start, end: end.index}
+                    } else {
+                        const range = ctx.tab(globalMatch)
+                        yield {kind: "entpath_open", name: ctx.range_text(range), ...range}
 
+                        yield parse_entpath(ctx)
+                    }
                 }
                 else if (bm.tag != null) {
                     

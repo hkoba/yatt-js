@@ -14,6 +14,25 @@ export function re_entity_open(ns: string[], entPrefixChar: EntPrefixChar): stri
     return `${entPrefixChar}(?:${entbase})`
 }
 
+export function re_lcmsg(): string {
+    const lcmsg = re_join(
+	'(?<msgopn>(?:\\#\\w+)?\\[{2,})',
+	'(?<msgsep>\\|{2,})',
+	'(?<msgclo>\\]{2,})'
+    );
+    return `(?<lcmsg>${lcmsg})`
+}
+
+export type EntPrefixMatch = {
+    entity?: string
+    lcmsg?: string
+    msgopn?: string
+    msgsep?: string
+    msgclo?: string
+}
+
+export type LCMsg = Range & {kind: "lcmsg_open" | "lcmsg_sep" | "lcmsg_close"}
+
 const open_head: {[k: string]: "call" | "array" | "hash"} =
     {"(": "call",   "[": "array", "{": "hash"}
 const open_rest: {[k: string]: "invoke" | "aref" | "href"} =

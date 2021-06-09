@@ -105,9 +105,9 @@ export class ParserContext {
         this.index += num
     }
 
-    matched_range(from: GlobalMatch, to: RegExpExecArray): Range {
+    matched_range(from: GlobalMatch, to: RegExpExecArray, morestr?: string): Range {
         const start = from.match.index
-        const end = to.index + to[0].length
+        const end = to.index + to[0].length + (morestr ? morestr.length : 0)
         return {start, end}
     }
 
@@ -120,9 +120,9 @@ export class ParserContext {
         return {start, end}
     }
 
-    tab(from: GlobalMatch, to?: RegExpExecArray): Range {
-        const matched = to ? this.matched_range(from, to) :
-            {start: from.match.index, end: from.lastIndex}
+    tab(from: GlobalMatch, to?: RegExpExecArray, morestr?: string): Range {
+        const matched = to ? this.matched_range(from, to, morestr) :
+            {start: from.match.index, end: from.lastIndex + (morestr ? morestr.length : 0)}
         this.index = matched.end
         return matched
     }
