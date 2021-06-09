@@ -1,0 +1,4 @@
+<!yatt:args foo %yatt:bar; baz>
+<yatt:if &yatt:foo;>
+  has foo
+</yatt:if>
