@@ -75,14 +75,21 @@ export function* tokenize(outerCtx: ParserContext, payloadList: Payload[]): Gene
                             // XXX: never type
                             throw ctx.throw_error("lcmsg entity is not terminated with ;")
                         }
-                        const kind = bm.msgopn ? "lcmsg_open"
-                            : bm.msgsep ? "lcmsg_sep"
-                            : bm.msgclo ? "lcmsg_close" : null;
-                        if (kind == null) {
-                            throw ctx.throw_error("BUG: unknown condition");
+
+                        if (bm.msgopn) {
+                            yield {kind: "lcmsg_open", namespace: bm.entity.split(/:/)
+                                   , start: range.start, end: end.index}
+                        }
+                        else {
+                            const kind = bm.msgsep ? "lcmsg_sep"
+                                : bm.msgclo ? "lcmsg_close" : null;
+                            if (kind == null) {
+                                throw ctx.throw_error("BUG: unknown condition");
+                            }
+
+                            yield { kind, start: range.start, end: end.index }
                         }
 
-                        yield {kind, start: range.start, end: end.index}
                     } else {
                         const range = ctx.tab(globalMatch)
                         yield {kind: "entpath_open", name: ctx.range_text(range), ...range}

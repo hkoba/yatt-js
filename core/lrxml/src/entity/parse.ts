@@ -31,7 +31,8 @@ export type EntPrefixMatch = {
     msgclo?: string
 }
 
-export type LCMsg = Range & {kind: "lcmsg_open" | "lcmsg_sep" | "lcmsg_close"}
+export type LCMsg = Range & {kind: "lcmsg_sep" | "lcmsg_close"} |
+    Range & {kind: "lcmsg_open", namespace: string[]}
 
 const open_head: {[k: string]: "call" | "array" | "hash"} =
     {"(": "call",   "[": "array", "{": "hash"}

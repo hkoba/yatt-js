@@ -23,7 +23,10 @@ type Text = Range & {kind: "text"}
 type Comment = Range & {kind: "comment"}
 type PI = Range & {kind: "pi"}
 
-export type Node = Text | Comment | PI | Element | EntNode
+type LCMsg = Range & {kind: "lcmsg", namespace: string[]
+                      , lcmsg: Text[][], bind: EntNode[]}
+
+export type Node = Text | Comment | PI | Element | EntNode | LCMsg
 
 export function parse_template(ctx: ParserContext, part: Part): Node[] {
     let lex = tokenize(ctx, part.payload)
@@ -44,6 +47,11 @@ function parse_tokens(ctx: ParserContext, part: Part
             case "entpath_open": break;
             case "entity": {
                 sink.push(tok)
+                break;
+            }
+            case "lcmsg_open": {
+                const {lcmsg, bind, end} = parse_lcmsg(ctx, lex)
+                sink.push({kind: "lcmsg", namespace: tok.namespace, lcmsg, bind, start: tok.start, end: end.end})
                 break;
             }
             case "tag_open": {
@@ -75,13 +83,44 @@ function parse_tokens(ctx: ParserContext, part: Part
                 break;
             }
             default: {
-                console.log("INVALID token:", tok)
-                ctx.NEVER()
+                ctx.NIMPL(tok)
             }
         }
     }
     
     return sink
+}
+
+function parse_lcmsg(ctx: ParserContext, lex: Generator<Token>)
+: {lcmsg: Text[][], bind: EntNode[], end: Range} {
+    let sink: Text[] = [];
+    let lcmsg = [sink]
+    let bind: EntNode[] = []
+    for (const tok of lex) {
+        ctx.index = tok.start
+        switch (tok.kind) {
+            case "text": {
+                sink.push(tok)
+                break;
+            }
+            case "entpath_open": break;
+            case "entity": {
+                bind.push(tok)
+                break;
+            }
+            case "lcmsg_close": {
+                return {lcmsg, bind, end: {start: tok.start, end: tok.end}}
+            }
+            case "lcmsg_sep": {
+                lcmsg.push(sink = [])
+            }
+            case "comment": break; // just ignore
+            default: {
+                ctx.throw_error(`Invalid token: ${tok.kind}`)
+            }
+        }
+    }
+    ctx.throw_error(`lcmsg is not terminated!`)
 }
 
 if (module.id === ".") {
