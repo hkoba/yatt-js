@@ -1,8 +1,8 @@
 export {yattParams, YattParams, YattConfig} from './yatt-config'
 
-export {parserContext, Range, ParserContext} from './context'
+export {parserContext, Range, ParserContext, ParserSession, ScanningContext} from './context'
 
-export {parse_multipart, Part} from './multipart/parse'
+export {parse_multipart, Part as RawPart} from './multipart/parse'
 
 export {parse_template, Node} from './template/parse'
 
