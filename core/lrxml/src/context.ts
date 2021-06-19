@@ -16,18 +16,14 @@ export type GlobalMatch = {
     lastIndex: number
 }
 
-export class ParserContext<S extends ParserSession> {
-    public debug: number = 0
+export class ScanningContext<S extends ParserSession> {
     constructor(public session: S,
                 public index: number,
                 public start: number,
                 public end: number,
-                public parent?: ParserContext<S>) {
+                public parent?: ScanningContext<S>) {
         if (typeof session.source !== "string") {
             throw new Error("session.source is not a string type!")
-        }
-        if (session.params.debug.parser !== undefined) {
-            this.debug = session.params.debug.parser
         }
     }
 
@@ -39,14 +35,6 @@ export class ParserContext<S extends ParserSession> {
         return this.end <= this.index
     }
 
-    re(key: string, fn: () => RegExp): RegExp {
-        let re = this.session.patterns[key]
-        if (! re) {
-            re = this.session.patterns[key] = fn()
-        }
-        return new RegExp(re, re.flags)
-    }
-    
     rest_range(): Range | null {
         if (this.end <= this.index) {
             return null
@@ -57,15 +45,65 @@ export class ParserContext<S extends ParserSession> {
     rest_string(): string {
         return this.session.source.substring(this.index, this.end)
     }
-    
+
     rest_line(num: number = 1): string {
         return this.rest_string().split(/\r?\n/).slice(0, num).join("\n")
     }
 
-    narrowed(range: Range): ParserContext<S> {
+    line_number(index?: number): number {
+        return lineNumber(this.session.source.substring(0, index ?? this.index))
+    }
+
+    throw_error(message: string, options?: {index?: number}): never {
+        const index = this.start + (options?.index ?? this.index);
+        const prefix = this.session.source.substring(0, index)
+        const lastNl = prefix.lastIndexOf('\n')
+        const lineNo = lineNumber(prefix)
+        const colNo = index - lastNl
+        const fileInfo = this.session.filename ? ` at ${this.session.filename}` : ""
+        const longMessage = `${message}${fileInfo} line ${lineNo} column ${colNo}`
+        throw new Error(longMessage)
+    }
+
+    NEVER(): never {
+        this.throw_error("BUG! why reached here!")
+    }
+
+    NIMPL(item?: any): never {
+        if (item !== undefined) {
+            const json = JSON.stringify(item)
+            this.throw_error(`Unhandled element: ${json}`)
+        } else {
+            this.throw_error("Not yet implemented")
+        }
+    }
+}
+
+export class ParserContext extends ScanningContext<ParserSession> {
+    public debug: number = 0
+    constructor(session: ParserSession,
+                index: number,
+                start: number,
+                end: number,
+                parent?: ParserContext) {
+        super(session, index, start, end, parent)
+        if (session.params.debug.parser !== undefined) {
+            this.debug = session.params.debug.parser
+        }
+    }
+
+    narrowed(range: Range): ParserContext {
         let subCtx = new ParserContext(this.session, range.start, range.start, range.end, this)
         subCtx.debug = this.debug
         return subCtx
+    }
+
+    re(key: string, fn: () => RegExp): RegExp {
+        let re = this.session.patterns[key]
+        if (! re) {
+            re = this.session.patterns[key] = fn()
+        }
+        return new RegExp(re, re.flags)
     }
 
     global_match(re: RegExp): GlobalMatch | null {
@@ -149,34 +187,6 @@ export class ParserContext<S extends ParserSession> {
         const start = this.index;
         return { start, end: globalMatch.match.index }
     }
-
-    line_number(index: number): number {
-        return lineNumber(this.session.source.substring(0, this.index))
-    }
-
-    throw_error(message: string, options?: {index?: number}): never {
-        const index = this.start + (options?.index ?? this.index);
-        const prefix = this.session.source.substring(0, index)
-        const lastNl = prefix.lastIndexOf('\n')
-        const lineNo = lineNumber(prefix)
-        const colNo = index - lastNl
-        const fileInfo = this.session.filename ? ` at ${this.session.filename}` : ""
-        const longMessage = `${message}${fileInfo} line ${lineNo} column ${colNo}`
-        throw new Error(longMessage)
-    }
-    
-    NEVER(): never {
-        this.throw_error("BUG! why reached here!")
-    }
-
-    NIMPL(item?: any): never {
-        if (item !== undefined) {
-            const json = JSON.stringify(item)
-            this.throw_error(`Unhandled element: ${json}`)
-        } else {
-            this.throw_error("Not yet implemented")
-        }
-    }
 }
 
 function trim_input(match: RegExpExecArray | null) {
@@ -191,7 +201,7 @@ function trim_input(match: RegExpExecArray | null) {
     return obj
 }
 
-export function parserContext(v: {source: string, filename?: string, config: YattConfig}): ParserContext<ParserSession> {
+export function parserContext(v: {source: string, filename?: string, config: YattConfig}): ParserContext {
     
     const session = {source: v.source, filename: v.filename, params: yattParams(v.config), patterns: {}}
     

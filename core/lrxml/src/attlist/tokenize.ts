@@ -58,7 +58,7 @@ export function extractMatch(am: AttMatch): [AttKind, string] | null {
     return null
 }
 
-export function* tokenize_attlist<S extends ParserSession>(ctx: ParserContext<S>, entPrefixChar: EntPrefixChar): Generator<AttToken> {
+export function* tokenize_attlist(ctx: ParserContext, entPrefixChar: EntPrefixChar): Generator<AttToken> {
     let re = ctx.re('attlist' + entPrefixChar, () => re_att(ctx.session.params.namespace, entPrefixChar))
     let match
     while ((match = ctx.match_index(re)) !== null) {

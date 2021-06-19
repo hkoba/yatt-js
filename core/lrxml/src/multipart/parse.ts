@@ -24,7 +24,7 @@ export type PartBase = {
 
 export type Part = PartBase & Range
 
-export function parse_multipart<S extends ParserSession>(ctx: ParserContext<S>): Part[] {
+export function parse_multipart(ctx: ParserContext): Part[] {
     let partList: [number, PartBase][] = []
     let lex = tokenize(ctx)
     for (const tok of lex) {
@@ -81,7 +81,7 @@ function add_range<T>(list: [number, T][], end: number): (T & Range)[] {
     return result
 }
 
-function push_payload<S extends ParserSession>(ctx: ParserContext<S>, partList: [number, PartBase][], payload: Payload) {
+function push_payload(ctx: ParserContext, partList: [number, PartBase][], payload: Payload) {
     if (! partList.length) {
         // May fill default kind/namespace
         partList.push([0,{

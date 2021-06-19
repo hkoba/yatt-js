@@ -35,7 +35,7 @@ function re_decl_open(ns: string[]): RegExp {
 
 export type ChunkGenerator = Generator<Chunk, any, any>
 
-export function* tokenize<S extends ParserSession>(ctx: ParserContext<S>): ChunkGenerator {
+export function* tokenize(ctx: ParserContext): ChunkGenerator {
     let re_decls = ctx.re('decls', () => re_decl_open(ctx.session.params.namespace))
     let re_comment_end = ctx.session.params.compat_end_of_comment ?
         /(?<prefix>.*?)-->/sy :

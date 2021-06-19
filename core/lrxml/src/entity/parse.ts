@@ -86,7 +86,7 @@ type EntPathMatch = {
     dict_open?: string
 }
 
-export function parse_entpath<S extends ParserSession>(ctx: ParserContext<S>): EntNode {
+export function parse_entpath(ctx: ParserContext): EntNode {
 
     const start = ctx.index
     const path = parse_pipeline(ctx);
@@ -99,7 +99,7 @@ export function parse_entpath<S extends ParserSession>(ctx: ParserContext<S>): E
     return {kind: "entity", start, end: ctx.index, path}
 }
 
-function parse_pipeline<S extends ParserSession>(ctx: ParserContext<S>): EntPath {
+function parse_pipeline(ctx: ParserContext): EntPath {
     const re_open = ctx.re('entpath_open', () => re_entpath_open())
     let pipe: EntPath = []
 
@@ -135,7 +135,7 @@ function _is_open(mg: EntPathMatch): OpenChars | undefined {
     return (mg.call_open ?? mg.array_open ?? mg.dict_open) as OpenChars | undefined
 }
 
-function parse_entgroup<S extends ParserSession>(ctx: ParserContext<S>, close: RegExp): EntTerm[] {
+function parse_entgroup(ctx: ParserContext, close: RegExp): EntTerm[] {
     let elements: EntTerm[] = [];
     let lastIndex = ctx.index
     while (! ctx.empty()) {
@@ -156,7 +156,7 @@ function parse_entgroup<S extends ParserSession>(ctx: ParserContext<S>, close: R
     return elements
 }
 
-function parse_entterm<S extends ParserSession>(ctx: ParserContext<S>): EntTerm | undefined {
+function parse_entterm(ctx: ParserContext): EntTerm | undefined {
     const re_text = ctx.re('entpath_text', () => re_enttext([]))
     const re_text_cont = ctx.re('entpath_text_cont', () =>
                                 re_enttext(['(?=(?<close>[\\])};,]))']))
@@ -202,7 +202,7 @@ function parse_entterm<S extends ParserSession>(ctx: ParserContext<S>): EntTerm 
     return term;
 }
 
-function parse_entparen<S extends ParserSession>(ctx: ParserContext<S>): void {
+function parse_entparen(ctx: ParserContext): void {
     let match
     while (match = ctx.match_index(/[^()]+|[()]/y)) {
         ctx.tab_match(match)

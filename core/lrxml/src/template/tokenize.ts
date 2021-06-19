@@ -50,7 +50,7 @@ type EntOpen = Range & {kind: "entpath_open", name: string}
 export type Token = Text | Comment | PI |
     TagOpen | AttToken | TagClose | EntOpen | EntNode | LCMsg
 
-export function* tokenize<S extends ParserSession>(outerCtx: ParserContext<S>, payloadList: Payload[]): Generator<Token,any,any>
+export function* tokenize(outerCtx: ParserContext, payloadList: Payload[]): Generator<Token,any,any>
 {
     let re = outerCtx.re('body', () => re_body(outerCtx.session.params.namespace))
     for (const tok of payloadList) {
