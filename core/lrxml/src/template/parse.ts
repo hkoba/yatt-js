@@ -123,7 +123,7 @@ function parse_lcmsg(ctx: ParserContext, lex: Generator<Token>)
     ctx.throw_error(`lcmsg is not terminated!`)
 }
 
-modulino: if (module.id === ".") {
+if (module.id === ".") {
     const { readFileSync } = require('fs')
     const [_cmd, _script, ...args] = process.argv;
 

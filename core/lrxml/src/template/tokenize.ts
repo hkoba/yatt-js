@@ -145,7 +145,7 @@ export function* tokenize(outerCtx: ParserContext, payloadList: Payload[]): Gene
     }
 }
 
-modulino: if (module.id === ".") {
+if (module.id === ".") {
     const { readFileSync } = require('fs')
     const [_cmd, _script, ...args] = process.argv;
     const { parse_multipart } = require('../multipart/parse')

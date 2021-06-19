@@ -221,7 +221,7 @@ function parse_entparen(ctx: ParserContext): void {
     }
 }
 
-modulino: if (module.id === ".") {
+if (module.id === ".") {
     for (const str of process.argv.slice(2)) {
         let ctx = parserContext({
             source: str, config: {}
