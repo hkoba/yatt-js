@@ -3,17 +3,25 @@
   "version": "1.0.0",
   "description": "Loose but Recursive XML",
   "main": "lib/index.js",
+  "module": "dist/lrxml.esm.js",
+  "browser": "dist/lrxml.umd.js",
   "tap": {
     "ts": true,
     "coverage": false
   },
   "scripts": {
+    "build": "rollup -c",
     "test": "tap"
   },
   "author": "",
   "license": "MIT",
   "devDependencies": {
+    "@rollup/plugin-commonjs": "^19.0.0",
+    "@rollup/plugin-node-resolve": "^13.0.0",
+    "@rollup/plugin-typescript": "^8.2.1",
     "@types/tap": "^15.0.2",
+    "rollup": "^2.52.1",
+    "rollup-plugin-preserve-shebangs": "^0.2.0",
     "ts-node": "^10.0.0"
   }
 }
