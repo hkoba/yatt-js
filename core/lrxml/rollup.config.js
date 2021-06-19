@@ -14,7 +14,8 @@ export default [
 	output: {
 	    name: 'lrxml',
 	    file: pkg.browser,
-	    format: 'umd'
+	    format: 'umd',
+            sourcemap: true
 	},
 	plugins: [
             preserveShebangs(),
@@ -38,8 +39,8 @@ export default [
 	    typescript() // so Rollup can convert TypeScript to JavaScript
 	],
 	output: [
-	    { file: pkg.main, format: 'cjs' },
-	    { file: pkg.module, format: 'es' }
+	    { file: pkg.main, format: 'cjs', sourcemap: true },
+	    { file: pkg.module, format: 'es', sourcemap: true }
 	]
     }
 ];
