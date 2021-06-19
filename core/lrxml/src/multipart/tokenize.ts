@@ -96,7 +96,7 @@ export function* tokenize(ctx: ParserContext): ChunkGenerator {
     }
 }
 
-if (module.id === ".") {
+modulino: if (module.id === ".") {
     const { readFileSync } = require("fs")
     const [_cmd, _script, ...args] = process.argv;
     const { parse_long_options } = require("../utils/long-options")
