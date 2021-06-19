@@ -9,6 +9,7 @@ export type ParserSession = {
     params: YattParams
     source: string
     patterns: {[k: string]: RegExp}
+    // parent?: ParserSession
 }
 
 export type GlobalMatch = {
@@ -82,9 +83,9 @@ export class ScanningContext<S extends ParserSession> {
 export class ParserContext extends ScanningContext<ParserSession> {
     public debug: number = 0
     constructor(session: ParserSession,
-                index: number,
-                start: number,
-                end: number,
+                index: number = 0,
+                start: number = 0,
+                end: number = session.source.length,
                 parent?: ParserContext) {
         super(session, index, start, end, parent)
         if (session.params.debug.parser !== undefined) {
@@ -201,10 +202,12 @@ function trim_input(match: RegExpExecArray | null) {
     return obj
 }
 
-export function parserContext(v: {source: string, filename?: string, config: YattConfig}): ParserContext {
-    
-    const session = {source: v.source, filename: v.filename, params: yattParams(v.config), patterns: {}}
-    
-    return new ParserContext(session, 0, 0, session.source.length)
+export function parserSession(v: {source: string, filename?: string, config: YattConfig}) : ParserSession {
+
+    return {source: v.source, filename: v.filename, params: yattParams(v.config), patterns: {}}
 }
 
+export function parserContext(v: {source: string, filename?: string, config: YattConfig}): ParserContext {
+
+    return new ParserContext(parserSession(v))
+}

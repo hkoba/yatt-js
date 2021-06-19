@@ -1,8 +1,8 @@
 #!/usr/bin/env ts-node
 
-import { YattConfig, parse_multipart, parserContext } from 'lrxml-js'
+import { parse_multipart, ParserContext, parserSession, ParserSession } from 'lrxml-js'
 
-import { BuilderMap, builderContext } from './context'
+import { BuilderMap, BuilderContext } from './context'
 import { Part } from './part'
 import { WidgetBuilder } from './widget'
 import { ActionBuilder } from './action'
@@ -13,23 +13,21 @@ export function builtin_builders(): BuilderMap {
     builders.set('widget', new WidgetBuilder(true, false))
     builders.set('page', new WidgetBuilder(true, true))
     builders.set('action', new ActionBuilder)
+    // entity
     builders.set('', builders.get('args'))
     return builders
 }
 
-export function* build_declarations_from_file(fn: string, config: YattConfig)
+export function* build_declarations(session: ParserSession)
 : Generator<Part>{
-    const { readFileSync } = require('fs')
+    // XXX: default private or public
     const builders = builtin_builders()
 
-    const pCtx = parserContext({
-        filename: fn, source: readFileSync(fn, { encoding: "utf-8" }), config
-    })
+    const pCtx = new ParserContext(session)
 
-    const ctx = builderContext({
-        builders, filename: fn, source: pCtx.session.source, config
-    })
+    const ctx = new BuilderContext({builders, ...session})
 
+    // XXX: declaration macro handling
     for (const rawPart of parse_multipart(pCtx)) {
         yield ctx.build_declaration(rawPart)
     }
@@ -37,13 +35,17 @@ export function* build_declarations_from_file(fn: string, config: YattConfig)
 
 if (module.id === ".") {
     const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
+    const { readFileSync } = require('fs')
 
     for (const fn of process.argv.slice(2)) {
-        let gen = build_declarations_from_file(fn, {debug: {
-            parser: debugLevel
-        }})
-        for (const part of gen) {
-            console.log(part)
+        let session = parserSession({
+            filename: fn, source: readFileSync(fn, { encoding: "utf-8" }),
+            config: {
+                debug: { parser: debugLevel }
+            }
+        })
+        for (const part of build_declarations(session)) {
+            console.dir(part, {colors: true, depth: null})
         }
     }
 }
