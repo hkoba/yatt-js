@@ -1,5 +1,5 @@
 import {
-    Range, ParserContext
+    Range, ParserContext, ParserSession
 } from '../context'
 
 import { AttBare, AttSq, AttDq, AttNest } from '../attlist/tokenize'
@@ -14,7 +14,7 @@ type Term = ({kind: AttBare | AttSq | AttDq, value: string, comment: string[]}
 
 export type AttItem = {label?: Term} & Term
 
-export function parse_attlist<T extends {kind: string} & Range>(ctx: ParserContext, lex: Generator<T,any,any>
+export function parse_attlist<T extends {kind: string} & Range, S extends ParserSession>(ctx: ParserContext<S>, lex: Generator<T,any,any>
                                  , end_kind: string): [AttItem[], T] {
     let attList: AttItem[] = []
     let pendingTerm: Term | undefined = undefined

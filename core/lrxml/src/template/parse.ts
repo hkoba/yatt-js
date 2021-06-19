@@ -1,7 +1,7 @@
 #!/usr/bin/env ts-node
 
 import {YattConfig} from '../yatt-config'
-import { Range, ParserContext, parserContext } from '../context'
+import { Range, ParserContext, parserContext, ParserSession } from '../context'
 
 import { tokenize, Token } from './tokenize'
 
@@ -28,13 +28,13 @@ type LCMsg = Range & {kind: "lcmsg", namespace: string[]
 
 export type Node = Text | Comment | PI | Element | EntNode | LCMsg
 
-export function parse_template(ctx: ParserContext, part: Part): Node[] {
+export function parse_template<S extends ParserSession>(ctx: ParserContext<S>, part: Part): Node[] {
     let lex = tokenize(ctx, part.payload)
     let nodes = parse_tokens(ctx, part, lex, []);
     return nodes
 }
 
-function parse_tokens(ctx: ParserContext, part: Part
+function parse_tokens<S extends ParserSession>(ctx: ParserContext<S>, part: Part
                       , lex: Generator<Token, any, any>, sink: Node[], close?: string) {
 
     for (const tok of lex) {
@@ -91,7 +91,7 @@ function parse_tokens(ctx: ParserContext, part: Part
     return sink
 }
 
-function parse_lcmsg(ctx: ParserContext, lex: Generator<Token>)
+function parse_lcmsg<S extends ParserSession>(ctx: ParserContext<S>, lex: Generator<Token>)
 : {lcmsg: Text[][], bind: EntNode[], end: Range} {
     let sink: Text[] = [];
     let lcmsg = [sink]

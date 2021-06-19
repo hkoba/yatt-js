@@ -16,13 +16,13 @@ export type GlobalMatch = {
     lastIndex: number
 }
 
-export class ParserContext {
+export class ParserContext<S extends ParserSession> {
     public debug: number = 0
-    constructor(public session: ParserSession,
+    constructor(public session: S,
                 public index: number,
                 public start: number,
                 public end: number,
-                public parent?: ParserContext) {
+                public parent?: ParserContext<S>) {
         if (typeof session.source !== "string") {
             throw new Error("session.source is not a string type!")
         }
@@ -62,7 +62,7 @@ export class ParserContext {
         return this.rest_string().split(/\r?\n/).slice(0, num).join("\n")
     }
 
-    narrowed(range: Range): ParserContext {
+    narrowed(range: Range): ParserContext<S> {
         let subCtx = new ParserContext(this.session, range.start, range.start, range.end, this)
         subCtx.debug = this.debug
         return subCtx
@@ -191,7 +191,7 @@ function trim_input(match: RegExpExecArray | null) {
     return obj
 }
 
-export function parserContext(v: {source: string, filename?: string, config: YattConfig}): ParserContext {
+export function parserContext(v: {source: string, filename?: string, config: YattConfig}): ParserContext<ParserSession> {
     
     const session = {source: v.source, filename: v.filename, params: yattParams(v.config), patterns: {}}
     
