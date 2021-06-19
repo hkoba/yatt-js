@@ -18,6 +18,14 @@ export type BuilderSession = ParserSession & {
 }
 
 export class BuilderContext extends ScanningContext<BuilderSession> {
+    constructor(session: BuilderSession,
+                index: number = 0,
+                start: number = 0,
+                end: number = session.source.length,
+                parent?: BuilderContext) {
+        super(session, index, start, end, parent)
+    }
+
     build_declaration(rawPart: RawPart): Part {
         const builder = this.session.builders.get(rawPart.kind)
         if (builder == null) {
@@ -103,6 +111,5 @@ export function builderContext(v: {builders: BuilderMap, source: string, filenam
 
     const session: BuilderSession = {builders: v.builders, source: v.source, filename: v.filename, params: yattParams(v.config), patterns: {}}
 
-    return new BuilderContext(session, 0, 0, session.source.length)
+    return new BuilderContext(session)
 }
-
