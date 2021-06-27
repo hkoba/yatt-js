@@ -1,4 +1,4 @@
-import { YattParams, yattParams, YattConfig } from './yatt-config'
+import { LrxmlParams, lrxmlParams, LrxmlConfig } from './config'
 
 import { lineNumber } from './utils/count_lines'
 
@@ -6,7 +6,7 @@ export type Range = {start: number, end: number}
 
 export type ParserSession = {
     filename?: string
-    params: YattParams
+    params: LrxmlParams
     source: string
     patterns: {[k: string]: RegExp}
     // parent?: ParserSession
@@ -202,12 +202,12 @@ function trim_input(match: RegExpExecArray | null) {
     return obj
 }
 
-export function parserSession(v: {source: string, filename?: string, config: YattConfig}) : ParserSession {
+export function parserSession(v: {source: string, filename?: string, config: LrxmlConfig}) : ParserSession {
 
-    return {source: v.source, filename: v.filename, params: yattParams(v.config), patterns: {}}
+    return {source: v.source, filename: v.filename, params: lrxmlParams(v.config), patterns: {}}
 }
 
-export function parserContext(v: {source: string, filename?: string, config: YattConfig}): ParserContext {
+export function parserContext(v: {source: string, filename?: string, config: LrxmlConfig}): ParserContext {
 
     return new ParserContext(parserSession(v))
 }

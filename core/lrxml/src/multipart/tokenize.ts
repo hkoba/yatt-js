@@ -1,6 +1,6 @@
 #!/usr/bin/env ts-node
 
-import {YattConfig} from '../yatt-config'
+import {LrxmlConfig} from '../config'
 
 import {
     Range, GlobalMatch, ParserContext, parserContext, ParserSession
@@ -102,7 +102,7 @@ if (module.id === ".") {
     const { parse_long_options } = require("../utils/long-options")
     const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
 
-    const config: YattConfig = {
+    const config: LrxmlConfig = {
         debug: { parser: debugLevel }
     }
     parse_long_options(args, {target: config})

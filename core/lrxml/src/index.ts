@@ -1,4 +1,4 @@
-export {yattParams, YattParams, YattConfig} from './yatt-config'
+export {lrxmlParams, LrxmlParams, LrxmlConfig} from './config'
 
 export {parserContext, parserSession, Range, ParserContext, ParserSession, ScanningContext} from './context'
 

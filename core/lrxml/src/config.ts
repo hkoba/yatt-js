@@ -1,4 +1,4 @@
-export interface YattConfig {
+export interface LrxmlConfig {
     namespace?: string[]
     doc_root?: string
     default_part?: string
@@ -8,7 +8,7 @@ export interface YattConfig {
     }
 }
 
-export interface YattParams {
+export interface LrxmlParams {
     namespace: string[]
     doc_root: string
     default_part: string
@@ -18,7 +18,7 @@ export interface YattParams {
     }
 }
 
-export function yattParams(config: YattConfig): YattParams {
+export function lrxmlParams(config: LrxmlConfig): LrxmlParams {
     let {
         namespace = ["yatt"],
         doc_root = "",
