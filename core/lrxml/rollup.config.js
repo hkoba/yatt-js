@@ -21,7 +21,7 @@ export default [
       preserveShebangs(),
       resolve(),   // so Rollup can find external modules
       commonjs(),  // so Rollup can convert external modules to an ES module
-      typescript() // so Rollup can convert TypeScript to JavaScript
+      typescript({module: "esnext"}) // so Rollup can convert TypeScript to JavaScript
     ]
   },
 
@@ -36,7 +36,7 @@ export default [
     external: [],
     plugins: [
       preserveShebangs(),
-      typescript() // so Rollup can convert TypeScript to JavaScript
+      typescript({module: "esnext"}) // so Rollup can convert TypeScript to JavaScript
     ],
     output: [
       { file: pkg.main, format: 'cjs', sourcemap: true },
