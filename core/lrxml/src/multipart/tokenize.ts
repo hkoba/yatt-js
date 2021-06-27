@@ -81,6 +81,7 @@ export function* tokenize(ctx: ParserContext): ChunkGenerator {
 
             const end = ctx.match_index(re_decl_end)
             if (!end) {
+                // XXX: yatt vs lrxml
                 ctx.throw_error("yatt declaration is not closed", { index: globalMatch.match.index })
             }
 
