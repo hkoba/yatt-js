@@ -4,12 +4,18 @@ import { lineNumber } from './utils/count_lines'
 
 export type Range = {start: number, end: number}
 
-export type ParserSession = {
-  filename?: string
-  params: LrxmlParams
-  source: string
-  patterns: {[k: string]: RegExp}
-  // parent?: ParserSession
+export class ParserSession {
+  public patterns: {[k: string]: RegExp} = {}
+  constructor(
+    public readonly source: string,
+    public params: LrxmlParams,
+    public filename?: string
+    // public parent?: ParserSession
+  ) { }
+
+  range_text(range: Range) {
+    return this.source.substring(range.start, range.end)
+  }
 }
 
 export type GlobalMatch = {
@@ -29,7 +35,7 @@ export class ScanningContext<S extends ParserSession> {
   }
 
   range_text(range: Range) {
-    return this.session.source.substring(range.start, range.end)
+    return this.session.range_text(range)
   }
 
   empty(): boolean {
@@ -204,7 +210,7 @@ function trim_input(match: RegExpExecArray | null) {
 
 export function parserSession(v: {source: string, filename?: string, config: LrxmlConfig}) : ParserSession {
 
-  return {source: v.source, filename: v.filename, params: lrxmlParams(v.config), patterns: {}}
+  return new ParserSession(v.source, lrxmlParams(v.config), v.filename)
 }
 
 export function parserContext(v: {source: string, filename?: string, config: LrxmlConfig}): ParserContext {
