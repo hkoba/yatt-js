@@ -8,18 +8,12 @@ export function range_text(source: string, range: Range): string {
   return source.substring(range.start, range.end)
 }
 
-export class ParserSession {
-  public patterns: {[k: string]: RegExp} = {}
-  constructor(
-    public readonly source: string,
-    public params: LrxmlParams,
-    public filename?: string
-    // public parent?: ParserSession
-  ) { }
-
-  range_text(range: Range) {
-    return range_text(this.source, range);
-  }
+export type ParserSession = {
+  filename?: string
+  params: LrxmlParams
+  source: string
+  patterns: {[k: string]: RegExp}
+  // parent?: ParserSession
 }
 
 export type GlobalMatch = {
@@ -39,7 +33,7 @@ export class ScanningContext<S extends ParserSession> {
   }
 
   range_text(range: Range) {
-    return this.session.range_text(range)
+    return range_text(this.session.source, range)
   }
 
   empty(): boolean {
@@ -214,7 +208,7 @@ function trim_input(match: RegExpExecArray | null) {
 
 export function parserSession(v: {source: string, filename?: string, config: LrxmlConfig}) : ParserSession {
 
-  return new ParserSession(v.source, lrxmlParams(v.config), v.filename)
+  return {source: v.source, filename: v.filename, params: lrxmlParams(v.config), patterns: {}}
 }
 
 export function parserContext(v: {source: string, filename?: string, config: LrxmlConfig}): ParserContext {
