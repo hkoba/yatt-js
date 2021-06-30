@@ -1,8 +1,10 @@
 #!/usr/bin/env ts-node
 
-import tap from 'tap'
+// import tap from 'tap';      // NG: can only be default-imported using the 'esModuleInterop' flagts
+// import * as tap from 'tap'; // NG: tap.same is not a function
+const tap = require('tap')
 
-import { parserContext } from '../src/context'
+import { parserContext, range_text } from '../src/context'
 
 import { parse_multipart } from '../src/multipart/parse'
 import { tokenize } from '../src/template/tokenize'
@@ -13,15 +15,15 @@ const it = (source: string) => {
   let [partList, session] = parse_multipart(source, {});
   return Array.from(partList).map((part) => {
     return {
-      part: part.kind, attlist: part.attlist.map((att) => session.range_text(att)),
+      part: part.kind, attlist: part.attlist.map((att) => range_text(session.source, att)),
       tokens: Array.from(tokenize(session, part.payload)).map((tok) => {
         if (tok.kind === "comment" && tok.innerRange != null) {
           return {
-            kind: tok.kind, "text": session.range_text(tok),
-            innerRange: session.range_text(tok.innerRange)
+            kind: tok.kind, "text": range_text(session.source, tok),
+            innerRange: range_text(session.source, tok.innerRange)
           }
         } else {
-          return { kind: tok.kind, "text": session.range_text(tok) }
+          return { kind: tok.kind, "text": range_text(session.source, tok) }
         }
       })
     }
