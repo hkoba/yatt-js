@@ -2,7 +2,7 @@
 
 import { parse_multipart, ParserContext, parserSession, ParserSession } from 'lrxml-js'
 
-import { BuilderMap, BuilderContext } from './context'
+import { BuilderMap, BuilderContext, BuilderSession, YattConfig } from './context'
 import { Part } from './part'
 import { WidgetBuilder } from './widget'
 import { ActionBuilder } from './action'
@@ -18,19 +18,23 @@ export function builtin_builders(): BuilderMap {
   return builders
 }
 
-export function* build_declarations(session: ParserSession)
-: Generator<Part>{
+export function build_declarations(
+  source: string, config: {filename?: string, builders?: BuilderMap} & YattConfig
+) : [Part[], BuilderSession] {
+
   // XXX: default private or public
-  const builders = builtin_builders()
+  const {builders = builtin_builders(), ...rest_config} = config
 
-  const pCtx = new ParserContext(session)
+  const [rawPartList, parser_session] = parse_multipart(source, rest_config)
 
-  const ctx = new BuilderContext({builders, ...session})
+  const builder_session = {builders, ...parser_session}
+
+  const ctx = new BuilderContext(builder_session)
 
   // XXX: declaration macro handling
-  for (const rawPart of parse_multipart(pCtx)) {
-    yield ctx.build_declaration(rawPart)
-  }
+  const partList = rawPartList.map(rawPart => ctx.build_declaration(rawPart))
+
+  return [partList, builder_session]
 }
 
 if (module.id === ".") {
@@ -38,13 +42,12 @@ if (module.id === ".") {
   const { readFileSync } = require('fs')
 
   for (const fn of process.argv.slice(2)) {
-    let session = parserSession({
-      filename: fn, source: readFileSync(fn, { encoding: "utf-8" }),
-      config: {
-        debug: { parser: debugLevel }
-      }
-    })
-    for (const part of build_declarations(session)) {
+    const [partList, _session] = build_declarations(
+      readFileSync(fn, { encoding: "utf-8" }),
+      {filename: fn, debug: { parser: debugLevel }}
+    )
+
+    for (const part of partList) {
       console.dir(part, {colors: true, depth: null})
     }
   }
