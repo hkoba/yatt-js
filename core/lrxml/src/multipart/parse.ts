@@ -5,7 +5,7 @@ import {
   Range, ParserContext, parserContext, ParserSession
 } from '../context'
 
-import { tokenize, Chunk } from './tokenize'
+import { tokenize } from './tokenize'
 
 import { AttItem, parse_attlist} from '../attlist/parse'
 
