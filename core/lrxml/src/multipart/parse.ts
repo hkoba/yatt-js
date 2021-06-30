@@ -5,7 +5,7 @@ import {
   Range, ParserContext, parserContext, ParserSession
 } from '../context'
 
-import { tokenize } from './tokenize'
+import { tokenize_multipart_context } from './tokenize'
 
 import { AttItem, parse_attlist} from '../attlist/parse'
 
@@ -29,12 +29,12 @@ export function parse_multipart(
 ): [Part[], ParserSession] {
   const {filename, ..._config} = config;
   let ctx = parserContext({filename, source, config: _config})
-  return [parse(ctx), ctx.session]
+  return [parse_multipart_context(ctx), ctx.session]
 }
 
-export function parse(ctx: ParserContext): Part[] {
+export function parse_multipart_context(ctx: ParserContext): Part[] {
   let partList: [number, PartBase][] = []
-  let lex = tokenize(ctx)
+  let lex = tokenize_multipart_context(ctx)
   for (const tok of lex) {
     switch (tok.kind) {
       case "text": {

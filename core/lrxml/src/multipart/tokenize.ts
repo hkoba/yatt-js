@@ -40,10 +40,10 @@ export function* tokenize_multipart(
 ) {
   const {filename, ..._config} = config;
   let ctx = parserContext({filename, source, config: _config})
-  yield* tokenize(ctx)
+  yield* tokenize_multipart_context(ctx)
 }
 
-export function* tokenize(ctx: ParserContext): ChunkGenerator {
+export function* tokenize_multipart_context(ctx: ParserContext): ChunkGenerator {
   let re_decls = ctx.re('decls', () => re_decl_open(ctx.session.params.namespace))
   let re_comment_end = ctx.session.params.compat_end_of_comment ?
     /(?<prefix>.*?)-->/sy :

@@ -2,20 +2,22 @@
 
 import tap from 'tap'
 
-import { parserContext } from '../src/context'
+import { parserContext, range_text } from '../src/context'
 
-import { tokenize } from '../src/multipart/tokenize'
+import { tokenize_multipart } from '../src/multipart/tokenize'
 
 // import { createInterface } from 'readline'
 
 const it = (source: string) => {
   let ctx = parserContext({source, config: {}})
-  return Array.from(tokenize(ctx)).map((tok) => {
+  let lex = tokenize_multipart(source, {})
+
+  return Array.from(lex).map((tok) => {
     if (tok.kind === "comment" && tok.innerRange != null) {
-      return {kind: tok.kind, "text": ctx.range_text(tok),
-              innerRange: ctx.range_text(tok.innerRange)}
+      return {kind: tok.kind, "text": range_text(source, tok),
+              innerRange: range_text(source, tok.innerRange)}
     } else {
-      return {kind: tok.kind, "text": ctx.range_text(tok)}
+      return {kind: tok.kind, "text": range_text(source, tok)}
     }
   });
 }

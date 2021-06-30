@@ -1,7 +1,7 @@
 #!/usr/bin/env ts-node
 
 import {LrxmlConfig} from '../config'
-import { Range, ParserContext, parserContext, ParserSession } from '../context'
+import { Range, ParserContext, ParserSession } from '../context'
 
 import { tokenize, Token } from './tokenize'
 
@@ -28,8 +28,9 @@ type LCMsg = Range & {kind: "lcmsg", namespace: string[]
 
 export type Node = Text | Comment | PI | Element | EntNode | LCMsg
 
-export function parse_template(ctx: ParserContext, part: Part): Node[] {
-  let lex = tokenize(ctx, part.payload)
+export function parse_template(session: ParserSession, part: Part): Node[] {
+  let lex = tokenize(session, part.payload)
+  let ctx = new ParserContext(session);
   let nodes = parse_tokens(ctx, part, lex, []);
   return nodes
 }
@@ -135,13 +136,14 @@ if (module.id === ".") {
   parse_long_options(args, {target: config})
   
   for (const fn of args) {
-    let ctx = parserContext({
-      filename: fn, source: readFileSync(fn, { encoding: "utf-8" }), config
+    const source = readFileSync(fn, { encoding: "utf-8" })
+    let [partList, session] = parse_multipart(source, {
+      filename: fn, ...config
     })
     
-    for (const part of parse_multipart(ctx)) {
+    for (const part of partList) {
       console.dir(part, {colors: true, depth: null})
-      console.dir(parse_template(ctx, part), {colors: true, depth: null})
+      console.dir(parse_template(session, part), {colors: true, depth: null})
     }
   }
 }
