@@ -24,7 +24,15 @@ export type PartBase = {
 
 export type Part = PartBase & Range
 
-export function parse_multipart(ctx: ParserContext): Part[] {
+export function parse_multipart(
+  source: string, config: {filename?: string} & LrxmlConfig
+): [Part[], ParserSession] {
+  const {filename, ..._config} = config;
+  let ctx = parserContext({filename, source, config: _config})
+  return [parse(ctx), ctx.session]
+}
+
+export function parse(ctx: ParserContext): Part[] {
   let partList: [number, PartBase][] = []
   let lex = tokenize(ctx)
   for (const tok of lex) {
@@ -106,15 +114,14 @@ if (module.id === ".") {
   parse_long_options(args, {target: config})
 
   for (const fn of args) {
-    let ctx = parserContext({
-      filename: fn, source: readFileSync(fn, { encoding: "utf-8" }), config
+    const source = readFileSync(fn, { encoding: "utf-8" })
+    let [partList, ] = parse_multipart(source, {
+      filename: fn, ...config
     })
-
     process.stdout.write(JSON.stringify({FILENAME: fn}) + "\n")
-    for (const part of parse_multipart(ctx)) {
+    for (const part of partList) {
       process.stdout.write(JSON.stringify(part) + "\n")
     }
     process.stdout.write("\n")
   }
-
 }

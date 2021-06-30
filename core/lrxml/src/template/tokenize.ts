@@ -2,7 +2,7 @@
 
 import {LrxmlConfig} from '../config'
 import {
-  Range, ParserContext, parserContext, ParserSession
+  Range, ParserContext, ParserSession
 } from '../context'
 
 import { Payload } from '../multipart/parse'
@@ -50,9 +50,10 @@ type EntOpen = Range & {kind: "entpath_open", name: string}
 export type Token = Text | Comment | PI |
   TagOpen | AttToken | TagClose | EntOpen | EntNode | LCMsg
 
-export function* tokenize(outerCtx: ParserContext, payloadList: Payload[]): Generator<Token,any,any>
+export function* tokenize(session: ParserSession, payloadList: Payload[]): Generator<Token,any,any>
   {
-  let re = outerCtx.re('body', () => re_body(outerCtx.session.params.namespace))
+  let outerCtx = new ParserContext(session);
+  let re = outerCtx.re('body', () => re_body(session.params.namespace))
   for (const tok of payloadList) {
     if (tok.kind === "comment") {
       yield tok
@@ -157,15 +158,16 @@ if (module.id === ".") {
   parse_long_options(args, {target: config})
   
   for (const fn of args) {
-    let ctx = parserContext({
-      filename: fn, source: readFileSync(fn, { encoding: "utf-8" }), config
+    const source = readFileSync(fn, { encoding: "utf-8" })
+    let [partList, session] = parse_multipart(source, {
+      filename: fn, ...config
     })
 
     process.stdout.write(JSON.stringify({FILENAME: fn}) + "\n")
-    for (const part of parse_multipart(ctx)) {
+    for (const part of partList) {
       process.stdout.write(JSON.stringify({part: part.kind, attlist: part.attlist}) + "\n")
-      for (const tok of tokenize(ctx, part.payload)) {
-        const text = ctx.range_text(tok)
+      for (const tok of tokenize(session, part.payload)) {
+        const text = session.range_text(tok)
         process.stdout.write(JSON.stringify([tok, text]) + "\n")
       }
     }

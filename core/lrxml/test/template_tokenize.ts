@@ -10,18 +10,18 @@ import { tokenize } from '../src/template/tokenize'
 // import { createInterface } from 'readline'
 
 const it = (source: string) => {
-  let ctx = parserContext({ source, config: {} })
-  return Array.from(parse_multipart(ctx)).map((part) => {
+  let [partList, session] = parse_multipart(source, {});
+  return Array.from(partList).map((part) => {
     return {
-      part: part.kind, attlist: part.attlist.map((att) => ctx.range_text(att)),
-      tokens: Array.from(tokenize(ctx, part.payload)).map((tok) => {
+      part: part.kind, attlist: part.attlist.map((att) => session.range_text(att)),
+      tokens: Array.from(tokenize(session, part.payload)).map((tok) => {
         if (tok.kind === "comment" && tok.innerRange != null) {
           return {
-            kind: tok.kind, "text": ctx.range_text(tok),
-            innerRange: ctx.range_text(tok.innerRange)
+            kind: tok.kind, "text": session.range_text(tok),
+            innerRange: session.range_text(tok.innerRange)
           }
         } else {
-          return { kind: tok.kind, "text": ctx.range_text(tok) }
+          return { kind: tok.kind, "text": session.range_text(tok) }
         }
       })
     }

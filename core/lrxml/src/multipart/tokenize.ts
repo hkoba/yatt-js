@@ -3,7 +3,7 @@
 import {LrxmlConfig} from '../config'
 
 import {
-  Range, GlobalMatch, ParserContext, parserContext, ParserSession
+  Range, GlobalMatch, ParserContext, parserContext
 } from '../context'
 import { re_join } from '../utils/regexp'
 
@@ -34,6 +34,14 @@ function re_decl_open(ns: string[]): RegExp {
 }
 
 export type ChunkGenerator = Generator<Chunk, any, any>;
+
+export function* tokenize_multipart(
+  source: string, config: {filename?: string} & LrxmlConfig
+) {
+  const {filename, ..._config} = config;
+  let ctx = parserContext({filename, source, config: _config})
+  yield* tokenize(ctx)
+}
 
 export function* tokenize(ctx: ParserContext): ChunkGenerator {
   let re_decls = ctx.re('decls', () => re_decl_open(ctx.session.params.namespace))
@@ -109,14 +117,15 @@ if (module.id === ".") {
   parse_long_options(args, {target: config})
 
   for (const fn of args) {
-    let ctx = parserContext({
-      filename: fn, source: readFileSync(fn, { encoding: "utf-8" }), config
-    });
+    const source = readFileSync(fn, { encoding: "utf-8" })
+    let lex = tokenize_multipart(source, {
+      filename: fn, ...config
+    })
 
     process.stdout.write(JSON.stringify({FILENAME: fn}) + "\n")
-    for (const tok of tokenize(ctx)) {
+    for (const tok of lex) {
       process.stdout.write(JSON.stringify({
-        TOKEN: tok, PAYLOAD: ctx.range_text(tok)
+        TOKEN: tok, PAYLOAD: source.substring(tok.start, tok.end)
       }) + "\n")
     }
     process.stdout.write("\n")
