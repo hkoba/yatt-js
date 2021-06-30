@@ -1,13 +1,3 @@
-export interface LrxmlConfig {
-  namespace?: string[]
-  doc_root?: string
-  default_part?: string
-  compat_end_of_comment?: boolean
-  debug?: {
-    parser?: number
-  }
-}
-
 export interface LrxmlParams {
   namespace: string[]
   doc_root: string
@@ -17,6 +7,8 @@ export interface LrxmlParams {
     parser?: number
   }
 }
+
+export type LrxmlConfig = Partial<LrxmlParams>;
 
 export function lrxmlParams(config: LrxmlConfig): LrxmlParams {
   let {
