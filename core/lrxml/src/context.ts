@@ -4,6 +4,10 @@ import { lineNumber } from './utils/count_lines'
 
 export type Range = {start: number, end: number}
 
+export function range_text(source: string, range: Range): string {
+  return source.substring(range.start, range.end)
+}
+
 export class ParserSession {
   public patterns: {[k: string]: RegExp} = {}
   constructor(
@@ -14,7 +18,7 @@ export class ParserSession {
   ) { }
 
   range_text(range: Range) {
-    return this.source.substring(range.start, range.end)
+    return range_text(this.source, range);
   }
 }
 
