@@ -1,6 +1,6 @@
-import { RawPart } from 'lrxml-js'
+import { RawPart, AttItem } from 'lrxml-js'
 import { Part } from './part'
-import { DeclarationBuilder, BuilderContext } from './context'
+import { DeclarationBuilder, BuilderContext, PartName } from './context'
 
 export type Action = Part & {
   type: "action"
@@ -8,6 +8,15 @@ export type Action = Part & {
 }
 
 export class ActionBuilder implements DeclarationBuilder {
+
+  parse_part_name(ctx: BuilderContext, attlist: AttItem[]): PartName {
+    if (! attlist.length || attlist[0] == null) {
+      ctx.throw_error(`Action name is not given`)
+    }
+    const [name, route] = ctx.cut_name_and_route(attlist)!
+    return {name, route, rest: attlist}
+  }
+
   build(ctx: BuilderContext, keyword: string, raw_part: RawPart): Action {
     let attlist = Object.assign([], raw_part.attlist)
     let head = ctx.cut_name_and_route(attlist)

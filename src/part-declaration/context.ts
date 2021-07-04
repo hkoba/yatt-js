@@ -31,8 +31,11 @@ export function yattParams(config: YattConfig): YattParams {
 
 export type BuilderMap = Map<string, DeclarationBuilder>;
 
+export type PartName = {name?: string, route?: string, rest: AttItem[]}
+
 export interface DeclarationBuilder {
   build(ctx: BuilderContext, keyword: string, part: RawPart): Part;
+  parse_part_name(ctx: BuilderContext, attlist: AttItem[]): PartName
 }
 
 export type BuilderSession = ParserSession & {
@@ -46,6 +49,15 @@ export class BuilderContext extends ScanningContext<BuilderSession> {
               end: number = session.source.length,
               parent?: BuilderContext) {
     super(session, index, start, end, parent)
+  }
+
+  parse_part_name(rawPart: RawPart): PartName {
+    const builder = this.session.builders.get(rawPart.kind)
+    if (builder == null) {
+      this.throw_error(`Unknown part kind: ${rawPart.kind}`)
+    }
+    let attlist = Object.assign([], rawPart.attlist)
+    return builder.parse_part_name(this, attlist)
   }
 
   build_declaration(rawPart: RawPart): Part {
@@ -100,6 +112,14 @@ export class BuilderContext extends ScanningContext<BuilderSession> {
       }
     }
     return arg_dict
+  }
+
+  att_is_quoted(att: AttItem): boolean {
+    return att.kind === "sq" || att.kind === "dq"
+  }
+
+  att_has_label(att: AttItem): boolean {
+    return att.label != null
   }
 
   cut_name_and_route(attlist: AttItem[]): [string, string | undefined] | null {
