@@ -14,7 +14,6 @@ export type Payload = {kind: "text", data: string} & Range |
 
 export type PartBase = {
   filename?: string
-  lineno: number
   namespace: string
   kind: string
   subkind: string[]
@@ -60,7 +59,6 @@ export function parse_multipart_context(ctx: ParserContext): Part[] {
         const [attlist, end] = parse_attlist(ctx, lex, "decl_end")
         let part: PartBase = {
           filename: ctx.session.filename,
-          lineno: tok.lineNo,
           namespace, kind, subkind, attlist, payload: []
         }
         partList.push([tok.start, part])
@@ -94,7 +92,6 @@ function push_payload(ctx: ParserContext, partList: [number, PartBase][], payloa
     // May fill default kind/namespace
     partList.push([0,{
       filename: ctx.session.filename,
-      lineno: 1,
       kind: "", namespace: "", subkind: [], attlist: [], payload: []
     }])
   }

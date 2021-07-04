@@ -11,7 +11,7 @@ import { AttToken, tokenize_attlist } from '../attlist/tokenize'
 
 export type Text      = {kind: "text"}       & Range
 export type Comment   = {kind: "comment", innerRange: Range}    & Range
-export type DeclBegin = {kind: "decl_begin", detail: string, lineNo: number} & Range
+export type DeclBegin = {kind: "decl_begin", detail: string} & Range
 export type DeclEnd   = {kind: "decl_end"}   & Range
 
 export type Chunk = Text | Comment | DeclBegin | AttToken | DeclEnd
@@ -78,7 +78,6 @@ export function* tokenize_multipart_context(ctx: ParserContext): ChunkGenerator 
       // <!yatt:widget ...
       yield {
         kind: "decl_begin", detail: dm.declname,
-        lineNo: ctx.line_number(globalMatch.match.index),
         ...ctx.tab(globalMatch)
       }
 
