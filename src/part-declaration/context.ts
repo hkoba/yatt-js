@@ -34,7 +34,6 @@ export type BuilderMap = Map<string, DeclarationBuilder>;
 export type PartName = {name?: string, route?: string, rest: AttItem[]}
 
 export interface DeclarationBuilder {
-  build(ctx: BuilderContext, keyword: string, part: RawPart): Part;
   parse_part_name(ctx: BuilderContext, attlist: AttItem[]): PartName
 }
 
@@ -58,15 +57,6 @@ export class BuilderContext extends ScanningContext<BuilderSession> {
     }
     let attlist = Object.assign([], rawPart.attlist)
     return builder.parse_part_name(this, attlist)
-  }
-
-  build_declaration(rawPart: RawPart): Part {
-    const builder = this.session.builders.get(rawPart.kind)
-    if (builder == null) {
-      this.throw_error(`Unknown part kind: ${rawPart.kind}`)
-    }
-
-    return builder.build(this, rawPart.kind, rawPart)
   }
 
   parse_arg_spec(str: string): { type: string, default?: [DefaultFlag, string] } {

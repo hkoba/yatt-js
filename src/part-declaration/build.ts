@@ -39,25 +39,6 @@ export function parse_part_names(
   return [partList, builder_session]
 }
 
-export function build_declarations(
-  source: string, config: {filename?: string, builders?: BuilderMap} & YattConfig
-) : [Part[], BuilderSession] {
-
-  // XXX: default private or public
-  const {builders = builtin_builders(), ...rest_config} = config
-
-  const [rawPartList, parser_session] = parse_multipart(source, rest_config)
-
-  const builder_session = {builders, ...parser_session}
-
-  const ctx = new BuilderContext(builder_session)
-
-  // XXX: declaration macro handling
-  const partList = rawPartList.map(rawPart => ctx.build_declaration(rawPart))
-
-  return [partList, builder_session]
-}
-
 if (module.id === ".") {
   const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
   const { readFileSync } = require('fs')
