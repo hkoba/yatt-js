@@ -10,6 +10,7 @@ import { Part, ArgDict, DefaultFlag } from './part'
 
 import { WidgetBuilder } from './widget'
 import { ActionBuilder } from './action'
+import { BaseProcessor } from './base'
 
 import { TemplateDeclaration } from './template'
 
@@ -19,8 +20,9 @@ export function builtin_builders(): BuilderMap {
   builders.set('widget', new WidgetBuilder(true, false))
   builders.set('page', new WidgetBuilder(true, true))
   builders.set('action', new ActionBuilder)
+  builders.set('base', new BaseProcessor)
   // XXX: entity
-  // XXX: base, import
+  // XXX: import
   builders.set('', builders.get('args'))
   return builders
 }
