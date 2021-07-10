@@ -3,7 +3,7 @@ import { Part } from './part'
 import { DeclarationBuilder, BuilderContext, PartName } from './context'
 
 export type Action = Part & {
-  type: "action"
+  kind: "action"
   route?: string
 }
 
@@ -16,6 +16,6 @@ export class ActionBuilder implements DeclarationBuilder {
       ctx.throw_error(`Action name is not given`)
     }
     const [name, route] = ctx.cut_name_and_route(attlist)!
-    return {kind: this.kind, prefix: this.prefix, name, route, rest: attlist}
+    return {kind: this.kind, prefix: this.prefix, name, route, is_public: false, rest: attlist}
   }
 }

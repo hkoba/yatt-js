@@ -3,7 +3,7 @@ import { Part } from './part'
 import { DeclarationBuilder, BuilderContext, PartName } from './context'
 
 export type Widget = Part & {
-  type: "widget"
+  kind: "widget"
   route?: string
 }
 
@@ -21,9 +21,9 @@ export class WidgetBuilder implements DeclarationBuilder {
       if (attlist.length && attlist[0] != null && !ctx.att_has_label(attlist[0])
           && ctx.att_is_quoted(attlist[0])) {
         const att = attlist.shift()!
-        return {kind: this.kind, prefix: this.prefix, route: ctx.range_text(att), rest: attlist}
+        return {kind: this.kind, prefix: this.prefix, name: "", is_public: this.is_public, route: ctx.range_text(att), rest: attlist}
       } else {
-        return {kind: this.kind, prefix: this.prefix, rest: attlist}
+        return {kind: this.kind, prefix: this.prefix, name: "", is_public: this.is_public, rest: attlist}
       }
     } else {
       if (! attlist.length) {
@@ -31,7 +31,7 @@ export class WidgetBuilder implements DeclarationBuilder {
         ctx.throw_error(`Widget name is not given`)
       }
       const [name, route] = ctx.cut_name_and_route(attlist)!
-      return {kind: this.kind, prefix: this.prefix, name, route, rest: attlist}
+      return {kind: this.kind, prefix: this.prefix, name, route, is_public: this.is_public, rest: attlist}
     }
   }
 }

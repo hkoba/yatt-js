@@ -11,8 +11,9 @@ import {yattParams, YattConfig} from '../config'
 export type BuilderMap = Map<string, DeclarationBuilder>;
 
 export type PartName = {
-  name?: string,
+  name: string,
   route?: string,
+  is_public: boolean,
   prefix: string,
   kind: string,
   rest: AttItem[]
@@ -80,7 +81,7 @@ export class BuilderContext extends ScanningContext<BuilderSession> {
         }
         else if (att.kind === "entity") {
           // XXX: declaration macro
-          console.log(att)
+          console.warn('ArgMacro is ignored: ', att)
         }
         else {
           this.throw_error(`??2 ${att.kind} file ${this.session.filename}`)

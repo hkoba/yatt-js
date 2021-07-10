@@ -2,8 +2,10 @@ import { RawPart } from 'lrxml-js'
 
 export type PartSet = {[k: string]: Part}
 
+export type PartKind = string
+
 export type Part = {
-  type: string
+  kind: PartKind
   name: string
   is_public: boolean
   arg_dict: ArgDict
