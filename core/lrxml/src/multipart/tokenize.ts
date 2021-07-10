@@ -110,7 +110,7 @@ if (module.id === ".") {
   const { parse_long_options } = require("../utils/long-options")
   const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
 
-  const config: LrxmlConfig = {
+  let config: LrxmlConfig = {
     debug: { parser: debugLevel }
   }
   parse_long_options(args, {target: config})
