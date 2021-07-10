@@ -1,13 +1,13 @@
 import { AttItem } from 'lrxml-js'
 import { Part } from './part'
-import { DeclarationBuilder, BuilderContext, PartName } from './context'
+import { DeclarationProcessor, BuilderContext, PartName } from './context'
 
 export type Widget = Part & {
   kind: "widget"
   route?: string
 }
 
-export class WidgetBuilder implements DeclarationBuilder {
+export class WidgetBuilder implements DeclarationProcessor {
   readonly kind: string = 'widget'
   constructor(
     readonly is_named: boolean, readonly is_public: boolean,

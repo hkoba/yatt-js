@@ -6,7 +6,7 @@ import {
 
 import {yattParams, YattConfig} from '../config'
 
-export type BuilderMap = Map<string, DeclarationBuilder>;
+export type BuilderMap = Map<string, DeclarationProcessor>;
 
 export type PartName = {
   name: string,
@@ -17,7 +17,7 @@ export type PartName = {
   rest: AttItem[]
 }
 
-export interface DeclarationBuilder {
+export interface DeclarationProcessor {
   readonly kind: string;
   parse_part_name(ctx: BuilderContext, attlist: AttItem[]): PartName
 }

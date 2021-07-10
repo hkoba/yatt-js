@@ -1,13 +1,13 @@
 import { AttItem } from 'lrxml-js'
 import { Part } from './part'
-import { DeclarationBuilder, BuilderContext, PartName } from './context'
+import { DeclarationProcessor, BuilderContext, PartName } from './context'
 
 export type Action = Part & {
   kind: "action"
   route?: string
 }
 
-export class ActionBuilder implements DeclarationBuilder {
+export class ActionBuilder implements DeclarationProcessor {
   readonly kind = 'action';
   constructor(readonly prefix: string = 'do_') {}
 
