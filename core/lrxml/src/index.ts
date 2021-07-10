@@ -11,3 +11,5 @@ export {parse_template, Node} from './template/parse'
 export {AttItem} from './attlist/parse'
 
 export {EntNode, EntTerm, EntPath} from './entity/parse'
+
+export { parse_long_options } from './utils/long-options'
