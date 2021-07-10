@@ -8,7 +8,11 @@ export {parse_multipart, parse_multipart_context, Part as RawPart} from './multi
 
 export {parse_template, Node} from './template/parse'
 
-export {AttItem} from './attlist/parse'
+export {
+  AttItem, AttValue,
+  hasStringValue, hasQuotedStringValue, hasNestedValue, hasLabel,
+  isBareLabeledAtt, isBareword
+} from './attlist/parse'
 
 export {EntNode, EntTerm, EntPath} from './entity/parse'
 

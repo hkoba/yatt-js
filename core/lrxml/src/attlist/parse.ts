@@ -1,18 +1,55 @@
 import {
-  Range, ParserContext, ParserSession
+  Range, ParserContext
 } from '../context'
 
 import { AttBare, AttSq, AttDq, AttNest } from '../attlist/tokenize'
 
 import { EntNode } from '../entity/parse'
 
-type Term = ({kind: AttBare | AttSq | AttDq, value: string, comment: string[]}
-             |
-             {kind: AttNest, value: AttItem[], comment: string[]}
-            ) & Range |
+type BaseTerm<T> = Range & {value: T, comment: string[]}
+
+type QuotedStringTerm = {kind: AttSq | AttDq} & BaseTerm<string>;
+type BareStringTerm = {kind: AttBare} & BaseTerm<string>;
+type StringTerm = BareStringTerm | QuotedStringTerm
+type NestedTerm = {kind: AttNest} & BaseTerm<AttItem[]>;
+
+type Term = StringTerm | NestedTerm |
   (EntNode & {comment: string[]})
 
-export type AttItem = {label?: Term} & Term
+export type AttValue = Term
+
+export type AttItem = {label?: Term} & AttValue
+export type AttLabeled = {label: Term} & AttValue
+export type AttBareLabeled = {label: BareStringTerm} & AttValue
+export type AttBareword = BareStringTerm
+
+export function hasStringValue(att: AttItem)
+: att is ({label?: Term} & StringTerm) {
+  return att.kind === "bare" || att.kind === "sq" || att.kind === "dq";
+}
+
+export function hasQuotedStringValue(att: AttItem)
+: att is ({label?: Term} & StringTerm) {
+  return att.kind === "sq" || att.kind === "dq";
+}
+
+export function isBareword(att: AttItem)
+: att is AttBareword {
+  return !hasLabel(att) && att.kind === 'bare'
+}
+
+export function hasNestedValue(att: AttItem)
+: att is ({label?: Term} & NestedTerm) {
+  return att.kind === 'nest'
+}
+
+export function hasLabel(att: AttItem): att is AttLabeled {
+  return att.label !== undefined
+}
+
+export function isBareLabeledAtt(att: AttItem): att is AttBareLabeled {
+  return hasLabel(att) && att.label.kind === 'bare'
+}
 
 export function parse_attlist<T extends {kind: string} & Range>(ctx: ParserContext, lex: Generator<T,any,any>
                                                                 , end_kind: string): [AttItem[], T] {
