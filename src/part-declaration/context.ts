@@ -28,12 +28,24 @@ export type BuilderSession = ParserSession & {
 }
 
 export class BuilderContext extends ScanningContext<BuilderSession> {
+  stash: Map<[string, string], any>;
   constructor(session: BuilderSession,
               index: number = 0,
               start: number = 0,
               end: number = session.source.length,
               parent?: BuilderContext) {
     super(session, index, start, end, parent)
+    this.stash = new Map;
+  }
+
+  append_stash(key: [string, string], value: any): void {
+    if (! this.stash.has(key)) {
+      this.stash.set(key, [value])
+    } else {
+      let entry = this.stash.get(key);
+      entry.push(value)
+      this.stash.set(key, entry)
+    }
   }
 
   att_is_quoted(att: AttItem): boolean {
