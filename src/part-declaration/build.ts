@@ -2,10 +2,14 @@
 
 import { parse_multipart, RawPart } from 'lrxml-js'
 
-import { BuilderMap, BuilderContext, BuilderSession, YattConfig, PartName } from './context'
+import { YattConfig } from '../config'
+
+import { BuilderMap, BuilderContext, BuilderSession, PartName } from './context'
 import { Part } from './part'
 import { WidgetBuilder } from './widget'
 import { ActionBuilder } from './action'
+
+import { TemplateDeclaration } from './template'
 
 export function builtin_builders(): BuilderMap {
   let builders = new Map
@@ -13,14 +17,15 @@ export function builtin_builders(): BuilderMap {
   builders.set('widget', new WidgetBuilder(true, false))
   builders.set('page', new WidgetBuilder(true, true))
   builders.set('action', new ActionBuilder)
-  // entity
+  // XXX: entity
+  // XXX: base, import
   builders.set('', builders.get('args'))
   return builders
 }
 
-export function parse_part_names(
+export function build_template_declaration(
   source: string, config: {filename?: string, builders?: BuilderMap} & YattConfig
-): [(PartName & {rawPart: RawPart})[], BuilderSession] {
+): [TemplateDeclaration, BuilderSession] {
   // XXX: default private or public
   const {builders = builtin_builders(), ...rest_config} = config
 
@@ -30,27 +35,52 @@ export function parse_part_names(
 
   const ctx = new BuilderContext(builder_session)
 
-  // XXX: declaration macro handling
-  const partList = rawPartList.map(rawPart => {
-    const name = ctx.parse_part_name(rawPart)
-    return {...name, rawPart}
-  })
+  // For delegate type and ArgMacro
+  type Item = (PartName & {rawPart: RawPart})
+  let partMap_: Map<[string, string], Item> = new Map;
+  for (const rawPart of rawPartList) {
+    const item: Item = {...ctx.parse_part_name(rawPart), rawPart}
+    if (partMap_.has([item.kind, item.name])) {
+      // XXX: Better diag
+      ctx.throw_error(`Duplicate declaration ${item.kind} ${item.name}`);
+    }
+    partMap_.set([item.kind, item.name], item)
+  }
 
-  return [partList, builder_session]
+  let partMap: Map<[string, string], Part> = new Map;
+  let routes: Map<string, Part> = new Map;
+  for (const entry of partMap_) {
+    const [key, item] = entry
+    const [kind, name] = key
+    const arg_dict = ctx.build_arg_dict(item.rest)
+    const part = {
+      kind, name, is_public: item.is_public, arg_dict, raw_part: item.rawPart
+    }
+    partMap.set(key, part)
+    if (item.route != null) {
+      routes.set(item.route, part)
+    }
+  }
+
+  return [{path: config.filename ?? "", partMap, routes}, builder_session]
 }
 
 if (module.id === ".") {
+  let [...args] = process.argv.slice(2);
+
+  const { parse_long_options } = require("lrxml-js")
   const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
+  let config = { debug: { parser: debugLevel } }
+  parse_long_options(args, {target: config})
+
   const { readFileSync } = require('fs')
 
-  for (const fn of process.argv.slice(2)) {
-    const [partList, _session] = parse_part_names(
+  for (const fn of args) {
+    const [template, _session] = build_template_declaration(
       readFileSync(fn, { encoding: "utf-8" }),
-      {filename: fn, debug: { parser: debugLevel }}
+      {filename: fn, ...config}
     )
 
-    for (const part of partList) {
-      console.dir(part, {colors: true, depth: null})
-    }
+    console.dir(template, {colors: true, depth: null})
   }
 }
