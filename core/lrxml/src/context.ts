@@ -35,6 +35,16 @@ export class ScanningContext<S extends ParserSession> {
     }
   }
 
+  set_range<T extends Range>(range: T): void {
+    this.set_start_end(range.start, range.end)
+  }
+  set_start_end(start: number, end?: number): void {
+    this.start = start
+    if (end != null) {
+      this.end = end;
+    }
+  }
+
   range_text(range: Range, startOffset: number = 0, endOffset: number = 0) {
     return range_text(this.session.source, range, startOffset, endOffset)
   }

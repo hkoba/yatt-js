@@ -43,6 +43,7 @@ export function build_template_declaration(
   type Item = (PartName & {rawPart: RawPart})
   let partMap_: Map<[string, string], Item> = new Map;
   for (const rawPart of rawPartList) {
+    ctx.set_range(rawPart)
     const pn = parse_part_name(ctx, rawPart)
     if (! pn)
       continue;
