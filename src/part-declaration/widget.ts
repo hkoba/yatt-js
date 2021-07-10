@@ -30,7 +30,11 @@ export class WidgetBuilder implements DeclarationProcessor {
         // XXX: token position
         ctx.throw_error(`Widget name is not given`)
       }
-      const [name, route] = ctx.cut_name_and_route(attlist)!
+      const att = ctx.cut_name_and_route(attlist)
+      if (! att) {
+        ctx.throw_error(`Widget name is not given`)
+      }
+      const [name, route] = att
       return {kind: this.kind, prefix: this.prefix, name, route, is_public: this.is_public, rest: attlist}
     }
   }

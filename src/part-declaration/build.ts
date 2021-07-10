@@ -41,7 +41,10 @@ export function build_template_declaration(
   type Item = (PartName & {rawPart: RawPart})
   let partMap_: Map<[string, string], Item> = new Map;
   for (const rawPart of rawPartList) {
-    const item: Item = {...parse_part_name(ctx, rawPart), rawPart}
+    const pn = parse_part_name(ctx, rawPart)
+    if (! pn)
+      continue;
+    const item: Item = {...pn, rawPart}
     if (partMap_.has([item.kind, item.name])) {
       // XXX: Better diag
       ctx.throw_error(`Duplicate declaration ${item.kind} ${item.name}`);
@@ -69,7 +72,7 @@ export function build_template_declaration(
   return [{path: config.filename ?? "", partMap, routes}, builder_session]
 }
 
-function parse_part_name(ctx: BuilderContext, rawPart: RawPart): PartName {
+function parse_part_name(ctx: BuilderContext, rawPart: RawPart): PartName | undefined {
   const builder = ctx.session.builders.get(rawPart.kind)
   if (builder == null) {
     ctx.throw_error(`Unknown part kind: ${rawPart.kind}`)

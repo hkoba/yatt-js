@@ -20,7 +20,7 @@ export type PartName = {
 
 export interface DeclarationProcessor {
   readonly kind: string;
-  parse_part_name(ctx: BuilderContext, attlist: AttItem[]): PartName
+  parse_part_name(ctx: BuilderContext, attlist: AttItem[]): PartName | undefined
 }
 
 export type BuilderSession = ParserSession & {
