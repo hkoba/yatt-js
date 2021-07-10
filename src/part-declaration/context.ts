@@ -10,9 +10,16 @@ import {yattParams, YattConfig} from '../config'
 
 export type BuilderMap = Map<string, DeclarationBuilder>;
 
-export type PartName = {name?: string, route?: string, rest: AttItem[]}
+export type PartName = {
+  name?: string,
+  route?: string,
+  prefix: string,
+  kind: string,
+  rest: AttItem[]
+}
 
 export interface DeclarationBuilder {
+  readonly kind: string;
   parse_part_name(ctx: BuilderContext, attlist: AttItem[]): PartName
 }
 
