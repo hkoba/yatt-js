@@ -1,7 +1,8 @@
 import {
   ParserSession,
   ScanningContext,
-  AttItem
+  AttItem, hasStringValue, hasQuotedStringValue, hasNestedValue, hasLabel,
+  isBareword
 } from 'lrxml-js'
 
 import {yattParams, YattConfig} from '../config'
@@ -49,23 +50,30 @@ export class BuilderContext extends ScanningContext<BuilderSession> {
     let head = attlist.shift()
     if (head == null)
       return null
-    if (head.label) {
+    if (hasLabel(head)) {
       if (head.label.kind !== "bare") {
         this.throw_error(`Invalid token : ${head.label}`)
       }
-      if (head.kind === "sq" || head.kind === "dq" || head.kind === "bare") {
+      if (hasStringValue(head)) {
         return [head.label.value, head.value]
       } else {
         this.NIMPL()
       }
-    } else {
-      if (head.kind === "sq" || head.kind === "dq") {
-        return ["", head.value]
+    }
+    else if (isBareword(head)) {
+      return [head.value, undefined]
+    }
+    else {
+      if (hasNestedValue(head)) {
+        this.NIMPL();
       }
-      if (head.kind !== "bare") {
+      if (head.kind === "entity") {
         this.NIMPL()
       }
-      return [head.value, undefined]
+      if (hasQuotedStringValue(head)) {
+        return ["", head.value]
+      }
+      return null;
     }
   }
 }
