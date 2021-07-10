@@ -4,8 +4,11 @@ import { lineNumber } from './utils/count_lines'
 
 export type Range = {start: number, end: number}
 
-export function range_text(source: string, range: Range): string {
-  return source.substring(range.start, range.end)
+export function range_text(
+  source: string, range: Range,
+  startOffset: number = 0, endOffset: number = 0
+): string {
+  return source.substring(range.start + startOffset, range.end + endOffset)
 }
 
 export type ParserSession = {
@@ -32,8 +35,8 @@ export class ScanningContext<S extends ParserSession> {
     }
   }
 
-  range_text(range: Range) {
-    return range_text(this.session.source, range)
+  range_text(range: Range, startOffset: number = 0, endOffset: number = 0) {
+    return range_text(this.session.source, range, startOffset, endOffset)
   }
 
   empty(): boolean {

@@ -30,7 +30,11 @@ export function hasStringValue(att: AttItem)
 
 export function hasQuotedStringValue(att: AttItem)
 : att is ({label?: Term} & StringTerm) {
-  return att.kind === "sq" || att.kind === "dq";
+  return attKindIsQuotedString(att.kind);
+}
+
+function attKindIsQuotedString(kind: string): boolean {
+  return kind === "sq" || kind === "dq";
 }
 
 export function isBareword(att: AttItem)
@@ -58,6 +62,9 @@ export function parse_attlist<T extends {kind: string} & Range>(ctx: ParserConte
   let had_equal: boolean = false
   let cur
   while (!(cur = lex.next()).done) {
+    if (ctx.debug >= 2) {
+      console.log('att token: ', cur.value)
+    }
     if (cur.value.kind === end_kind) {
       if (pendingTerm) {
         if (had_equal) {
@@ -78,7 +85,7 @@ export function parse_attlist<T extends {kind: string} & Range>(ctx: ParserConte
       case "nest":
       case "bare": case "sq": case "dq": {
         const start = cur.value.start
-        let term;
+        let term: Term;
         if (cur.value.kind === "nest") {
           const [value, end] = parse_attlist(ctx, lex, "nestclo")
           term = {
@@ -86,13 +93,16 @@ export function parse_attlist<T extends {kind: string} & Range>(ctx: ParserConte
           }
         }
         else if (cur.value.kind === "entity") {
-          term = {comment: [], ...cur.value}
+          // XXX: Evil cast
+          term = {comment: [], ...(cur.value as unknown as EntNode)}
         }
         else {
           // XXX: parse (type, declflag, default)
           // XXX: parse entity
+          let value = attKindIsQuotedString(cur.value.kind) ?
+            ctx.range_text(cur.value, 1, -1) : ctx.range_text(cur.value);
           term = {
-            kind: cur.value.kind, value: ctx.range_text(cur.value),
+            kind: cur.value.kind, value,
             start, end: cur.value.end,
             comment: []
           }
@@ -108,16 +118,17 @@ export function parse_attlist<T extends {kind: string} & Range>(ctx: ParserConte
           }
         } else {
           if (had_equal) {
-            attList.push({label: pendingTerm, ...pendingTerm})
+            const att = {label: pendingTerm, ...term};
+            attList.push(att)
             if (ctx.debug) {
-              console.log("Pushed to attList with label: ", pendingTerm)
+              console.log("Pushed to attList with label: ", att)
             }
             pendingTerm = undefined
             had_equal = false
           } else {
             attList.push({...pendingTerm})
             if (ctx.debug) {
-              console.log("Pushed to attlist as a standalone term")
+              console.log("Pushed to attlist as a standalone term: ", pendingTerm)
             }
             pendingTerm = term as Term
           }
@@ -135,6 +146,9 @@ export function parse_attlist<T extends {kind: string} & Range>(ctx: ParserConte
           ctx.throw_error("unexpected = in attribute list")
         }
         had_equal = true
+        if (ctx.debug) {
+          console.log("found equal for pendingTerm: ", pendingTerm)
+        }
         break
       }
       default: {
