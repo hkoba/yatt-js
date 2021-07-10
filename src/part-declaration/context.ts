@@ -1,10 +1,8 @@
 import {
   ParserSession,
   ScanningContext,
-  RawPart, AttItem
+  AttItem
 } from 'lrxml-js'
-
-import { Part, ArgDict, DefaultFlag } from './part'
 
 import {yattParams, YattConfig} from '../config'
 
@@ -35,60 +33,6 @@ export class BuilderContext extends ScanningContext<BuilderSession> {
               end: number = session.source.length,
               parent?: BuilderContext) {
     super(session, index, start, end, parent)
-  }
-
-  parse_part_name(rawPart: RawPart): PartName {
-    const builder = this.session.builders.get(rawPart.kind)
-    if (builder == null) {
-      this.throw_error(`Unknown part kind: ${rawPart.kind}`)
-    }
-    let attlist = Object.assign([], rawPart.attlist)
-    return builder.parse_part_name(this, attlist)
-  }
-
-  parse_arg_spec(str: string): { type: string, default?: [DefaultFlag, string] } {
-    let match = /([\/\|\?])/.exec(str)
-    if (match == null) {
-      return { type: "" }
-    } else {
-      let type = str.substring(0, match.index)
-      let dflag = match[0]
-      let defaultValue = str.substring(match.index + 1);
-      return { type, default: [dflag as DefaultFlag, defaultValue] }
-    }
-  }
-
-  build_arg_dict(attlist: AttItem[]): ArgDict {
-    let arg_dict: ArgDict = {}
-    for (const att of attlist) {
-      if (att.label) {
-        if (att.label.kind !== "bare")
-          this.throw_error(`Invalid att label: ${att.label}`)
-        let name = att.label.value
-        if (att.kind === "sq" || att.kind === "dq" || att.kind === "bare") {
-          arg_dict[name] = {
-            name,
-            ...this.parse_arg_spec(att.value)
-          }
-        } else {
-          this.throw_error(`??1 ${att.kind}`)
-        }
-      }
-      else {
-        if (att.kind === "bare") {
-          let name = att.value
-          arg_dict[name] = { name, type: "" }
-        }
-        else if (att.kind === "entity") {
-          // XXX: declaration macro
-          console.warn('ArgMacro is ignored: ', att)
-        }
-        else {
-          this.throw_error(`??2 ${att.kind} file ${this.session.filename}`)
-        }
-      }
-    }
-    return arg_dict
   }
 
   att_is_quoted(att: AttItem): boolean {
