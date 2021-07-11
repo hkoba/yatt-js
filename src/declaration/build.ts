@@ -109,7 +109,7 @@ function build_arg_dict(ctx: BuilderContext, attlist: AttItem[]): ArgDict {
           ...parse_arg_spec(ctx, att.value)
         }
       } else {
-        ctx.throw_error(`??1 ${att.kind}`)
+        ctx.token_error(att, `NIMPL`)
       }
     }
     else {

@@ -1,8 +1,9 @@
 import { LrxmlParams, lrxmlParams, LrxmlConfig } from './config'
 
-import { lineNumber } from './utils/count_lines'
+import { lineNumber, extract_line } from './utils/count_lines'
 
 export type Range = {start: number, end: number}
+export type Token = {kind: string} & Range
 
 export function range_text(
   source: string, range: Range,
@@ -81,6 +82,18 @@ export class ScanningContext<S extends ParserSession> {
     const fileInfo = this.session.filename ? ` at ${this.session.filename}` : ""
     const longMessage = `${message}${fileInfo} line ${lineNo} column ${colNo}`
     throw new Error(longMessage)
+  }
+
+  token_error(token: Token, message: string, options?: {index?: number}): never {
+    const index = token.start + (options?.index ?? 0);
+    const prefix = this.session.source.substring(0, index)
+    const lastNl = prefix.lastIndexOf('\n')
+    const lineNo = lineNumber(prefix)
+    const colNo = index - lastNl
+    const tokenLine = extract_line(this.session.source, lastNl, colNo)
+    const fileInfo = this.session.filename ? ` at ${this.session.filename}` : ""
+    const longMessage = `${message} for token ${token.kind}${fileInfo} line ${lineNo} column ${colNo}`
+    throw new Error(tokenLine + '\n' + longMessage)
   }
 
   NEVER(): never {
