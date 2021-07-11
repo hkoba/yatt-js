@@ -60,6 +60,11 @@ export type EntPathItem = {kind: "var" | "prop", name: string} & Range |
 
 export type EntNode = {kind: "entity", path: EntPath} & Range
 
+export function isEntNode(token: {kind: string} & Range)
+: token is EntNode {
+  return token.kind === "entity"
+}
+
 function re_entpath_open() {
   const str = re_join(
     ':(?<var>\\w+)(?<call_open>[(])?',

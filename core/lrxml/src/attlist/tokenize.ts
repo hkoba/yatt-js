@@ -34,8 +34,17 @@ export type AttKind =  AttOther | AttIdentPlus
 
 export type TokenContent = {text: string, innerRange?: Range} & Range
 
-export type AttToken = {kind: AttOther} & TokenContent |
-  {kind: AttIdentPlus, has_tdots: boolean} & TokenContent |
+type AttTokenOf<T> = {kind: T} & TokenContent
+
+export type AttToken = AttTokenOf<AttComment> |
+  AttTokenOf<AttComment> |
+  AttTokenOf<AttSq> |
+  AttTokenOf<AttDq> |
+  AttTokenOf<AttNest> |
+  AttTokenOf<AttNestClo> |
+  AttTokenOf<AttBare> |
+  AttTokenOf<AttEqual> |
+  {kind: AttIdentPlus, has_three_colon: boolean} & TokenContent |
   EntNode
 
 export function isAttToken(token: {kind: string} & Range)
@@ -90,11 +99,11 @@ export function* tokenize_attlist(ctx: ParserContext, entPrefixChar: EntPrefixCh
     }
     let bare, m;
     if (match.groups && (bare = (match.groups as AttMatch).bare)
-        && (m = /^(?<tdots>:::)?(?:<ident>\w+(?::\w+)*)\z/.exec(bare))
+        && (m = /^(?<three_colon>:::)?(?:<ident>\w+(?::\w+)*)\z/.exec(bare))
         && m.groups) {
-      let mg = m.groups as {tdots?: string, ident: string}
+      let mg = m.groups as {three_colon?: string, ident: string}
       yield {
-        kind: "identplus", has_tdots: !!mg.tdots,
+        kind: "identplus", has_three_colon: !!mg.three_colon,
         text: mg.ident,
         start: match.index,
         end: re.lastIndex

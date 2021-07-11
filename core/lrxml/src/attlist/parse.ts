@@ -1,8 +1,8 @@
 import {
-  Range, ParserContext
+  Range, ParserContext, TokenT
 } from '../context'
 
-import { AttBare, AttSq, AttDq, AttNest } from '../attlist/tokenize'
+import { AttToken, isAttToken, AttBare, AttSq, AttDq, AttNest, AttIdentPlus, TokenContent } from '../attlist/tokenize'
 
 import { EntNode } from '../entity/parse'
 
@@ -12,24 +12,29 @@ type QuotedStringTerm = {kind: AttSq | AttDq} & BaseTerm<string>;
 type BareStringTerm = {kind: AttBare} & BaseTerm<string>;
 type StringTerm = BareStringTerm | QuotedStringTerm
 type NestedTerm = {kind: AttNest} & BaseTerm<AttItem[]>;
+type IdentplusTerm = {kind: AttIdentPlus, has_three_colon: boolean} & BaseTerm<string>;
 
-type Term = StringTerm | NestedTerm |
-  (EntNode & {comment: string[]})
+type EntTerm = (EntNode & {comment: string[]})
+
+type Term = IdentplusTerm | StringTerm | NestedTerm | EntTerm
+
+type Label = IdentplusTerm | NestedTerm
 
 export type AttValue = Term
 
-export type AttItem = {label?: Term} & AttValue
-export type AttLabeled = {label: Term} & AttValue
-export type AttBareLabeled = {label: BareStringTerm} & AttValue
-export type AttBareword = BareStringTerm
+export type AttItem = {label?: Label} & AttValue
+export type AttLabeled = {label: Label} & AttValue
+export type AttIdentLabeled = {label: IdentplusTerm} & AttValue
+export type AttIdentOnly = IdentplusTerm
+export type AttLabelPair = {label: Label} & Label
 
 export function hasStringValue(att: AttItem)
-: att is ({label?: Term} & StringTerm) {
+: att is ({label?: Label} & StringTerm) {
   return att.kind === "bare" || att.kind === "sq" || att.kind === "dq";
 }
 
 export function hasQuotedStringValue(att: AttItem)
-: att is ({label?: Term} & StringTerm) {
+: att is ({label?: Label} & StringTerm) {
   return attKindIsQuotedString(att.kind);
 }
 
@@ -37,13 +42,18 @@ function attKindIsQuotedString(kind: string): boolean {
   return kind === "sq" || kind === "dq";
 }
 
-export function isBareword(att: AttItem)
-: att is AttBareword {
-  return !hasLabel(att) && att.kind === 'bare'
+export function isLabelTerm(term: Term)
+: term is Label {
+  return term.kind === "identplus" || term.kind === "nest"
+}
+
+export function isIdentOnly(att: AttItem)
+: att is AttIdentOnly {
+  return !hasLabel(att) && att.kind === 'identplus'
 }
 
 export function hasNestedValue(att: AttItem)
-: att is ({label?: Term} & NestedTerm) {
+: att is ({label?: Label} & NestedTerm) {
   return att.kind === 'nest'
 }
 
@@ -51,12 +61,13 @@ export function hasLabel(att: AttItem): att is AttLabeled {
   return att.label !== undefined
 }
 
-export function isBareLabeledAtt(att: AttItem): att is AttBareLabeled {
-  return hasLabel(att) && att.label.kind === 'bare'
+export function isBareLabeledAtt(att: AttItem): att is AttIdentLabeled {
+  return hasLabel(att) && att.label.kind === 'identplus'
 }
 
-export function parse_attlist<T extends {kind: string} & Range>(ctx: ParserContext, lex: Generator<T,any,any>
-                                                                , end_kind: string): [AttItem[], T] {
+export function parse_attlist<T extends {kind: string} & Range>(
+  ctx: ParserContext, lex: Generator<T,any,any>, end_kind: string
+): [AttItem[], T] {
   let attList: AttItem[] = []
   let pendingTerm: Term | undefined = undefined
   let had_equal: boolean = false
@@ -74,65 +85,35 @@ export function parse_attlist<T extends {kind: string} & Range>(ctx: ParserConte
       }
       return [attList, cur.value];
     }
-    switch (cur.value.kind) {
+
+    if (! isAttToken(cur.value)) {
+      ctx.throw_error(`Unknown token from lexter: kind: ${cur.value.kind}`)
+    }
+    let token: AttToken = cur.value
+
+    let term: Term | undefined
+    // Following branches may fill term or continue to next loop.
+    switch (token.kind) {
       case "comment": {
         if (pendingTerm) {
-          pendingTerm.comment.push(ctx.range_text(cur.value))
+          pendingTerm.comment.push(ctx.range_text(token))
         }
-        break
+        break;
       }
-      case "entity":
-      case "nest":
+      case "entity": {
+        term = term_entity(ctx, lex, token)
+        break;
+      }
+      case "nest": {
+        term = term_nest(ctx, lex, token)
+        break;
+      }
+      case "identplus": {
+        term = term_identplus(ctx, lex, token)
+        break;
+      }
       case "bare": case "sq": case "dq": {
-        const start = cur.value.start
-        let term: Term;
-        if (cur.value.kind === "nest") {
-          const [value, end] = parse_attlist(ctx, lex, "nestclo")
-          term = {
-            kind: "nest", value, start, end: end.end, comment: []
-          }
-        }
-        else if (cur.value.kind === "entity") {
-          // XXX: Evil cast
-          term = {comment: [], ...(cur.value as unknown as EntNode)}
-        }
-        else {
-          // XXX: parse (type, declflag, default)
-          // XXX: parse entity
-          let value = attKindIsQuotedString(cur.value.kind) ?
-            ctx.range_text(cur.value, 1, -1) : ctx.range_text(cur.value);
-          term = {
-            kind: cur.value.kind, value,
-            start, end: cur.value.end,
-            comment: []
-          }
-        }
-
-        if (ctx.debug) {
-          console.log("term: ", term)
-        }
-        if (! pendingTerm) {
-          pendingTerm = term as Term
-          if (ctx.debug) {
-            console.log("-> pendingTerm")
-          }
-        } else {
-          if (had_equal) {
-            const att = {label: pendingTerm, ...term};
-            attList.push(att)
-            if (ctx.debug) {
-              console.log("Pushed to attList with label: ", att)
-            }
-            pendingTerm = undefined
-            had_equal = false
-          } else {
-            attList.push({...pendingTerm})
-            if (ctx.debug) {
-              console.log("Pushed to attlist as a standalone term: ", pendingTerm)
-            }
-            pendingTerm = term as Term
-          }
-        }
+        term = term_string(ctx, lex, token)
         break;
       }
       case "equal": {
@@ -149,13 +130,88 @@ export function parse_attlist<T extends {kind: string} & Range>(ctx: ParserConte
         if (ctx.debug) {
           console.log("found equal for pendingTerm: ", pendingTerm)
         }
-        break
+        continue; // Important.
       }
-      default: {
-        ctx.NIMPL(cur.value)
+      default:
+        ctx.NIMPL(token)
+    }
+
+    if (term != null) {
+      if (ctx.debug) {
+        console.log("term: ", term)
+      }
+      if (! pendingTerm) {
+        pendingTerm = term as Term
+        if (ctx.debug) {
+          console.log("-> pendingTerm")
+        }
+      } else {
+        if (had_equal) {
+          if (! isLabelTerm(pendingTerm)) {
+            ctx.token_error(pendingTerm, `Invalid attribute term before '='`)
+          }
+          const att: AttItem = {label: pendingTerm, ...term};
+          attList.push(att)
+          if (ctx.debug) {
+            console.log("Pushed to attList with label: ", att)
+          }
+          pendingTerm = undefined
+          had_equal = false
+        }
+        else {
+          attList.push({...pendingTerm})
+          if (ctx.debug) {
+            console.log("Pushed to attlist as a standalone term: ", pendingTerm)
+          }
+          pendingTerm = term as Term
+        }
       }
     }
   }
   
   ctx.NEVER();
+}
+
+function term_nest<U extends TokenT<string>>(
+  ctx: ParserContext, lex: Generator<U,any,any>,
+  token: {kind: "nest"} & TokenContent
+): NestedTerm {
+  const [value, end] = parse_attlist(ctx, lex, "nestclo")
+  return {
+    kind: "nest", value, start: token.start, end: end.end, comment: []
+  }
+}
+
+function term_entity<U extends TokenT<string>>(
+  ctx: ParserContext, lex: Generator<U,any,any>,
+  token: EntNode
+): EntTerm {
+  // XXX: Evil cast
+  return {comment: [], ...(token as unknown as EntNode)}
+}
+
+function term_string<U extends TokenT<string>>(
+  ctx: ParserContext, lex: Generator<U,any,any>,
+  token: {kind: "bare" | "sq" | "dq"} & TokenContent
+): StringTerm {
+  let value = attKindIsQuotedString(token.kind) ?
+    ctx.range_text(token, 1, -1) : ctx.range_text(token);
+  return {
+    kind: token.kind, value,
+    start: token.start, end: token.end,
+    comment: []
+  }
+}
+
+function term_identplus<U extends TokenT<string>>(
+  ctx: ParserContext, lex: Generator<U,any,any>,
+  token: {kind: "identplus", has_three_colon: boolean} & TokenContent
+): IdentplusTerm {
+  let value = ctx.range_text(token)
+  return {
+    kind: token.kind, value,
+    has_three_colon: token.has_three_colon,
+    start: token.start, end: token.end,
+    comment: []
+  }
 }

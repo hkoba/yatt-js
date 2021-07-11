@@ -11,7 +11,7 @@ export {parse_template, Node} from './template/parse'
 export {
   AttItem, AttValue,
   hasStringValue, hasQuotedStringValue, hasNestedValue, hasLabel,
-  isBareLabeledAtt, isBareword
+  isBareLabeledAtt, isIdentOnly
 } from './attlist/parse'
 
 export {EntNode, EntTerm, EntPath} from './entity/parse'
