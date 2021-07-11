@@ -132,14 +132,16 @@ function build_arg_dict(ctx: BuilderContext, attlist: AttItem[]): ArgDict {
 
 if (module.id === ".") {
   let [...args] = process.argv.slice(2);
-
+  console.time('load lrxml-js');
   const { parse_long_options } = require("lrxml-js")
+  console.timeLog('load lrxml-js');
   const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
   let config = { debug: { parser: debugLevel } }
   parse_long_options(args, {target: config})
 
   const { readFileSync } = require('fs')
 
+  console.time('run');
   for (const fn of args) {
     const [template, _session] = build_template_declaration(
       readFileSync(fn, { encoding: "utf-8" }),
@@ -148,4 +150,5 @@ if (module.id === ".") {
 
     console.dir(template, {colors: true, depth: null})
   }
+  console.timeLog('run');
 }
