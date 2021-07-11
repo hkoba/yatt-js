@@ -1,4 +1,4 @@
-import { Range, ParserContext, ParserSession } from '../context'
+import { Range, ParserContext } from '../context'
 import { re_join } from '../utils/regexp'
 
 import { re_entity_open, EntPrefixChar, parse_entpath, EntNode } from '../entity/parse'
@@ -26,11 +26,32 @@ export type AttNest = "nest"
 export type AttNestClo = "nestclo"
 export type AttBare = "bare"
 export type AttEqual = "equal"
+export type AttIdentPlus = "identplus"
 
-export type AttKind = AttComment | AttSq | AttDq | AttNest |
+export type AttOther = AttComment | AttSq | AttDq | AttNest |
   AttNestClo | AttBare | AttEqual
+export type AttKind =  AttOther | AttIdentPlus
 
-export type AttToken = {kind: AttKind, text: string, innerRange?: Range} & Range | EntNode
+export type TokenContent = {text: string, innerRange?: Range} & Range
+
+export type AttToken = {kind: AttOther} & TokenContent |
+  {kind: AttIdentPlus, has_tdots: boolean} & TokenContent |
+  EntNode
+
+export function isAttToken(token: {kind: string} & Range)
+: token is AttToken {
+  switch (token.kind) {
+    case "entity":
+    case "comment":
+    case "bare": case "sq": case "dq":
+    case "nest": case "nestclo":
+    case 'equal':
+    case "identplus":
+      return true
+    default:
+      return false;
+  }
+}
 
 type AttMatch = {
   [x: string]: string | undefined
@@ -45,14 +66,14 @@ type AttMatch = {
   entity?: string
 }
 
-export function extractMatch(am: AttMatch): [AttKind, string] | null {
+export function extractMatch(am: AttMatch): [AttOther, string] | null {
   if (am.ws != null) {
     return null
   }
   for (const k in am) {
     const val = am[k]
     if (typeof val === "string") {
-      return [k as AttKind, val]
+      return [k as AttOther, val]
     }
   }
   return null
@@ -65,6 +86,19 @@ export function* tokenize_attlist(ctx: ParserContext, entPrefixChar: EntPrefixCh
     if (match.groups && (match.groups as AttMatch).entity) {
       ctx.advance(match)
       yield parse_entpath(ctx)
+      continue
+    }
+    let bare, m;
+    if (match.groups && (bare = (match.groups as AttMatch).bare)
+        && (m = /^(?<tdots>:::)?(?:<ident>\w+(?::\w+)*)\z/.exec(bare))
+        && m.groups) {
+      let mg = m.groups as {tdots?: string, ident: string}
+      yield {
+        kind: "identplus", has_tdots: !!mg.tdots,
+        text: mg.ident,
+        start: match.index,
+        end: re.lastIndex
+      }
       continue
     }
     const kv = extractMatch(match.groups as AttMatch)
