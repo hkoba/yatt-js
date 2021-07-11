@@ -1,6 +1,6 @@
 #!/usr/bin/env ts-node
 
-const tap = require('tap')
+import tap from 'tap'
 
 import {lineNumber, extract_line} from '../src/utils/count_lines'
 

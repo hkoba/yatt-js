@@ -1,8 +1,9 @@
 #!/usr/bin/env ts-node
 
-// import tap from 'tap';      // NG: can only be default-imported using the 'esModuleInterop' flagts
-// import * as tap from 'tap'; // NG: tap.same is not a function
-const tap = require('tap')
+// * add test/**/*.ts to tsconfig.src
+// * enable 'esModuleInterop' flags
+
+import tap from 'tap'
 
 import { parserContext, range_text } from '../src/context'
 
