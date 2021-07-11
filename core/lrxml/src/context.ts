@@ -4,6 +4,7 @@ import { lineNumber, extract_line } from './utils/count_lines'
 
 export type Range = {start: number, end: number}
 export type Token = {kind: string} & Range
+export type TokenT<S> = {kind: S} & Range
 
 export function range_text(
   source: string, range: Range,
