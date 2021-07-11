@@ -7,7 +7,8 @@
   "browser": "dist/lrxml.umd.js",
   "tap": {
     "ts": true,
-    "coverage": false
+    "coverage": false,
+    "files": "test/**/*.ts"
   },
   "scripts": {
     "build": "rollup -c",
