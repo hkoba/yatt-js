@@ -11,7 +11,7 @@
     "files": "test/**/*.ts"
   },
   "scripts": {
-    "build": "tsc && rollup -c",
+    "build": "tsc -p tsconfig.build.json && rollup -c",
     "test": "tap"
   },
   "author": "",

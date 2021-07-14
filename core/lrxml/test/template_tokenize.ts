@@ -2,6 +2,7 @@
 
 // * add test/**/*.ts to tsconfig.src
 // * enable 'esModuleInterop' flags
+// * prepare tsconfig.build.json and add rootDir: src, exclude: ["test"]
 
 import tap from 'tap'
 
