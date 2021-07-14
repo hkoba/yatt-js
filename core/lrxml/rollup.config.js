@@ -39,7 +39,7 @@ export default [
       typescript({module: "esnext"}) // so Rollup can convert TypeScript to JavaScript
     ],
     output: [
-      { file: pkg.main, format: 'cjs', sourcemap: true },
+      // { file: pkg.main, format: 'cjs', sourcemap: true },
       { file: pkg.module, format: 'es', sourcemap: true }
     ]
   }
