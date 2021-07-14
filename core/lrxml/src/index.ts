@@ -10,7 +10,7 @@ export {parse_template, Node} from './template/parse'
 
 export {
   AttItem, AttValue,
-  hasStringValue, hasQuotedStringValue, hasNestedValue, hasLabel,
+  hasStringValue, hasQuotedStringValue, hasNestedLabel, hasLabel,
   isBareLabeledAtt, isIdentOnly
 } from './attlist/parse'
 

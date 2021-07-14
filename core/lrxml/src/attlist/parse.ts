@@ -23,8 +23,9 @@ type Label = IdentplusTerm | NestedTerm
 export type AttValue = Term
 
 export type AttItem = {label?: Label} & AttValue
-export type AttLabeled = {label: Label} & AttValue
-export type AttIdentLabeled = {label: IdentplusTerm} & AttValue
+export type AttLabeled = AttLabeledByIdent | AttLabeledNested
+export type AttLabeledByIdent = {label: IdentplusTerm} & AttValue
+export type AttLabeledNested = {label: NestedTerm} & AttValue
 export type AttIdentOnly = IdentplusTerm
 export type AttLabelPair = {label: Label} & Label
 
@@ -52,8 +53,8 @@ export function isIdentOnly(att: AttItem)
   return !hasLabel(att) && att.kind === 'identplus'
 }
 
-export function hasNestedValue(att: AttItem)
-: att is ({label?: Label} & NestedTerm) {
+export function hasNestedLabel(att: AttItem)
+: att is AttLabeledNested {
   return att.kind === 'nest'
 }
 
@@ -61,7 +62,7 @@ export function hasLabel(att: AttItem): att is AttLabeled {
   return att.label !== undefined
 }
 
-export function isBareLabeledAtt(att: AttItem): att is AttIdentLabeled {
+export function isBareLabeledAtt(att: AttItem): att is AttLabeledByIdent {
   return hasLabel(att) && att.label.kind === 'identplus'
 }
 
@@ -123,7 +124,7 @@ export function parse_attlist<T extends {kind: string} & Range>(
         if (had_equal) {
           ctx.throw_error("unexpected = in attribute list")
         }
-        if (pendingTerm.kind !== "bare" && pendingTerm.kind !== "nest") {
+        if (! isLabelTerm(pendingTerm)) {
           ctx.throw_error("unexpected = in attribute list")
         }
         had_equal = true
