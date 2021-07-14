@@ -99,7 +99,7 @@ export function* tokenize_attlist(ctx: ParserContext, entPrefixChar: EntPrefixCh
     }
     let bare, m;
     if (match.groups && (bare = (match.groups as AttMatch).bare)
-        && (m = /^(?<three_colon>:::)?(?<ident>\w+(?::\w+)*)$/.exec(bare))
+        && (m = /^(?<three_colon>:::)?(?<ident>[_A-Za-z]\w*(?::\w+)*)$/.exec(bare))
         && m.groups) {
       let mg = m.groups as {three_colon?: string, ident: string}
       yield {

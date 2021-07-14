@@ -37,14 +37,14 @@ AEIOU
 tap.same(it(`<!yatt:foo bar x=3 y="8" z='9'>
 `), [
   {kind: "decl_begin", text: "<!yatt:foo"},
-  {kind: "bare", text: "bar"},
-  {kind: "bare", text: "x"},
+  {kind: "identplus", text: "bar"},
+  {kind: "identplus", text: "x"},
   {kind: "equal", text: "="},
   {kind: "bare", text: "3"},
-  {kind: "bare", text: "y"},
+  {kind: "identplus", text: "y"},
   {kind: "equal", text: "="},
   {kind: "dq", text: '"8"'},
-  {kind: "bare", text: "z"},
+  {kind: "identplus", text: "z"},
   {kind: "equal", text: "="},
   {kind: "sq", text: "'9'"},
   {kind: "decl_end", text: ">\n"},
