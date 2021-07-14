@@ -1,6 +1,9 @@
 #!/usr/bin/env ts-node
 
-import { parse_multipart, RawPart, AttItem } from 'lrxml-js'
+import {
+  parse_multipart, RawPart, AttItem,
+  isBareLabeledAtt, hasStringValue, isIdentOnly
+} from 'lrxml-js'
 
 import { YattConfig } from '../config'
 
@@ -99,31 +102,30 @@ function parse_arg_spec(ctx: BuilderContext, str: string): { type: string, defau
 function build_arg_dict(ctx: BuilderContext, attlist: AttItem[]): ArgDict {
   let arg_dict: ArgDict = {}
   for (const att of attlist) {
-    if (att.label) {
-      if (att.label.kind !== "bare")
-        ctx.throw_error(`Invalid att label: ${att.label}`)
-      let name = att.label.value
-      if (att.kind === "sq" || att.kind === "dq" || att.kind === "bare") {
+    if (isBareLabeledAtt(att)) {
+      // name="type?default"
+      let name = att.label.value;
+      if (hasStringValue(att)) {
         arg_dict[name] = {
           name,
           ...parse_arg_spec(ctx, att.value)
         }
-      } else {
+      }
+      else {
         ctx.token_error(att, `NIMPL`)
       }
     }
+    else if (isIdentOnly(att)) {
+      // name
+      let name = att.value
+      arg_dict[name] = { name, type: "" }
+    }
+    else if (att.kind === "entity") {
+      // XXX: declaration macro
+      console.warn('ArgMacro is ignored: ', att)
+    }
     else {
-      if (att.kind === "bare") {
-        let name = att.value
-        arg_dict[name] = { name, type: "" }
-      }
-      else if (att.kind === "entity") {
-        // XXX: declaration macro
-        console.warn('ArgMacro is ignored: ', att)
-      }
-      else {
-        ctx.throw_error(`??2 ${att.kind} file ${ctx.session.filename}`)
-      }
+      ctx.throw_error(`??2 ${att.kind} file ${ctx.session.filename}`)
     }
   }
   return arg_dict
