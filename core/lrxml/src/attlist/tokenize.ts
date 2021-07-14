@@ -99,7 +99,7 @@ export function* tokenize_attlist(ctx: ParserContext, entPrefixChar: EntPrefixCh
     }
     let bare, m;
     if (match.groups && (bare = (match.groups as AttMatch).bare)
-        && (m = /^(?<three_colon>:::)?(?:<ident>\w+(?::\w+)*)\z/.exec(bare))
+        && (m = /^(?<three_colon>:::)?(?<ident>\w+(?::\w+)*)$/.exec(bare))
         && m.groups) {
       let mg = m.groups as {three_colon?: string, ident: string}
       yield {
@@ -108,15 +108,16 @@ export function* tokenize_attlist(ctx: ParserContext, entPrefixChar: EntPrefixCh
         start: match.index,
         end: re.lastIndex
       }
-      continue
     }
-    const kv = extractMatch(match.groups as AttMatch)
-    if (kv) {
-      const [key, val] = kv
-      yield {kind: key
-             , text: val
-             , start: match.index
-             , end: re.lastIndex}
+    else {
+      const kv = extractMatch(match.groups as AttMatch)
+      if (kv) {
+        const [key, val] = kv
+        yield {kind: key
+               , text: val
+               , start: match.index
+               , end: re.lastIndex}
+      }
     }
     ctx.advance(match)
   }
