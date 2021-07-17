@@ -1,6 +1,9 @@
 export {lrxmlParams, LrxmlParams, LrxmlConfig} from './config'
 
-export {parserContext, parserSession, Range, ParserContext, ParserSession, ScanningContext} from './context'
+export {
+  parserContext, parserSession, Range, ParserContext, ParserSession, ScanningContext,
+  Token, TokenT
+} from './context'
 
 export {tokenize_multipart, tokenize_multipart_context} from './multipart/tokenize'
 
