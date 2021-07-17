@@ -201,8 +201,10 @@ export function build_template_declaration(
   return [{path: config.filename ?? "", partMap, routes}, builder_session]
 }
 
-function add_args(ctx: BuilderContext, argMap: Map<string, Variable>, attlist: AttItem[]): void {
+type Finder = (ctx: BuilderContext, name: string) => Widget;
 
+function add_args(ctx: BuilderContext, argMap: Map<string, Variable>, attlist: AttItem[]): ((finder: Finder) => Variable)[] {
+  let delayed = []
   for (const att of attlist) {
     if (isBareLabeledAtt(att)) {
       let name = att.label.value
@@ -222,6 +224,7 @@ function add_args(ctx: BuilderContext, argMap: Map<string, Variable>, attlist: A
         let fst = attlist.shift()!
         if (isIdentOnly(fst)
             || !hasLabel(fst) && hasQuotedStringValue(fst)) {
+          // XXX: ここも型名で拡張可能にしたい
           if (fst.value === "code") {
             let widget: Widget = {
               kind: "widget", name, is_public: false,
@@ -238,9 +241,21 @@ function add_args(ctx: BuilderContext, argMap: Map<string, Variable>, attlist: A
             argMap.set(name, v)
           }
           else {
-            let typeNameList = fst.value.split(/:/)
-            if (typeNameList.length && typeNameList[0]! === "delegate") {
-              ctx.NIMPL()
+            let [typeName, ...restName] = fst.value.split(/:/)
+            if (typeName === "delegate") {
+              delayed.push((finder: Finder) => {
+                let widget = finder(ctx, name);
+                let v: DelegateVar = {
+                  typeName: "delegate", varName: name,
+                  widget,
+                  delegateVars: new Map,
+                  attItem: att, argNo: argMap.size,
+                  is_callable: true, from_route: false,
+                  is_body_argument: false,
+                  is_escaped: false
+                }
+                return v
+              })
             }
             else {
               ctx.token_error(att, `Unknown arg decl`)
@@ -263,6 +278,8 @@ function add_args(ctx: BuilderContext, argMap: Map<string, Variable>, attlist: A
       ctx.token_error(att, `Unknown arg declaration`)
     }
   }
+
+  return delayed;
 }
 
 function parse_part_name(ctx: BuilderContext, rawPart: RawPart): PartName | undefined {
