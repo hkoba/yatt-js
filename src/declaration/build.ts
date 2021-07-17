@@ -83,7 +83,7 @@ function parse_part_name(ctx: BuilderContext, rawPart: RawPart): PartName | unde
   if (builder == null) {
     ctx.throw_error(`Unknown part kind: ${rawPart.kind}`)
   }
-  let attlist = Object.assign([], rawPart.attlist)
+  let attlist = ctx.copy_array(rawPart.attlist)
   return builder.parse_part_name(ctx, attlist)
 }
 

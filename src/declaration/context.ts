@@ -48,6 +48,8 @@ export class BuilderContext extends ScanningContext<BuilderSession> {
     }
   }
 
+  copy_array<T>(ary: T[]): T[] {
+    return Object.assign([], ary)
   }
 
   cut_name_and_route(attlist: AttItem[]): [string, string | undefined] | null {
