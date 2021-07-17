@@ -2,20 +2,80 @@
 
 import {
   parse_multipart, RawPart, AttItem,
-  isBareLabeledAtt, hasStringValue, isIdentOnly
+  isBareLabeledAtt, hasStringValue, isIdentOnly, Token,
+  hasLabel, hasQuotedStringValue
 } from 'lrxml-js'
 
 import { YattConfig } from '../config'
 
 import { BuilderMap, BuilderContext, BuilderSession, PartName } from './context'
 
-import { Part, ArgDict, DefaultFlag } from './part'
+// import { Part, ArgDict, DefaultFlag } from './part'
+export type PartSet = {[k: string]: Part}
 
-import { WidgetBuilder } from './widget'
+export type PartKind = string
+
+export type Part = {
+  kind: PartKind
+  name: string
+  is_public: boolean
+  argMap: Map<string, Variable>
+  raw_part?: RawPart //
+}
+
+export type DefaultFlag = "?" | "|" | "/"
+
+// import { WidgetBuilder, Widget } from './widget'
+export type Widget = Part & {
+  kind: "widget"
+  route?: string
+}
+
+import {DeclarationProcessor} from './context'
+
+export class WidgetBuilder implements DeclarationProcessor {
+  readonly kind: string = 'widget'
+  constructor(
+    readonly is_named: boolean, readonly is_public: boolean,
+    readonly prefix: string = 'render_'
+  ) {}
+
+  parse_part_name(ctx: BuilderContext, attlist: AttItem[]): PartName {
+    if (! this.is_named) {
+      // yatt:args
+      // "/route"
+      if (attlist.length && !hasLabel(attlist[0])
+          && hasQuotedStringValue(attlist[0])) {
+        const att = attlist.shift()!
+        return {kind: this.kind, prefix: this.prefix, name: "", is_public: this.is_public, route: ctx.range_text(att), rest: attlist}
+      } else {
+        return {kind: this.kind, prefix: this.prefix, name: "", is_public: this.is_public, rest: attlist}
+      }
+    } else {
+      if (! attlist.length) {
+        // XXX: token position
+        ctx.throw_error(`Widget name is not given (1)`)
+      }
+      const att = ctx.cut_name_and_route(attlist)
+      if (! att) {
+        ctx.throw_error(`Widget name is not given (2)`)
+      }
+      const [name, route] = att
+      return {kind: this.kind, prefix: this.prefix, name, route, is_public: this.is_public, rest: attlist}
+    }
+  }
+}
+
+
 import { ActionBuilder } from './action'
 import { BaseProcessor } from './base'
 
-import { TemplateDeclaration } from './template'
+// import { TemplateDeclaration } from './template'
+export type TemplateDeclaration = {
+  path: string
+  partMap: Map<[string, string], Part>;
+  routes: Map<string, Part>;
+}
 
 export function builtin_builders(): BuilderMap {
   let builders = new Map
@@ -28,6 +88,68 @@ export function builtin_builders(): BuilderMap {
   // XXX: import
   builders.set('', builders.get('args'))
   return builders
+}
+
+export type VariableBase = {
+  typeName: string
+  varName:  string
+  argNo?:   number
+  defaultSpec?: [DefaultFlag, string]
+  attItem?: AttItem
+  from_route: boolean
+  is_body_argument: boolean
+  is_escaped: boolean
+  is_callable: boolean
+}
+
+type TextVar = {typeName: "text"} & VariableBase;
+type ListVar = {typeName: "list"} & VariableBase;
+type ScalarVar = {typeName: "scalar"} & VariableBase;
+type BooleanVar = {typeName: "boolean"} & VariableBase;
+type HtmlVar = {typeName: "html", is_escaped: true} & VariableBase;
+type ExprVar = { typeName: "expr", is_callable: true} & VariableBase;
+type SimpleVar = TextVar | ListVar | ScalarVar | BooleanVar | HtmlVar | ExprVar
+
+type WidgetVar = {
+  typeName: "widget", is_callable: true, widget: Widget
+} & VariableBase;
+
+type DelegateVar = {
+  typeName: "delegate", is_callable: true, widget: Widget,
+  delegateVars: Map<string, SimpleVar>
+} & VariableBase;
+
+type Variable = SimpleVar | WidgetVar | DelegateVar
+
+type VarTypeSpec = { typeName: string, defaultSpec?: [DefaultFlag, string] }
+
+export function build_simple_variable(
+  ctx: BuilderContext, attItem: AttItem, argNo: number, varName: string, spec: VarTypeSpec
+): Variable
+{
+  let {typeName, defaultSpec} = spec;
+  const is_body_argument = varName === "body"; // XXX
+  switch (typeName) {
+    case "text": case "list": case "scalar": case "boolean": return {
+      typeName, varName, defaultSpec, attItem, argNo,
+      from_route: false, is_body_argument,
+      is_escaped: false, is_callable: false
+    }
+
+    case "html": return {
+      typeName, varName, defaultSpec, attItem, argNo,
+      from_route: false, is_body_argument,
+      is_escaped: true, is_callable: false
+    }
+    case "code": return {
+      typeName: "expr", varName, defaultSpec, attItem, argNo,
+      from_route: false, is_body_argument,
+      is_escaped: false, is_callable: true
+    }
+    default: {
+      ctx.token_error(attItem, `Unknown argument`);
+    }
+  }
 }
 
 export function build_template_declaration(
@@ -43,19 +165,83 @@ export function build_template_declaration(
   const ctx = new BuilderContext(builder_session)
 
   // For delegate type and ArgMacro
-  type Item = (PartName & {rawPart: RawPart})
+  type Item = (PartName & {argMap: Map<string, Variable>, rawPart: RawPart})
   let partMap_: Map<[string, string], Item> = new Map;
   for (const rawPart of rawPartList) {
     ctx.set_range(rawPart)
     const pn = parse_part_name(ctx, rawPart)
     if (! pn)
       continue;
-    const item: Item = {...pn, rawPart}
+    const item: Item = {...pn, rawPart, argMap: new Map}
     if (partMap_.has([item.kind, item.name])) {
       // XXX: Better diag
       ctx.throw_error(`Duplicate declaration ${item.kind} ${item.name}`);
     }
     partMap_.set([item.kind, item.name], item)
+    let argNo = 0
+    // XXX: route args
+    for (const att of item.rest) {
+      if (isBareLabeledAtt(att)) {
+        let name = att.label.value
+        if (att.kind === "bare" || att.kind === "sq" || att.kind === "dq" || att.kind === "identplus") {
+          // : name="type?default"
+          let spec = parse_arg_spec(ctx, att.value, "text")
+          // XXX: こっちにも delegate 有る…？廃止？
+          let v = build_simple_variable(ctx, att, argNo, name, spec)
+          item.argMap.set(name, v)
+        }
+        else if (att.kind === "nest") {
+          // : name=[code] name=[delegate]
+          if (att.value.length === 0) {
+            ctx.token_error(att, `Empty arg declaration`)
+          }
+          let attlist = ctx.copy_array(att.value)
+          let fst = attlist.shift()!
+          if (isIdentOnly(fst)
+              || !hasLabel(fst) && hasQuotedStringValue(fst)) {
+            if (fst.value === "code") {
+              let widget: Widget = {
+                kind: "widget", name, is_public: false,
+                argMap: new Map
+              }
+              // XXX: attlist → widget.argMap
+              let v: WidgetVar = {
+                typeName: "widget", widget,
+                varName: name, attItem: att, argNo,
+                is_callable: true, from_route: false,
+                is_body_argument: name === "body", // XXX
+                is_escaped: false
+              }
+              item.argMap.set(name, v)
+            }
+            else {
+              let typeNameList = fst.value.split(/:/)
+              if (typeNameList.length && typeNameList[0]! === "delegate") {
+                ctx.NIMPL()
+              }
+              else {
+                ctx.token_error(att, `Unknown arg decl`)
+              }
+            }
+          }
+        }
+        else {
+          ctx.token_error(att, `Unknown arg declaration`)
+        }
+      }
+      else if (isIdentOnly(att)) {
+        // : name
+        let name = att.value
+        let v = build_simple_variable(ctx, att, argNo, name, {typeName: "text"})
+        item.argMap.set(name, v)
+      }
+      // XXX: entity (ArgMacro)
+      else {
+          ctx.token_error(att, `Unknown arg declaration`)
+      }
+
+      argNo++;
+    }
   }
 
   let partMap: Map<[string, string], Part> = new Map;
@@ -65,9 +251,8 @@ export function build_template_declaration(
     const [kind, name] = key
     // XXX: delegate type
     // XXX: ArgMacro
-    const arg_dict = build_arg_dict(ctx, item.rest)
     const part = {
-      kind, name, is_public: item.is_public, arg_dict, raw_part: item.rawPart
+      kind, name, is_public: item.is_public, argMap: item.argMap, raw_part: item.rawPart
     }
     partMap.set(key, part)
     if (item.route != null) {
@@ -87,50 +272,17 @@ function parse_part_name(ctx: BuilderContext, rawPart: RawPart): PartName | unde
   return builder.parse_part_name(ctx, attlist)
 }
 
-function parse_arg_spec(ctx: BuilderContext, str: string): { type: string, default?: [DefaultFlag, string] } {
+function parse_arg_spec(ctx: BuilderContext, str: string, defaultType: string): VarTypeSpec {
   let match = /([\/\|\?])/.exec(str)
   if (match == null) {
-    return { type: "" }
+    return { typeName: defaultType }
   } else {
-    let type = str.substring(0, match.index)
+    let typeName = str.substring(0, match.index)
     let dflag = match[0]
     let defaultValue = str.substring(match.index + 1);
-    return { type, default: [dflag as DefaultFlag, defaultValue] }
+    return { typeName, defaultSpec: [dflag as DefaultFlag, defaultValue] }
   }
 }
-
-function build_arg_dict(ctx: BuilderContext, attlist: AttItem[]): ArgDict {
-  let arg_dict: ArgDict = {}
-  for (const att of attlist) {
-    if (isBareLabeledAtt(att)) {
-      // name="type?default"
-      let name = att.label.value;
-      if (hasStringValue(att)) {
-        arg_dict[name] = {
-          name,
-          ...parse_arg_spec(ctx, att.value)
-        }
-      }
-      else {
-        ctx.token_error(att, `NIMPL`)
-      }
-    }
-    else if (isIdentOnly(att)) {
-      // name
-      let name = att.value
-      arg_dict[name] = { name, type: "" }
-    }
-    else if (att.kind === "entity") {
-      // XXX: declaration macro
-      console.warn('ArgMacro is ignored: ', att)
-    }
-    else {
-      ctx.throw_error(`??2 ${att.kind} file ${ctx.session.filename}`)
-    }
-  }
-  return arg_dict
-}
-
 
 if (module.id === ".") {
   let [...args] = process.argv.slice(2);
