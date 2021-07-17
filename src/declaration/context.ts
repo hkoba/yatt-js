@@ -48,12 +48,6 @@ export class BuilderContext extends ScanningContext<BuilderSession> {
     }
   }
 
-  att_is_quoted(att: AttItem): boolean {
-    return att.kind === "sq" || att.kind === "dq"
-  }
-
-  att_has_label(att: AttItem): boolean {
-    return att.label != null
   }
 
   cut_name_and_route(attlist: AttItem[]): [string, string | undefined] | null {
