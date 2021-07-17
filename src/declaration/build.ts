@@ -19,8 +19,9 @@ export type Part = {
   kind: PartKind
   name: string
   is_public: boolean
-  argMap: Map<string, Variable>
+  argMap: Map<string, Variable>;
   raw_part?: RawPart //
+  route?: string
 }
 
 export type DefaultFlag = "?" | "|" | "/"
@@ -28,7 +29,6 @@ export type DefaultFlag = "?" | "|" | "/"
 // import { WidgetBuilder, Widget } from './widget'
 export type Widget = Part & {
   kind: "widget"
-  route?: string
 }
 
 import {DeclarationProcessor} from './context'
@@ -152,6 +152,18 @@ export function build_simple_variable(
   }
 }
 
+function map_append<K,V>(map: Map<K,V[]>, k: K, v: V): void {
+  if (map.has(k)) {
+    map.get(k)!.push(v)
+  } else {
+    map.set(k, [v]);
+  }
+}
+
+type ArgAdder = {
+  name: string, dep: string[], fun: (widget: Widget) => ArgAdder | undefined
+}
+
 export function build_template_declaration(
   source: string, config: {filename?: string, builders?: BuilderMap} & YattConfig
 ): [TemplateDeclaration, BuilderSession] {
@@ -165,47 +177,90 @@ export function build_template_declaration(
   const ctx = new BuilderContext(builder_session)
 
   // For delegate type and ArgMacro
-  type Item = (PartName & {argMap: Map<string, Variable>, rawPart: RawPart})
-  let partMap_: Map<[string, string], Item> = new Map;
+  let partMap: Map<[string, string], Part> = new Map;
+  let delayedWidget: Map<string, Widget> = new Map;
+  let delayedBy: Map<string[], ArgAdder[]> = new Map;
   for (const rawPart of rawPartList) {
     ctx.set_range(rawPart)
     const pn = parse_part_name(ctx, rawPart)
     if (! pn)
       continue;
-    const item: Item = {...pn, rawPart, argMap: new Map}
-    if (partMap_.has([item.kind, item.name])) {
+    const part: Part = {kind: pn.kind, name: pn.name, is_public: pn.is_public, argMap: new Map, raw_part: rawPart}
+    if (partMap.has([part.kind, part.name])) {
       // XXX: Better diag
-      ctx.throw_error(`Duplicate declaration ${item.kind} ${item.name}`);
+      ctx.throw_error(`Duplicate declaration ${part.kind} ${part.name}`);
     }
-    partMap_.set([item.kind, item.name], item)
+    partMap.set([part.kind, part.name], part)
     // XXX: add_route, route_arg
-    add_args(ctx, item.argMap, item.rest)
+    let task: ArgAdder | undefined = add_args(ctx, part.argMap, pn.rest)
+    if (task) {
+      if (part.kind !== "widget") {
+        ctx.NIMPL()
+      }
+      delayedWidget.set(part.name, part as Widget)
+      map_append(delayedBy, task.dep, task)
+    }
   }
 
-  let partMap: Map<[string, string], Part> = new Map;
-  let routes: Map<string, Part> = new Map;
-  for (const entry of partMap_) {
-    const [key, item] = entry
-    const [kind, name] = key
-    // XXX: delegate type
-    // XXX: ArgMacro
-    const part = {
-      kind, name, is_public: item.is_public, argMap: item.argMap, raw_part: item.rawPart
+  // Resolve
+  while (delayedWidget.size) {
+    let sz = delayedWidget.size
+    // 一つの widget が複数の delegate 引数宣言を持つことは普通に有る
+    // 全ての delegate 引数宣言が解決しないと、その widget を delegate として使う他の widget の引数確定が始められない
+    //
+    for (const [dep, taskList] of delayedBy) {
+      if (dep.length === 1) {
+        if (partMap.has(['widget', dep[0]])
+            && !delayedWidget.has(dep[0])) {
+          delayedBy.delete(dep)
+          const widget = partMap.get(['widget', dep[0]])
+          if (widget) {
+            for (const task of taskList) {
+              let cont = task.fun(widget as Widget)
+              if (! cont) {
+                delayedWidget.delete(task.name)
+              } else {
+                map_append(delayedBy, task.dep, task)
+              }
+            }
+          }
+        }
+      }
+      else {
+        ctx.NIMPL()
+      }
     }
-    partMap.set(key, part)
-    if (item.route != null) {
-      routes.set(item.route, part)
+    if (delayedWidget.size === sz) {
+      ctx.throw_error(`Can't resolve delegates`)
     }
   }
+
+  let routes = new Map; // XXX
 
   return [{path: config.filename ?? "", partMap, routes}, builder_session]
 }
 
-type Finder = (ctx: BuilderContext, name: string) => Widget;
+// 配列返しは駄目だ、delegate を見つけた箇所で引数解析を停止させないと。
+// そうしないと、明示した引数が delegate の前なのか後だったのかが
+// わからなくなる
+function add_args(
+  ctx: BuilderContext, argMap: Map<string, Variable>, attlist: AttItem[]
+): ArgAdder | undefined {
 
-function add_args(ctx: BuilderContext, argMap: Map<string, Variable>, attlist: AttItem[]): ((finder: Finder) => Variable)[] {
-  let delayed = []
-  for (const att of attlist) {
+  let gen = (function* () {
+    for (const v of attlist) {
+      yield v
+    }
+  })();
+
+  return add_args_cont(ctx, argMap, gen)
+}
+
+function add_args_cont(
+  ctx: BuilderContext, argMap: Map<string, Variable>, gen: Generator<AttItem>
+): ArgAdder | undefined {
+
+  for (const att of gen) {
     if (isBareLabeledAtt(att)) {
       let name = att.label.value
       if (att.kind === "bare" || att.kind === "sq" || att.kind === "dq" || att.kind === "identplus") {
@@ -243,19 +298,24 @@ function add_args(ctx: BuilderContext, argMap: Map<string, Variable>, attlist: A
           else {
             let [typeName, ...restName] = fst.value.split(/:/)
             if (typeName === "delegate") {
-              delayed.push((finder: Finder) => {
-                let widget = finder(ctx, name);
-                let v: DelegateVar = {
-                  typeName: "delegate", varName: name,
-                  widget,
-                  delegateVars: new Map,
-                  attItem: att, argNo: argMap.size,
-                  is_callable: true, from_route: false,
-                  is_body_argument: false,
-                  is_escaped: false
+              return {
+                name, dep: restName.length ? restName : [name],
+                fun: (widget: Widget): ArgAdder | undefined => {
+                  let v: DelegateVar = {
+                    typeName: "delegate", varName: name,
+                    widget,
+                    delegateVars: new Map,
+                    attItem: att, argNo: argMap.size,
+                    is_callable: true, from_route: false,
+                    is_body_argument: false,
+                    is_escaped: false
+                  }
+
+                  argMap.set(name, v)
+
+                  return add_args_cont(ctx, argMap, gen)
                 }
-                return v
-              })
+              }
             }
             else {
               ctx.token_error(att, `Unknown arg decl`)
@@ -278,8 +338,6 @@ function add_args(ctx: BuilderContext, argMap: Map<string, Variable>, attlist: A
       ctx.token_error(att, `Unknown arg declaration`)
     }
   }
-
-  return delayed;
 }
 
 function parse_part_name(ctx: BuilderContext, rawPart: RawPart): PartName | undefined {
