@@ -10,9 +10,11 @@ type BaseTerm<T> = Range & {value: T, comment: string[]}
 
 type QuotedStringTerm = {kind: AttSq | AttDq} & BaseTerm<string>;
 type BareStringTerm = {kind: AttBare} & BaseTerm<string>;
-type StringTerm = BareStringTerm | QuotedStringTerm
-type NestedTerm = {kind: AttNest} & BaseTerm<AttItem[]>;
 type IdentplusTerm = {kind: AttIdentPlus, has_three_colon: boolean} & BaseTerm<string>;
+type StringTerm = BareStringTerm | QuotedStringTerm | IdentplusTerm
+
+type NestedTerm = {kind: AttNest} & BaseTerm<AttItem[]>;
+
 
 type EntTerm = (EntNode & {comment: string[]})
 
@@ -31,7 +33,8 @@ export type AttLabelPair = {label: Label} & Label
 
 export function hasStringValue(att: AttItem)
 : att is ({label?: Label} & StringTerm) {
-  return att.kind === "bare" || att.kind === "sq" || att.kind === "dq";
+  return att.kind === "bare" || att.kind === "sq" || att.kind === "dq" ||
+    (att.label == null && att.kind === "identplus")
 }
 
 export function hasQuotedStringValue(att: AttItem)
