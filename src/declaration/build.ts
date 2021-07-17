@@ -178,70 +178,8 @@ export function build_template_declaration(
       ctx.throw_error(`Duplicate declaration ${item.kind} ${item.name}`);
     }
     partMap_.set([item.kind, item.name], item)
-    let argNo = 0
-    // XXX: route args
-    for (const att of item.rest) {
-      if (isBareLabeledAtt(att)) {
-        let name = att.label.value
-        if (att.kind === "bare" || att.kind === "sq" || att.kind === "dq" || att.kind === "identplus") {
-          // : name="type?default"
-          let spec = parse_arg_spec(ctx, att.value, "text")
-          // XXX: こっちにも delegate 有る…？廃止？
-          let v = build_simple_variable(ctx, att, argNo, name, spec)
-          item.argMap.set(name, v)
-        }
-        else if (att.kind === "nest") {
-          // : name=[code] name=[delegate]
-          if (att.value.length === 0) {
-            ctx.token_error(att, `Empty arg declaration`)
-          }
-          let attlist = ctx.copy_array(att.value)
-          let fst = attlist.shift()!
-          if (isIdentOnly(fst)
-              || !hasLabel(fst) && hasQuotedStringValue(fst)) {
-            if (fst.value === "code") {
-              let widget: Widget = {
-                kind: "widget", name, is_public: false,
-                argMap: new Map
-              }
-              // XXX: attlist → widget.argMap
-              let v: WidgetVar = {
-                typeName: "widget", widget,
-                varName: name, attItem: att, argNo,
-                is_callable: true, from_route: false,
-                is_body_argument: name === "body", // XXX
-                is_escaped: false
-              }
-              item.argMap.set(name, v)
-            }
-            else {
-              let typeNameList = fst.value.split(/:/)
-              if (typeNameList.length && typeNameList[0]! === "delegate") {
-                ctx.NIMPL()
-              }
-              else {
-                ctx.token_error(att, `Unknown arg decl`)
-              }
-            }
-          }
-        }
-        else {
-          ctx.token_error(att, `Unknown arg declaration`)
-        }
-      }
-      else if (isIdentOnly(att)) {
-        // : name
-        let name = att.value
-        let v = build_simple_variable(ctx, att, argNo, name, {typeName: "text"})
-        item.argMap.set(name, v)
-      }
-      // XXX: entity (ArgMacro)
-      else {
-          ctx.token_error(att, `Unknown arg declaration`)
-      }
-
-      argNo++;
-    }
+    // XXX: add_route, route_arg
+    add_args(ctx, item.argMap, item.rest)
   }
 
   let partMap: Map<[string, string], Part> = new Map;
@@ -261,6 +199,70 @@ export function build_template_declaration(
   }
 
   return [{path: config.filename ?? "", partMap, routes}, builder_session]
+}
+
+function add_args(ctx: BuilderContext, argMap: Map<string, Variable>, attlist: AttItem[]): void {
+
+  for (const att of attlist) {
+    if (isBareLabeledAtt(att)) {
+      let name = att.label.value
+      if (att.kind === "bare" || att.kind === "sq" || att.kind === "dq" || att.kind === "identplus") {
+        // : name="type?default"
+        let spec = parse_arg_spec(ctx, att.value, "text")
+        // XXX: こっちにも delegate 有る…？廃止？
+        let v = build_simple_variable(ctx, att, argMap.size, name, spec)
+        argMap.set(name, v)
+      }
+      else if (att.kind === "nest") {
+        // : name=[code] name=[delegate]
+        if (att.value.length === 0) {
+          ctx.token_error(att, `Empty arg declaration`)
+        }
+        let attlist = ctx.copy_array(att.value)
+        let fst = attlist.shift()!
+        if (isIdentOnly(fst)
+            || !hasLabel(fst) && hasQuotedStringValue(fst)) {
+          if (fst.value === "code") {
+            let widget: Widget = {
+              kind: "widget", name, is_public: false,
+              argMap: new Map
+            }
+            add_args(ctx, widget.argMap, attlist)
+            let v: WidgetVar = {
+              typeName: "widget", widget,
+              varName: name, attItem: att, argNo: argMap.size,
+              is_callable: true, from_route: false,
+              is_body_argument: name === "body", // XXX
+              is_escaped: false
+            }
+            argMap.set(name, v)
+          }
+          else {
+            let typeNameList = fst.value.split(/:/)
+            if (typeNameList.length && typeNameList[0]! === "delegate") {
+              ctx.NIMPL()
+            }
+            else {
+              ctx.token_error(att, `Unknown arg decl`)
+            }
+          }
+        }
+      }
+      else {
+        ctx.token_error(att, `Unknown arg declaration`)
+      }
+    }
+    else if (isIdentOnly(att)) {
+      // : name
+      let name = att.value
+      let v = build_simple_variable(ctx, att, argMap.size, name, {typeName: "text"})
+      argMap.set(name, v)
+    }
+    // XXX: entity (ArgMacro)
+    else {
+      ctx.token_error(att, `Unknown arg declaration`)
+    }
+  }
 }
 
 function parse_part_name(ctx: BuilderContext, rawPart: RawPart): PartName | undefined {
