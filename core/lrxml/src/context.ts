@@ -94,7 +94,7 @@ export class ScanningContext<S extends ParserSession> {
     const tokenLine = extract_line(this.session.source, lastNl, colNo)
     const fileInfo = this.session.filename ? ` at ${this.session.filename}` : ""
     const longMessage = `${message} for token ${token.kind}${fileInfo} line ${lineNo} column ${colNo}`
-    throw new Error(tokenLine + '\n' + longMessage)
+    throw new Error(longMessage + '\n' + tokenLine)
   }
 
   NEVER(): never {
