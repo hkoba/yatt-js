@@ -199,19 +199,40 @@ export function build_template_declaration(
       }
       delayedWidget.set(part.name, part as Widget)
       map_append(delayedBy, task.dep, task)
+      console.log(`delayed delegate arg ${task.name} in widget :${pn.name}, depends on widget :${task.dep}`)
     }
+  }
+
+  if (ctx.debug >= 2) {
+    let partNames = Array.from(partMap.keys()).map(v => v.join(" "));
+    console.log(`partMap has: ${partNames}`)
+    console.log(`Raw widget main ${partMap.has(['widget', 'main'])}`)
   }
 
   // Resolve
   while (delayedWidget.size) {
+    if (ctx.debug >= 2) {
+      let widgetNames = Array.from(delayedWidget.keys()).join(", ");
+      console.log(`delayed widgets: ${widgetNames}`)
+    }
     let sz = delayedWidget.size
     // 一つの widget が複数の delegate 引数宣言を持つことは普通に有る
     // 全ての delegate 引数宣言が解決しないと、その widget を delegate として使う他の widget の引数確定が始められない
     //
     for (const [dep, taskList] of delayedBy) {
+      if (ctx.debug >= 2) {
+        console.log(`Checking dependency for ${dep.join(":")}`)
+      }
       if (dep.length === 1) {
-        if (partMap.has(['widget', dep[0]])
-            && !delayedWidget.has(dep[0])) {
+        let inSameTemplate = partMap.has(['widget', dep[0]])
+        let notDelayed = !delayedWidget.has(dep[0])
+        if (ctx.debug >= 2) {
+          console.log(`-> name only. In same template? ${inSameTemplate}, Not delayed? ${notDelayed}`)
+        }
+        if (inSameTemplate && notDelayed) {
+          if (ctx.debug >= 2) {
+            console.log(`No more deps, let's resolve: ${dep.join(":")}`)
+          }
           delayedBy.delete(dep)
           const widget = partMap.get(['widget', dep[0]])
           if (widget) {
@@ -223,6 +244,11 @@ export function build_template_declaration(
                 map_append(delayedBy, task.dep, task)
               }
             }
+          }
+        }
+        else {
+          if (ctx.debug >= 2) {
+            console.log(`Skipped ${dep.join(":")}`)
           }
         }
       }
@@ -261,10 +287,16 @@ function add_args_cont(
 ): ArgAdder | undefined {
 
   for (const att of gen) {
+    if (ctx.debug >= 2) {
+      console.log('add args from: ', att)
+    }
     if (isBareLabeledAtt(att)) {
       let name = att.label.value
       if (att.kind === "bare" || att.kind === "sq" || att.kind === "dq" || att.kind === "identplus") {
         // : name="type?default"
+        if (ctx.debug) {
+          console.log(`kind ${att.kind}: ${name} = ${att.value}`)
+        }
         let spec = parse_arg_spec(ctx, att.value, "text")
         // XXX: こっちにも delegate 有る…？廃止？
         let v = build_simple_variable(ctx, att, argMap.size, name, spec)
@@ -367,7 +399,7 @@ if (module.id === ".") {
   const { parse_long_options } = require("lrxml-js")
   console.timeLog('load lrxml-js');
   const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
-  let config = { debug: { parser: debugLevel } }
+  let config = { debug: { declaration: debugLevel } }
   parse_long_options(args, {target: config})
 
   const { readFileSync } = require('fs')
