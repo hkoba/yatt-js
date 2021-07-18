@@ -18,6 +18,7 @@ export type PartKind = string
 export type Part = {
   kind: PartKind
   name: string
+  prefix: string
   is_public: boolean
   argMap: Map<string, Variable>;
   raw_part?: RawPart //
@@ -213,7 +214,7 @@ export function build_template_declaration(
     const pn = parse_part_name(ctx, rawPart)
     if (! pn)
       continue;
-    const part: Part = {kind: pn.kind, name: pn.name, is_public: pn.is_public, argMap: new Map, raw_part: rawPart}
+    const part: Part = {kind: pn.kind, name: pn.name, prefix: pn.prefix, is_public: pn.is_public, argMap: new Map, raw_part: rawPart}
     if (partMap[part.kind].has(part.name)) {
       // XXX: Better diag
       ctx.throw_error(`Duplicate declaration ${part.kind} ${part.name}`);
@@ -367,8 +368,9 @@ function add_args_cont(
             || !hasLabel(fst) && hasQuotedStringValue(fst)) {
           // XXX: ここも型名で拡張可能にしたい
           if (fst.value === "code") {
+            // XXX: makeWidget()
             let widget: Widget = {
-              kind: "widget", name, is_public: false,
+              kind: "widget", name, prefix: "render_", is_public: false,
               argMap: new Map
             }
             add_args(ctx, partName, widget.argMap, attlist)
@@ -465,7 +467,12 @@ if (module.id === ".") {
       {filename: fn, ...config}
     )
 
-    console.dir(template, {colors: true, depth: null})
+    const {partMap} = template;
+    for (const [name, widget] of partMap.widget) {
+      const args = [...widget.argMap.keys()].join(", ");
+      const proto = `function ${widget.prefix}${name}(${args})`
+      console.log(proto);
+    }
   }
   console.timeLog('run');
 }
