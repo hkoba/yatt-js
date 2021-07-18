@@ -91,7 +91,7 @@ import { BaseProcessor } from './base'
 // import { TemplateDeclaration } from './template'
 export type TemplateDeclaration = {
   path: string
-  partMap: Map<[string, string], Part>;
+  partMap: PartMapType;
   routes: Map<string, Part>;
 }
 
@@ -178,8 +178,14 @@ function map_append<K,V>(map: Map<K,V[]>, k: K, v: V): void {
   }
 }
 
+export interface PartMapType {
+  widget:  Map<string, Widget>;
+  action:  Map<string, Action>;
+  [k: string]: Map<string, Part>;
+}
+
 type ArgAdder = {
-  name: string, dep: string[], fun: (widget: Widget) => ArgAdder | undefined
+  name: string, dep: string, fun: (widget: Widget) => ArgAdder | undefined
 }
 
 export function build_template_declaration(
@@ -195,20 +201,24 @@ export function build_template_declaration(
   const ctx = new BuilderContext(builder_session)
 
   // For delegate type and ArgMacro
-  let partMap: Map<[string, string], Part> = new Map;
+  let partMap: PartMapType = {widget: new Map, action: new Map};
   let delayedWidget: Map<string, Widget> = new Map;
-  let delayedBy: Map<string[], ArgAdder[]> = new Map;
+  let delayedBy: Map<string, ArgAdder[]> = new Map;
+
   for (const rawPart of rawPartList) {
     ctx.set_range(rawPart)
+    if (partMap[rawPart.kind] == null) {
+      ctx.token_error(rawPart, `Unsupported part kind: ${rawPart.kind}`);
+    }
     const pn = parse_part_name(ctx, rawPart)
     if (! pn)
       continue;
     const part: Part = {kind: pn.kind, name: pn.name, is_public: pn.is_public, argMap: new Map, raw_part: rawPart}
-    if (partMap.has([part.kind, part.name])) {
+    if (partMap[part.kind].has(part.name)) {
       // XXX: Better diag
       ctx.throw_error(`Duplicate declaration ${part.kind} ${part.name}`);
     }
-    partMap.set([part.kind, part.name], part)
+    partMap[part.kind].set(part.name, part)
     // XXX: add_route, route_arg
     let task: ArgAdder | undefined = add_args(ctx, part.argMap, pn.rest)
     if (task) {
@@ -222,9 +232,9 @@ export function build_template_declaration(
   }
 
   if (ctx.debug >= 2) {
-    let partNames = Array.from(partMap.keys()).map(v => v.join(" "));
-    console.log(`partMap has: ${partNames}`)
-    console.log(`Raw widget main ${partMap.has(['widget', 'main'])}`)
+    // let partNames = Array.from(partMap.keys()).map(v => v.join(" "));
+    // console.log(`partMap has: ${partNames}`)
+    // console.log(`Raw widget main ${partMap.has(['widget', 'main'])}`)
   }
 
   // Resolve
@@ -238,43 +248,67 @@ export function build_template_declaration(
     // 全ての delegate 引数宣言が解決しないと、その widget を delegate として使う他の widget の引数確定が始められない
     //
     for (const [dep, taskList] of delayedBy) {
-      if (ctx.debug >= 2) {
-        console.log(`Checking dependency for ${dep.join(":")}`)
-      }
-      if (dep.length === 1) {
-        let inSameTemplate = partMap.has(['widget', dep[0]])
-        let notDelayed = !delayedWidget.has(dep[0])
+      let path = dep.split(":");
+      if (path.length === 1) {
+        if (ctx.debug >= 2) {
+          console.log(`Checking dependency for ${dep}`)
+        }
+        let inSameTemplate = partMap.widget.has(dep)
+        let notDelayed = !delayedWidget.has(dep)
         if (ctx.debug >= 2) {
           console.log(`-> name only. In same template? ${inSameTemplate}, Not delayed? ${notDelayed}`)
         }
         if (inSameTemplate && notDelayed) {
           if (ctx.debug >= 2) {
-            console.log(`No more deps, let's resolve: ${dep.join(":")}`)
+            console.log(`No more deps, let's resolve: ${dep}`)
           }
-          delayedBy.delete(dep)
-          const widget = partMap.get(['widget', dep[0]])
+          const widget = partMap.widget.get(dep)
           if (widget) {
-            for (const task of taskList) {
+            if (ctx.debug >= 2) {
+              console.log(`Found widget: ${dep}`)
+            }
+            let len = taskList.length
+            while (len-- > 0) {
+              const task = taskList.shift();
+              if (! task)
+                continue
+              if (ctx.debug >= 2) {
+                console.log(`Running task: ${task}`)
+              }
               let cont = task.fun(widget as Widget)
               if (! cont) {
+                if (ctx.debug >= 2) {
+                  console.log(`Task completed, deleting: ${task.name}`)
+                }
                 delayedWidget.delete(task.name)
               } else {
-                map_append(delayedBy, task.dep, task)
+                if (ctx.debug >= 2) {
+                  console.log(`Task pushed again: ${task.name}`)
+                }
+                taskList.push(task)
               }
             }
+          } else {
+            if (ctx.debug >= 2) {
+              console.log(`Skipped ${dep}`)
+            }
+          }
+          if (! taskList.length) {
+            delayedBy.delete(dep)
           }
         }
         else {
-          if (ctx.debug >= 2) {
-            console.log(`Skipped ${dep.join(":")}`)
-          }
+          ctx.NIMPL()
         }
       }
       else {
+        // XXX: dep が ':' を含む場合…
         ctx.NIMPL()
       }
     }
     if (delayedWidget.size === sz) {
+      let widgetNames = Array.from(delayedWidget.keys()).join(", ");
+      console.log(`Remaining delayed widgets: ${widgetNames}`)
       ctx.throw_error(`Can't resolve delegates`)
     }
   }
