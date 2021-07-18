@@ -220,7 +220,7 @@ export function build_template_declaration(
     }
     partMap[part.kind].set(part.name, part)
     // XXX: add_route, route_arg
-    let task: ArgAdder | undefined = add_args(ctx, part.argMap, pn.rest)
+    let task: ArgAdder | undefined = add_args(ctx, part.name, part.argMap, pn.rest)
     if (task) {
       if (part.kind !== "widget") {
         ctx.NIMPL()
@@ -322,7 +322,8 @@ export function build_template_declaration(
 // そうしないと、明示した引数が delegate の前なのか後だったのかが
 // わからなくなる
 function add_args(
-  ctx: BuilderContext, argMap: Map<string, Variable>, attlist: AttItem[]
+  ctx: BuilderContext, partName: string,
+  argMap: Map<string, Variable>, attlist: AttItem[]
 ): ArgAdder | undefined {
 
   let gen = (function* () {
@@ -331,11 +332,12 @@ function add_args(
     }
   })();
 
-  return add_args_cont(ctx, argMap, gen)
+  return add_args_cont(ctx, partName, argMap, gen)
 }
 
 function add_args_cont(
-  ctx: BuilderContext, argMap: Map<string, Variable>, gen: Generator<AttItem>
+  ctx: BuilderContext, partName: string,
+  argMap: Map<string, Variable>, gen: Generator<AttItem>
 ): ArgAdder | undefined {
 
   for (const att of gen) {
@@ -369,7 +371,7 @@ function add_args_cont(
               kind: "widget", name, is_public: false,
               argMap: new Map
             }
-            add_args(ctx, widget.argMap, attlist)
+            add_args(ctx, partName, widget.argMap, attlist)
             let v: WidgetVar = {
               typeName: "widget", widget,
               varName: name, attItem: att, argNo: argMap.size,
@@ -383,7 +385,7 @@ function add_args_cont(
             let [typeName, ...restName] = fst.value.split(/:/)
             if (typeName === "delegate") {
               return {
-                name, dep: restName.length ? restName : [name],
+                name: partName, dep: restName.length ? restName.join(":") : name,
                 fun: (widget: Widget): ArgAdder | undefined => {
                   let v: DelegateVar = {
                     typeName: "delegate", varName: name,
@@ -397,7 +399,7 @@ function add_args_cont(
 
                   argMap.set(name, v)
 
-                  return add_args_cont(ctx, argMap, gen)
+                  return add_args_cont(ctx, partName, argMap, gen)
                 }
               }
             }
