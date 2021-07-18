@@ -67,7 +67,25 @@ export class WidgetBuilder implements DeclarationProcessor {
 }
 
 
-import { ActionBuilder } from './action'
+// import { ActionBuilder, Action } from './action'
+export type Action = Part & {
+  kind: "action"
+}
+
+export class ActionBuilder implements DeclarationProcessor {
+  readonly kind = 'action';
+  constructor(readonly prefix: string = 'do_') {}
+
+  parse_part_name(ctx: BuilderContext, attlist: AttItem[]): PartName {
+    if (! attlist.length || attlist[0] == null) {
+      ctx.throw_error(`Action name is not given`)
+    }
+    const [name, route] = ctx.cut_name_and_route(attlist)!
+    return {kind: this.kind, prefix: this.prefix, name, route, is_public: false, rest: attlist}
+  }
+}
+
+
 import { BaseProcessor } from './base'
 
 // import { TemplateDeclaration } from './template'
