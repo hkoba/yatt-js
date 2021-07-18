@@ -1,6 +1,6 @@
 import {LrxmlParams} from 'lrxml-js'
 
-export type YattParams = LrxmlParams
+export type YattParams = LrxmlParams & {debug: {parser?: number, declaration?: number}}
 export type YattConfig = Partial<YattParams>
 
 export function yattParams(config: YattConfig): YattParams {

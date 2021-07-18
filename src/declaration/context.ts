@@ -5,7 +5,7 @@ import {
   isIdentOnly
 } from 'lrxml-js'
 
-import {yattParams, YattConfig} from '../config'
+import {yattParams, YattParams, YattConfig} from '../config'
 
 export type BuilderMap = Map<string, DeclarationProcessor>;
 
@@ -25,9 +25,11 @@ export interface DeclarationProcessor {
 
 export type BuilderSession = ParserSession & {
   builders: BuilderMap
+  params: YattParams
 }
 
 export class BuilderContext extends ScanningContext<BuilderSession> {
+  public debug: number = 0
   stash: Map<[string, string], any>;
   constructor(session: BuilderSession,
               index: number = 0,
@@ -36,6 +38,9 @@ export class BuilderContext extends ScanningContext<BuilderSession> {
               parent?: BuilderContext) {
     super(session, index, start, end, parent)
     this.stash = new Map;
+    if (session.params.debug.declaration !== undefined) {
+      this.debug = session.params.debug.declaration
+    }
   }
 
   append_stash(key: [string, string], value: any): void {
