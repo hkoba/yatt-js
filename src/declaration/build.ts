@@ -354,7 +354,10 @@ if (module.id === ".") {
   const { parse_long_options } = require("lrxml-js")
   console.timeLog('load lrxml-js');
   const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
-  let config = { debug: { declaration: debugLevel } }
+  let config = {
+    body_argument_name: "body",
+    debug: { declaration: debugLevel }
+  }
   parse_long_options(args, {target: config})
 
   const { readFileSync } = require('fs')
