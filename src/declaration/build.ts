@@ -131,11 +131,11 @@ export function build_template_declaration(
   source: string, config: {filename?: string, builders?: BuilderMap} & YattConfig
 ): [TemplateDeclaration, BuilderSession] {
   // XXX: default private or public
-  const {builders = builtin_builders(), ...rest_config} = config
+  let {builders = builtin_builders(), ...rest_config}: {builders?: BuilderMap, filename?: string} & YattConfig = config
 
   const [rawPartList, parser_session] = parse_multipart(source, rest_config)
 
-  const builder_session = {builders, ...parser_session}
+  const builder_session: BuilderSession = {builders, ...parser_session} as BuilderSession
 
   const ctx = new BuilderContext(builder_session)
 
