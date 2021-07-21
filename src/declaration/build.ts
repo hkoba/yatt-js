@@ -203,8 +203,7 @@ export function build_template_declaration(
 
   // For delegate type and ArgMacro
   let partMap: PartMapType = {widget: new Map, action: new Map};
-  let delayedWidget: Map<string, Widget> = new Map;
-  let delayedBy: Map<string, ArgAdder[]> = new Map;
+  let taskGraph = new TaskGraph<Widget>(ctx.debug);
 
   for (const rawPart of rawPartList) {
     ctx.set_range(rawPart)
@@ -226,8 +225,7 @@ export function build_template_declaration(
       if (part.kind !== "widget") {
         ctx.NIMPL()
       }
-      delayedWidget.set(part.name, part as Widget)
-      map_append(delayedBy, task.dep, task)
+      taskGraph.delay_product(part.name, part as Widget, task, task.dep);
       console.log(`delayed delegate arg ${task.name} in widget :${pn.name}, depends on widget :${task.dep}`)
     }
   }
@@ -239,84 +237,109 @@ export function build_template_declaration(
   }
 
   // Resolve
-  while (delayedWidget.size) {
-    if (ctx.debug >= 2) {
-      let widgetNames = Array.from(delayedWidget.keys()).join(", ");
-      console.log(`delayed widgets: ${widgetNames}`)
+  taskGraph.do_all((dep: string) => {
+    let inSameTemplate = partMap.widget.has(dep)
+    if (inSameTemplate) {
+      return [inSameTemplate, partMap.widget.get(dep)!]
     }
-    let sz = delayedWidget.size
-    // 一つの widget が複数の delegate 引数宣言を持つことは普通に有る
-    // 全ての delegate 引数宣言が解決しないと、その widget を delegate として使う他の widget の引数確定が始められない
-    //
-    for (const [dep, taskList] of delayedBy) {
-      let path = dep.split(":");
-      if (path.length === 1) {
-        if (ctx.debug >= 2) {
-          console.log(`Checking dependency for ${dep}`)
-        }
-        let inSameTemplate = partMap.widget.has(dep)
-        let notDelayed = !delayedWidget.has(dep)
-        if (ctx.debug >= 2) {
-          console.log(`-> name only. In same template? ${inSameTemplate}, Not delayed? ${notDelayed}`)
-        }
-        if (inSameTemplate && notDelayed) {
-          if (ctx.debug >= 2) {
-            console.log(`No more deps, let's resolve: ${dep}`)
-          }
-          const widget = partMap.widget.get(dep)
-          if (widget) {
-            if (ctx.debug >= 2) {
-              console.log(`Found widget: ${dep}`)
-            }
-            let len = taskList.length
-            while (len-- > 0) {
-              const task = taskList.shift();
-              if (! task)
-                continue
-              if (ctx.debug >= 2) {
-                console.log(`Running task: ${task}`)
-              }
-              let cont = task.fun(widget as Widget)
-              if (! cont) {
-                if (ctx.debug >= 2) {
-                  console.log(`Task completed, deleting: ${task.name}`)
-                }
-                delayedWidget.delete(task.name)
-              } else {
-                if (ctx.debug >= 2) {
-                  console.log(`Task pushed again: ${task.name}`)
-                }
-                taskList.push(task)
-              }
-            }
-          } else {
-            if (ctx.debug >= 2) {
-              console.log(`Skipped ${dep}`)
-            }
-          }
-          if (! taskList.length) {
-            delayedBy.delete(dep)
-          }
-        }
-        else {
-          ctx.NIMPL()
-        }
-      }
-      else {
-        // XXX: dep が ':' を含む場合…
-        ctx.NIMPL()
-      }
-    }
-    if (delayedWidget.size === sz) {
-      let widgetNames = Array.from(delayedWidget.keys()).join(", ");
-      console.log(`Remaining delayed widgets: ${widgetNames}`)
-      ctx.throw_error(`Can't resolve delegates`)
-    }
-  }
+  })
 
   let routes = new Map; // XXX
 
   return [{path: config.filename ?? "", partMap, routes}, builder_session]
+}
+
+type TaskRecord<T> = {
+  name: string, dep: string,
+  fun: (v: T) => TaskRecord<T> | undefined
+}
+
+class TaskGraph<Product> {
+  productMap: Map<string, Product> = new Map;
+  delayedBy: Map<string, TaskRecord<Product>[]> = new Map;
+
+  constructor(readonly debug: number) {}
+
+  delay_product(name: string, product: Product,
+                task: TaskRecord<Product>, depends: string): void {
+    this.productMap.set(name, product)
+    map_append(this.delayedBy, depends, task)
+  }
+
+  do_all(finder: (depName: string) => [boolean, Product] | undefined): void {
+    while (this.productMap.size) {
+      if (this.debug >= 2) {
+        let widgetNames = Array.from(this.productMap.keys()).join(", ");
+        console.log(`delayed widgets: ${widgetNames}`)
+      }
+      let sz = this.productMap.size
+      // 一つの widget が複数の delegate 引数宣言を持つことは普通に有る
+      // 全ての delegate 引数宣言が解決しないと、その widget を delegate として使う他の widget の引数確定が始められない
+      //
+      for (const [dep, taskList] of this.delayedBy) {
+        let path = dep.split(":");
+        if (path.length === 1) {
+          if (this.debug >= 2) {
+            console.log(`Checking dependency for ${dep}`)
+          }
+          const found = finder(dep)
+          if (found) {
+            const [inSameTemplate, widget] = found
+            let notDelayed = !this.productMap.has(dep)
+            if (this.debug >= 2) {
+              console.log(`-> name only. In same template? ${inSameTemplate}, Not delayed? ${notDelayed}`)
+            }
+            if (!inSameTemplate || notDelayed) {
+              if (this.debug >= 2) {
+                console.log(`No more deps, let's resolve: ${dep}`)
+              }
+              {
+                if (this.debug >= 2) {
+                  console.log(`Found widget: ${dep}`)
+                }
+                let len = taskList.length
+                while (len-- > 0) {
+                  const task = taskList.shift();
+                  if (! task)
+                    continue
+                  if (this.debug >= 2) {
+                    console.log(`Running task: ${task}`)
+                  }
+                  let cont = task.fun(widget)
+                  if (! cont) {
+                    if (this.debug >= 2) {
+                      console.log(`Task completed, deleting: ${task.name}`)
+                    }
+                    this.productMap.delete(task.name)
+                  } else {
+                    if (this.debug >= 2) {
+                      console.log(`Task pushed again: ${task.name}`)
+                    }
+                    taskList.push(task)
+                  }
+                }
+                if (! taskList.length) {
+                  this.delayedBy.delete(dep)
+                }
+
+              }
+            } else if (this.debug >= 2) {
+              console.log(`Skipped ${dep}`)
+            }
+          }
+        }
+        else {
+          // XXX: dep が ':' を含む場合…
+          throw new Error("Not implemented")
+        }
+      }
+      if (this.productMap.size === sz) {
+        let widgetNames = Array.from(this.productMap.keys()).join(", ");
+        console.log(`Remaining delayed widgets: ${widgetNames}`)
+        throw new Error(`Can't resolve delegates`)
+      }
+    }
+  }
 }
 
 // 配列返しは駄目だ、delegate を見つけた箇所で引数解析を停止させないと。
