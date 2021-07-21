@@ -226,12 +226,6 @@ export function build_template_declaration(
     }
   }
 
-  if (ctx.debug >= 2) {
-    // let partNames = Array.from(partMap.keys()).map(v => v.join(" "));
-    // console.log(`partMap has: ${partNames}`)
-    // console.log(`Raw widget main ${partMap.has(['widget', 'main'])}`)
-  }
-
   // Resolve
   taskGraph.do_all((dep: string) => {
     let inSameTemplate = partMap.widget.has(dep)
@@ -328,11 +322,17 @@ function add_args_cont(
                   }
 
                   // XXX: v 自体は delegateVars に足すべき
-                  if (restName.length) {
-                    for (const name of restName) {
+                  if (attlist.length) {
+                    for (const att of attlist) {
+                      if (! isIdentOnly(att)) {
+                        ctx.NIMPL()
+                      }
+                      let name = att.value
                       if (! widget.argMap.has(name)) {
                         ctx.throw_error(`No such argument ${name} in delegated widget ${widget.name}`)
                       }
+                      // XXX: deep copy, with original link?
+                      argMap.set(name, widget.argMap.get(name)!)
                     }
                   } else {
                     for (const [name, value] of widget.argMap.entries()) {

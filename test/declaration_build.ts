@@ -20,4 +20,28 @@ import { build_template_declaration } from '../src/declaration/build'
   {name: 'main', args: ['title']},
   {name: 'container', args: ['title']},
 ])
+
+  tap.same(it(`<!yatt:widget container main=[delegate]>
+
+<!yatt:widget main title>
+`), [
+  {name: 'container', args: ['title']},
+  {name: 'main', args: ['title']},
+], "reverse order")
+
+  tap.same(it(`<!yatt:widget container main=[delegate foo baz]>
+
+<!yatt:widget main foo bar baz>
+`), [
+  {name: 'container', args: ['foo', 'baz']},
+  {name: 'main', args: ['foo', 'bar', 'baz']},
+], "specified only")
+
+   tap.same(it(`<!yatt:widget container aliased=[delegate:long_widget_name y w]>
+
+<!yatt:widget long_widget_name x y z w>
+`), [
+  {name: 'container', args: ['y', 'w']},
+  {name: 'long_widget_name', args: ['x', 'y', 'z', 'w']},
+], "alias")
 }
