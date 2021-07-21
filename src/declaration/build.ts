@@ -294,7 +294,7 @@ function add_args_cont(
               kind: "widget", name, prefix: "render_", is_public: false,
               argMap: new Map, varMap: new Map
             }
-            add_args(ctx, part, attlist)
+            add_args(ctx, widget, attlist) // XXX: ここで delegate は禁止よね
             let v: WidgetVar = {
               typeName: "widget", widget,
               varName: name, attItem: att, argNo: part.argMap.size,
