@@ -13,7 +13,6 @@ export type PartName = {
   name: string,
   route?: string,
   is_public: boolean,
-  prefix: string,
   kind: string,
   rest: AttItem[]
 }

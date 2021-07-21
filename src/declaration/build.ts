@@ -22,7 +22,6 @@ export class WidgetBuilder implements DeclarationProcessor {
   readonly kind: string = 'widget'
   constructor(
     readonly is_named: boolean, readonly is_public: boolean,
-    readonly prefix: string = 'render_'
   ) {}
 
   parse_part_name(ctx: BuilderContext, attlist: AttItem[]): PartName {
@@ -32,9 +31,9 @@ export class WidgetBuilder implements DeclarationProcessor {
       if (attlist.length && !hasLabel(attlist[0])
           && hasQuotedStringValue(attlist[0])) {
         const att = attlist.shift()!
-        return {kind: this.kind, prefix: this.prefix, name: "", is_public: this.is_public, route: ctx.range_text(att), rest: attlist}
+        return {kind: this.kind, name: "", is_public: this.is_public, route: ctx.range_text(att), rest: attlist}
       } else {
-        return {kind: this.kind, prefix: this.prefix, name: "", is_public: this.is_public, rest: attlist}
+        return {kind: this.kind, name: "", is_public: this.is_public, rest: attlist}
       }
     } else {
       if (! attlist.length) {
@@ -46,21 +45,21 @@ export class WidgetBuilder implements DeclarationProcessor {
         ctx.throw_error(`Widget name is not given (2)`)
       }
       const [name, route] = att
-      return {kind: this.kind, prefix: this.prefix, name, route, is_public: this.is_public, rest: attlist}
+      return {kind: this.kind, name, route, is_public: this.is_public, rest: attlist}
     }
   }
 }
 
 export class ActionBuilder implements DeclarationProcessor {
   readonly kind = 'action';
-  constructor(readonly prefix: string = 'do_') {}
+  constructor() {}
 
   parse_part_name(ctx: BuilderContext, attlist: AttItem[]): PartName {
     if (! attlist.length || attlist[0] == null) {
       ctx.throw_error(`Action name is not given`)
     }
     const [name, route] = ctx.cut_name_and_route(attlist)!
-    return {kind: this.kind, prefix: this.prefix, name, route, is_public: false, rest: attlist}
+    return {kind: this.kind, name, route, is_public: false, rest: attlist}
   }
 }
 
