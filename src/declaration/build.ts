@@ -399,8 +399,25 @@ function add_args_cont(
                     is_escaped: false
                   }
 
-                  argMap.set(name, v)
-
+                  // XXX: v 自体は delegateVars に足すべき
+                  if (restName.length) {
+                    for (const name of restName) {
+                      if (! widget.argMap.has(name)) {
+                        ctx.throw_error(`No such argument ${name} in delegated widget ${widget.name}`)
+                      }
+                    }
+                  } else {
+                    for (const [name, value] of widget.argMap.entries()) {
+                      if (argMap.has(name)) {
+                        if (ctx.debug) {
+                          // XXX: better diag
+                          console.log(`skipping ${name} because it already exists`)
+                        }
+                        continue
+                      }
+                      argMap.set(name, value)
+                    }
+                  }
                   return add_args_cont(ctx, partName, argMap, gen)
                 }
               }
