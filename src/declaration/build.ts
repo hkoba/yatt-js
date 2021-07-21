@@ -93,7 +93,7 @@ export function build_simple_variable(
 ): Variable
 {
   let {typeName, defaultSpec} = spec;
-  const is_body_argument = varName === "body"; // XXX
+  const is_body_argument = ctx.is_body_argument(varName);
   switch (typeName) {
     case "text": case "list": case "scalar": case "boolean": return {
       typeName, varName, defaultSpec, attItem, argNo,
