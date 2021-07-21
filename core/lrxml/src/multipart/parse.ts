@@ -12,6 +12,12 @@ import { AttItem, parse_attlist} from '../attlist/parse'
 export type Payload = {kind: "text", data: string} & Range |
   {kind: "comment", data: string, innerRange: Range} & Range
 
+// yatt:widget:html
+// ↓
+// namespace: 'yatt'
+// kind: 'widget'
+// subkind: ['html']
+
 export type PartBase = {
   filename?: string
   namespace: string
