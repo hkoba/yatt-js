@@ -229,16 +229,7 @@ function add_args_cont(
             || !hasLabel(fst) && hasQuotedStringValue(fst)) {
           // XXX: ここも型名で拡張可能にしたい
           if (fst.value === "code") {
-            // XXX: makeWidget()
-            let widget: Widget = makeWidget(name, false)
-            add_args(ctx, widget, attlist) // XXX: ここで delegate は禁止よね
-            let v: WidgetVar = {
-              typeName: "widget", widget,
-              varName: name, attItem: att, argNo: part.argMap.size,
-              is_callable: true, from_route: false,
-              is_body_argument: name === "body", // XXX
-              is_escaped: false
-            }
+            let v = build_widget_varialbe(ctx, att, part.argMap.size, name, attlist)
             part.argMap.set(name, v)
           }
           else {
@@ -310,7 +301,17 @@ function add_args_cont(
   }
 }
 
-// function build_widget_varialbe(ctx: BuilderContext, )
+function build_widget_varialbe(ctx: BuilderContext, att: AttItem, argNo: number, varName: string, attlist: AttItem[]): WidgetVar {
+  let widget: Widget = makeWidget(varName, false)
+  add_args(ctx, widget, attlist) // XXX: ここで delegate は禁止よね
+  return {
+    typeName: "widget", widget,
+    varName, attItem: att, argNo,
+    is_callable: true, from_route: false,
+    is_body_argument: ctx.is_body_argument(varName),
+    is_escaped: false
+  }
+}
 
 function parse_part_name(ctx: BuilderContext, rawPart: RawPart): PartName | undefined {
   const builder = ctx.session.builders.get(rawPart.kind)
