@@ -145,7 +145,7 @@ export function build_template_declaration(
 
   for (const rawPart of rawPartList) {
     ctx.set_range(rawPart)
-    if (partMap[rawPart.kind] == null) {
+    if (! builders.has(rawPart.kind)) {
       ctx.token_error(rawPart, `Unsupported part kind: ${rawPart.kind}`);
     }
     const pn = parse_part_name(ctx, rawPart)
