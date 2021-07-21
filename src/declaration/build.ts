@@ -12,28 +12,9 @@ import { BuilderMap, BuilderContext, BuilderSession, PartName } from './context'
 
 import { TaskGraph } from './taskgraph'
 
-// import { Part, ArgDict, DefaultFlag } from './part'
-export type PartSet = {[k: string]: Part}
-
-export type PartKind = string
-
-export type Part = {
-  kind: PartKind
-  name: string
-  prefix: string
-  is_public: boolean
-  argMap: Map<string, Variable>;
-  varMap: Map<string, Variable>;
-  raw_part?: RawPart //
-  route?: string
-}
-
-export type DefaultFlag = "?" | "|" | "/"
-
-// import { WidgetBuilder, Widget } from './widget'
-export type Widget = Part & {
-  kind: "widget"
-}
+import { Part } from './part'
+import { Widget, makeWidget } from './widget'
+import { Action } from './action'
 
 import {DeclarationProcessor} from './context'
 
@@ -68,12 +49,6 @@ export class WidgetBuilder implements DeclarationProcessor {
       return {kind: this.kind, prefix: this.prefix, name, route, is_public: this.is_public, rest: attlist}
     }
   }
-}
-
-
-// import { ActionBuilder, Action } from './action'
-export type Action = Part & {
-  kind: "action"
 }
 
 export class ActionBuilder implements DeclarationProcessor {
@@ -112,38 +87,7 @@ export function builtin_builders(): BuilderMap {
   return builders
 }
 
-export type VariableBase = {
-  typeName: string
-  varName:  string
-  argNo?:   number
-  defaultSpec?: [DefaultFlag, string]
-  attItem?: AttItem
-  from_route: boolean
-  is_body_argument: boolean
-  is_escaped: boolean
-  is_callable: boolean
-}
-
-type TextVar = {typeName: "text"} & VariableBase;
-type ListVar = {typeName: "list"} & VariableBase;
-type ScalarVar = {typeName: "scalar"} & VariableBase;
-type BooleanVar = {typeName: "boolean"} & VariableBase;
-type HtmlVar = {typeName: "html", is_escaped: true} & VariableBase;
-type ExprVar = { typeName: "expr", is_callable: true} & VariableBase;
-type SimpleVar = TextVar | ListVar | ScalarVar | BooleanVar | HtmlVar | ExprVar
-
-type WidgetVar = {
-  typeName: "widget", is_callable: true, widget: Widget
-} & VariableBase;
-
-type DelegateVar = {
-  typeName: "delegate", is_callable: true, widget: Widget,
-  delegateVars: Map<string, SimpleVar>
-} & VariableBase;
-
-type Variable = SimpleVar | WidgetVar | DelegateVar
-
-type VarTypeSpec = { typeName: string, defaultSpec?: [DefaultFlag, string] }
+import {VarTypeSpec, Variable, WidgetVar, DelegateVar, DefaultFlag} from './vartype'
 
 export function build_simple_variable(
   ctx: BuilderContext, attItem: AttItem, argNo: number, varName: string, spec: VarTypeSpec
@@ -208,7 +152,7 @@ export function build_template_declaration(
     const pn = parse_part_name(ctx, rawPart)
     if (! pn)
       continue;
-    const part: Part = {kind: pn.kind, name: pn.name, prefix: pn.prefix, is_public: pn.is_public, argMap: new Map, varMap: new Map, raw_part: rawPart}
+    const part: Part = {kind: pn.kind, name: pn.name, is_public: pn.is_public, argMap: new Map, varMap: new Map, raw_part: rawPart}
     if (partMap[part.kind].has(part.name)) {
       // XXX: Better diag
       ctx.throw_error(`Duplicate declaration ${part.kind} ${part.name}`);
@@ -242,9 +186,6 @@ export function build_template_declaration(
 }
 
 
-// 配列返しは駄目だ、delegate を見つけた箇所で引数解析を停止させないと。
-// そうしないと、明示した引数が delegate の前なのか後だったのかが
-// わからなくなる
 function add_args(
   ctx: BuilderContext, part: Part, attlist: AttItem[]
 ): ArgAdder | undefined {
@@ -290,10 +231,7 @@ function add_args_cont(
           // XXX: ここも型名で拡張可能にしたい
           if (fst.value === "code") {
             // XXX: makeWidget()
-            let widget: Widget = {
-              kind: "widget", name, prefix: "render_", is_public: false,
-              argMap: new Map, varMap: new Map
-            }
+            let widget: Widget = makeWidget(name, false)
             add_args(ctx, widget, attlist) // XXX: ここで delegate は禁止よね
             let v: WidgetVar = {
               typeName: "widget", widget,
@@ -373,6 +311,8 @@ function add_args_cont(
   }
 }
 
+// function build_widget_varialbe(ctx: BuilderContext, )
+
 function parse_part_name(ctx: BuilderContext, rawPart: RawPart): PartName | undefined {
   const builder = ctx.session.builders.get(rawPart.kind)
   if (builder == null) {
@@ -415,7 +355,7 @@ if (module.id === ".") {
     const {partMap} = template;
     for (const [name, widget] of partMap.widget) {
       const args = [...widget.argMap.keys()].join(", ");
-      const proto = `function ${widget.prefix}${name}(${args})`
+      const proto = `function render_${name}(${args})`
       console.log(proto);
     }
   }

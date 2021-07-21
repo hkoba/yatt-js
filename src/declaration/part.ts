@@ -1,23 +1,13 @@
 import { RawPart } from 'lrxml-js'
 
-export type PartSet = {[k: string]: Part}
-
-export type PartKind = string
+import { Variable } from './vartype'
 
 export type Part = {
-  kind: PartKind
+  kind: string
   name: string
   is_public: boolean
-  arg_dict: ArgDict
-  raw_part: RawPart
+  argMap: Map<string, Variable>;
+  varMap: Map<string, Variable>;
+  raw_part?: RawPart //
+  route?: string
 }
-
-export type DefaultFlag = "?" | "|" | "/"
-
-export type VarDecl = {
-  name: string
-  type: string
-  default?: [DefaultFlag, string]
-}
-
-export type ArgDict = {[k: string]: VarDecl}
