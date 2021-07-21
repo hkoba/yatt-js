@@ -2,8 +2,7 @@
   "name": "yatt-js",
   "version": "0.0.1",
   "description": "Yet Another Template Transpiler to TypeScript",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "lib/index.js",
   "workspaces": {
     "packages": [
       "core/*"
