@@ -23,6 +23,7 @@ export type Part = {
   prefix: string
   is_public: boolean
   argMap: Map<string, Variable>;
+  varMap: Map<string, Variable>;
   raw_part?: RawPart //
   route?: string
 }
@@ -207,14 +208,14 @@ export function build_template_declaration(
     const pn = parse_part_name(ctx, rawPart)
     if (! pn)
       continue;
-    const part: Part = {kind: pn.kind, name: pn.name, prefix: pn.prefix, is_public: pn.is_public, argMap: new Map, raw_part: rawPart}
+    const part: Part = {kind: pn.kind, name: pn.name, prefix: pn.prefix, is_public: pn.is_public, argMap: new Map, varMap: new Map, raw_part: rawPart}
     if (partMap[part.kind].has(part.name)) {
       // XXX: Better diag
       ctx.throw_error(`Duplicate declaration ${part.kind} ${part.name}`);
     }
     partMap[part.kind].set(part.name, part)
     // XXX: add_route, route_arg
-    let task: ArgAdder | undefined = add_args(ctx, part.name, part.argMap, pn.rest)
+    let task: ArgAdder | undefined = add_args(ctx, part, pn.rest)
     if (task) {
       if (part.kind !== "widget") {
         ctx.NIMPL()
@@ -245,8 +246,7 @@ export function build_template_declaration(
 // そうしないと、明示した引数が delegate の前なのか後だったのかが
 // わからなくなる
 function add_args(
-  ctx: BuilderContext, partName: string,
-  argMap: Map<string, Variable>, attlist: AttItem[]
+  ctx: BuilderContext, part: Part, attlist: AttItem[]
 ): ArgAdder | undefined {
 
   let gen = (function* () {
@@ -255,12 +255,11 @@ function add_args(
     }
   })();
 
-  return add_args_cont(ctx, partName, argMap, gen)
+  return add_args_cont(ctx, part, gen)
 }
 
 function add_args_cont(
-  ctx: BuilderContext, partName: string,
-  argMap: Map<string, Variable>, gen: Generator<AttItem>
+  ctx: BuilderContext, part: Part, gen: Generator<AttItem>
 ): ArgAdder | undefined {
 
   for (const att of gen) {
@@ -276,8 +275,8 @@ function add_args_cont(
         }
         let spec = parse_arg_spec(ctx, att.value, "text")
         // XXX: こっちにも delegate 有る…？廃止？
-        let v = build_simple_variable(ctx, att, argMap.size, name, spec)
-        argMap.set(name, v)
+        let v = build_simple_variable(ctx, att, part.argMap.size, name, spec)
+        part.argMap.set(name, v)
       }
       else if (att.kind === "nest") {
         // : name=[code] name=[delegate]
@@ -293,35 +292,36 @@ function add_args_cont(
             // XXX: makeWidget()
             let widget: Widget = {
               kind: "widget", name, prefix: "render_", is_public: false,
-              argMap: new Map
+              argMap: new Map, varMap: new Map
             }
-            add_args(ctx, partName, widget.argMap, attlist)
+            add_args(ctx, part, attlist)
             let v: WidgetVar = {
               typeName: "widget", widget,
-              varName: name, attItem: att, argNo: argMap.size,
+              varName: name, attItem: att, argNo: part.argMap.size,
               is_callable: true, from_route: false,
               is_body_argument: name === "body", // XXX
               is_escaped: false
             }
-            argMap.set(name, v)
+            part.argMap.set(name, v)
           }
           else {
             let [typeName, ...restName] = fst.value.split(/:/)
             if (typeName === "delegate") {
               return {
-                name: partName, dep: restName.length ? restName.join(":") : name,
+                name: part.name, dep: restName.length ? restName.join(":") : name,
                 fun: (widget: Widget): ArgAdder | undefined => {
                   let v: DelegateVar = {
                     typeName: "delegate", varName: name,
                     widget,
                     delegateVars: new Map,
-                    attItem: att, argNo: argMap.size,
+                    attItem: att, argNo: part.argMap.size,
                     is_callable: true, from_route: false,
                     is_body_argument: false,
                     is_escaped: false
                   }
 
-                  // XXX: v 自体は delegateVars に足すべき
+                  part.varMap.set(att.label.value, v)
+
                   if (attlist.length) {
                     for (const att of attlist) {
                       if (! isIdentOnly(att)) {
@@ -332,21 +332,21 @@ function add_args_cont(
                         ctx.throw_error(`No such argument ${name} in delegated widget ${widget.name}`)
                       }
                       // XXX: deep copy, with original link?
-                      argMap.set(name, widget.argMap.get(name)!)
+                      part.argMap.set(name, widget.argMap.get(name)!)
                     }
                   } else {
                     for (const [name, value] of widget.argMap.entries()) {
-                      if (argMap.has(name)) {
+                      if (part.argMap.has(name)) {
                         if (ctx.debug) {
                           // XXX: better diag
                           console.log(`skipping ${name} because it already exists`)
                         }
                         continue
                       }
-                      argMap.set(name, value)
+                      part.argMap.set(name, value)
                     }
                   }
-                  return add_args_cont(ctx, partName, argMap, gen)
+                  return add_args_cont(ctx, part, gen)
                 }
               }
             }
@@ -363,8 +363,8 @@ function add_args_cont(
     else if (isIdentOnly(att)) {
       // : name
       let name = att.value
-      let v = build_simple_variable(ctx, att, argMap.size, name, {typeName: "text"})
-      argMap.set(name, v)
+      let v = build_simple_variable(ctx, att, part.argMap.size, name, {typeName: "text"})
+      part.argMap.set(name, v)
     }
     // XXX: entity (ArgMacro)
     else {
