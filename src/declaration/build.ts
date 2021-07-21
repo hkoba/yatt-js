@@ -226,7 +226,9 @@ export function build_template_declaration(
         ctx.NIMPL()
       }
       taskGraph.delay_product(part.name, part as Widget, task, task.dep);
-      console.log(`delayed delegate arg ${task.name} in widget :${pn.name}, depends on widget :${task.dep}`)
+      if (ctx.debug >= 2) {
+        console.log(`delayed delegate arg ${task.name} in widget :${pn.name}, depends on widget :${task.dep}`)
+      }
     }
   }
 
