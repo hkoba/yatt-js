@@ -14,6 +14,11 @@ import { build_template_declaration } from '../src/declaration/build'
     })
   }
 
+  tap.same(it(`<!yatt:widget foo bar='value/0'>
+`), [
+  {name: 'foo', args: ['bar'], vars: []}
+])
+
   tap.same(it(`<!yatt:widget main title>
 
 <!yatt:widget container main=[delegate]>
