@@ -270,7 +270,10 @@ function add_args_cont(
       let v = build_simple_variable(ctx, att, part.argMap.size, name, {typeName: "text"})
       part.argMap.set(name, v)
     }
-    // XXX: entity (ArgMacro)
+    else if (att.kind === "entity") {
+      // XXX: entity (ArgMacro)
+      console.warn(`Ignoring argmacro`)
+    }
     else {
       ctx.token_error(att, `Unknown arg declaration`)
     }
