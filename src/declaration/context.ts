@@ -7,19 +7,13 @@ import {
 
 import {yattParams, YattParams, YattConfig} from '../config'
 
-export type BuilderMap = Map<string, DeclarationProcessor>;
+import { Part } from './part'
 
-export type PartName = {
-  name: string,
-  route?: string,
-  is_public: boolean,
-  kind: string,
-  rest: AttItem[]
-}
+export type BuilderMap = Map<string, DeclarationProcessor>;
 
 export interface DeclarationProcessor {
   readonly kind: string;
-  parse_part_name(ctx: BuilderContext, attlist: AttItem[]): PartName | undefined
+  createPart(ctx: BuilderContext, attlist: AttItem[]): [Part, AttItem[]] | undefined
 }
 
 export type BuilderSession = ParserSession & {

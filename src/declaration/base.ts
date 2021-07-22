@@ -4,7 +4,7 @@ import { DeclarationProcessor, BuilderContext } from './context'
 
 export class BaseProcessor implements DeclarationProcessor {
   readonly kind = 'base'
-  parse_part_name(ctx: BuilderContext, attlist: AttItem[]): undefined {
+  createPart(ctx: BuilderContext, attlist: AttItem[]): undefined {
     for (const att of attlist) {
       if (! isBareLabeledAtt(att)) {
         // XXX: better diag

@@ -8,7 +8,7 @@ import {
 
 import { YattConfig } from '../config'
 
-import { BuilderMap, BuilderContext, BuilderSession, PartName } from './context'
+import { BuilderMap, BuilderContext, BuilderSession } from './context'
 
 import { TaskGraph } from './taskgraph'
 
@@ -22,17 +22,17 @@ export class WidgetBuilder implements DeclarationProcessor {
     readonly is_named: boolean, readonly is_public: boolean,
   ) {}
 
-  parse_part_name(ctx: BuilderContext, attlist: AttItem[]): PartName {
+  createPart(ctx: BuilderContext, attlist: AttItem[]): [Widget, AttItem[]] | undefined {
+    let name, route, rest
     if (! this.is_named) {
       // yatt:args
       // "/route"
+      name = ""
       if (attlist.length && !hasLabel(attlist[0])
           && hasQuotedStringValue(attlist[0])) {
-        const att = attlist.shift()!
-        return {kind: this.kind, name: "", is_public: this.is_public, route: ctx.range_text(att), rest: attlist}
-      } else {
-        return {kind: this.kind, name: "", is_public: this.is_public, rest: attlist}
+        route = ctx.range_text(attlist.shift()!);
       }
+
     } else {
       if (! attlist.length) {
         // XXX: token position
@@ -42,9 +42,12 @@ export class WidgetBuilder implements DeclarationProcessor {
       if (! att) {
         ctx.throw_error(`Widget name is not given (2)`)
       }
-      const [name, route] = att
-      return {kind: this.kind, name, route, is_public: this.is_public, rest: attlist}
+      name = att[0]
+      route = att[1]
     }
+    let widget = makeWidget(name, this.is_public)
+    widget.route = route;
+    return [widget, attlist];
   }
 }
 
@@ -52,12 +55,13 @@ export class ActionBuilder implements DeclarationProcessor {
   readonly kind = 'action';
   constructor() {}
 
-  parse_part_name(ctx: BuilderContext, attlist: AttItem[]): PartName {
+  createPart(ctx: BuilderContext, attlist: AttItem[]): [Action, AttItem[]] | undefined {
     if (! attlist.length || attlist[0] == null) {
       ctx.throw_error(`Action name is not given`)
     }
     const [name, route] = ctx.cut_name_and_route(attlist)!
-    return {kind: this.kind, name, route, is_public: false, rest: attlist}
+    return [{kind: this.kind, name, route, is_public: false,
+             argMap: new Map, varMap: new Map}, attlist]
   }
 }
 
@@ -146,24 +150,24 @@ export function build_template_declaration(
     if (! builders.has(rawPart.kind)) {
       ctx.token_error(rawPart, `Unsupported part kind: ${rawPart.kind}`);
     }
-    const pn = parse_part_name(ctx, rawPart)
+    const pn = createPart(ctx, rawPart)
     if (! pn)
       continue;
-    const part: Part = {kind: pn.kind, name: pn.name, is_public: pn.is_public, argMap: new Map, varMap: new Map, raw_part: rawPart}
+    const [part, attlist] = pn
     if (partMap[part.kind].has(part.name)) {
       // XXX: Better diag
       ctx.throw_error(`Duplicate declaration ${part.kind} ${part.name}`);
     }
     partMap[part.kind].set(part.name, part)
     // XXX: add_route, route_arg
-    let task: ArgAdder | undefined = add_args(ctx, part, pn.rest)
+    let task: ArgAdder | undefined = add_args(ctx, part, attlist)
     if (task) {
       if (part.kind !== "widget") {
         ctx.NIMPL()
       }
       taskGraph.delay_product(part.name, part as Widget, task, task.dep);
       if (ctx.debug >= 2) {
-        console.log(`delayed delegate arg ${task.name} in widget :${pn.name}, depends on widget :${task.dep}`)
+        console.log(`delayed delegate arg ${task.name} in widget :${part.name}, depends on widget :${task.dep}`)
       }
     }
   }
@@ -325,13 +329,13 @@ function build_delegate_variable_adder(
   }
 }
 
-function parse_part_name(ctx: BuilderContext, rawPart: RawPart): PartName | undefined {
+function createPart(ctx: BuilderContext, rawPart: RawPart): [Part, AttItem[]] | undefined {
   const builder = ctx.session.builders.get(rawPart.kind)
   if (builder == null) {
     ctx.throw_error(`Unknown part kind: ${rawPart.kind}`)
   }
   let attlist = ctx.copy_array(rawPart.attlist)
-  return builder.parse_part_name(ctx, attlist)
+  return builder.createPart(ctx, attlist)
 }
 
 function parse_arg_spec(ctx: BuilderContext, str: string, defaultType: string): VarTypeSpec {
