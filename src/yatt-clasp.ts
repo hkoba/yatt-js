@@ -32,14 +32,16 @@ function rootname(fn: string): string {
   const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
   let config = {
     body_argument_name: "body",
-    debug: { declaration: debugLevel }
+    debug: { declaration: debugLevel },
+    ext: 'ytjs'
   }
   parse_long_options(args, {target: config})
+  // 拡張子もオプションで渡さないと
 
   // const { readFileSync } = require('fs')
 
   for (const tmplDir of args) {
-    const fileList = await pGlob('**/*.ytjs', {cwd: tmplDir, root: tmplDir})
+    const fileList = await pGlob(`**/*.${config.ext}`, {cwd: tmplDir, root: tmplDir})
     for (const fn of fileList) {
       const nsPrefix = baseNS + '.' + rootname(fn).split('/').join('.')
       process.stdout.write(`namespace ${nsPrefix} {\n`);
