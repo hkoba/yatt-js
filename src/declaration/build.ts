@@ -10,6 +10,7 @@ import { YattConfig } from '../config'
 
 import {
   BuilderMap, BuilderContext, BuilderSession, DeclarationProcessor
+  ArgAdder
 } from './context'
 
 import { TaskGraph } from './taskgraph'
@@ -142,10 +143,6 @@ export function build_simple_variable(
       ctx.token_error(attItem, `Unknown argument`);
     }
   }
-}
-
-type ArgAdder = {
-  name: string, dep: string, fun: (widget: Widget) => ArgAdder | undefined
 }
 
 export function build_template_declaration(

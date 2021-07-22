@@ -7,13 +7,17 @@ import {
 
 import {yattParams, YattParams, YattConfig} from '../config'
 
-import { Part } from './part'
+import { Part, Widget } from './part'
 
 export type BuilderMap = Map<string, DeclarationProcessor>;
 
 export interface DeclarationProcessor {
   readonly kind: string;
   createPart(ctx: BuilderContext, attlist: AttItem[]): [Part, AttItem[]] | undefined
+}
+
+export type ArgAdder = {
+  name: string, dep: string, fun: (widget: Widget) => ArgAdder | undefined
 }
 
 export type BuilderSession = ParserSession & {
