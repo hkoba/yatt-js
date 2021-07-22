@@ -71,6 +71,7 @@ export class ActionBuilder implements DeclarationProcessor {
 
 export type TemplateDeclaration = {
   path: string
+  partOrder: [string, string][]; // kind, name
   partMap: PartMapType;
   routeMap: RouteMapType;
 }
@@ -142,6 +143,7 @@ export function build_template_declaration(
   const ctx = new BuilderContext(builder_session)
 
   // For delegate type and ArgMacro
+  let partOrder: [string, string][] = []
   let partMap: PartMapType = {widget: new Map, action: new Map};
   let taskGraph = new TaskGraph<Widget>(ctx.debug);
   let routeMap: RouteMapType = new Map
@@ -160,6 +162,8 @@ export function build_template_declaration(
       ctx.throw_error(`Duplicate declaration ${part.kind} ${part.name}`);
     }
     partMap[part.kind].set(part.name, part)
+    partOrder.push([part.kind, part.name]);
+    part.raw_part = rawPart
     if (part.route != null) {
       add_route(ctx, routeMap, part.route, part);
     }
@@ -185,7 +189,7 @@ export function build_template_declaration(
     // XXX: find from vfs
   })
 
-  return [{path: config.filename ?? "", partMap, routeMap}, builder_session]
+  return [{path: config.filename ?? "", partMap, routeMap, partOrder}, builder_session]
 }
 
 function add_route(
