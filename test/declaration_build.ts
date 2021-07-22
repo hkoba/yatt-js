@@ -46,3 +46,21 @@ import { build_template_declaration } from '../src/declaration/build'
   {name: 'long_widget_name', args: ['x', 'y', 'z', 'w'], vars: []},
 ], "alias")
 }
+
+{
+  const it = (src: string) => {
+    const [template, _session] = build_template_declaration(src, {});
+    const {routeMap} = template
+    return [...routeMap.entries()].map(([route, part]) => {
+      return {route, kind: part.kind, name: part.name}
+    })
+  }
+
+  tap.same(it(`<!yatt:page home="/home">
+
+<!yatt:page user="/user/:uid">
+`), [
+  {route: "/home", kind: "widget", name: "home"},
+  {route: "/user/:uid", kind: "widget", name: "user"},
+])
+}
