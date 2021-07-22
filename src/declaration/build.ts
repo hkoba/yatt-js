@@ -72,8 +72,16 @@ import { BaseProcessor } from './base'
 export type TemplateDeclaration = {
   path: string
   partMap: PartMapType;
-  routeMap: Map<string, Part>;
+  routeMap: RouteMapType;
 }
+
+export interface PartMapType {
+  widget:  Map<string, Widget>;
+  action:  Map<string, Action>;
+  [k: string]: Map<string, Part>;
+}
+
+export type RouteMapType = Map<string, {part: Part}>;
 
 export function builtin_builders(): BuilderMap {
   let builders = new Map
@@ -119,12 +127,6 @@ export function build_simple_variable(
   }
 }
 
-export interface PartMapType {
-  widget:  Map<string, Widget>;
-  action:  Map<string, Action>;
-  [k: string]: Map<string, Part>;
-}
-
 type ArgAdder = {
   name: string, dep: string, fun: (widget: Widget) => ArgAdder | undefined
 }
@@ -144,7 +146,7 @@ export function build_template_declaration(
   // For delegate type and ArgMacro
   let partMap: PartMapType = {widget: new Map, action: new Map};
   let taskGraph = new TaskGraph<Widget>(ctx.debug);
-  let routeMap = new Map
+  let routeMap: RouteMapType = new Map
 
   for (const rawPart of rawPartList) {
     ctx.set_range(rawPart)
@@ -190,10 +192,10 @@ export function build_template_declaration(
 }
 
 function add_route(
-  ctx: BuilderContext, routeMap: Map<string, Part>, route: string, part: Part
+  ctx: BuilderContext, routeMap: RouteMapType, route: string, part: Part
 ): void {
   // XXX: path-ro-regexp and add args to part
-  routeMap.set(route, part);
+  routeMap.set(route, {part});
 }
 
 function add_args(

@@ -51,8 +51,8 @@ import { build_template_declaration } from '../src/declaration/build'
   const it = (src: string) => {
     const [template, _session] = build_template_declaration(src, {});
     const {routeMap} = template
-    return [...routeMap.entries()].map(([route, part]) => {
-      return {route, kind: part.kind, name: part.name}
+    return [...routeMap.entries()].map(([route, rec]) => {
+      return {route, kind: rec.part.kind, name: rec.part.name}
     })
   }
 
