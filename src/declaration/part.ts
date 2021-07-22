@@ -11,3 +11,18 @@ export type Part = {
   raw_part?: RawPart //
   route?: string
 }
+
+export type Widget = Part & {
+  kind: "widget"
+}
+
+export function makeWidget(name: string, isPublic: boolean): Widget {
+  return {
+    kind: "widget", name, is_public: isPublic,
+    argMap: new Map, varMap: new Map
+  }
+}
+
+export type Action = Part & {
+  kind: "action"
+}

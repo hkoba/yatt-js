@@ -12,9 +12,7 @@ import { BuilderMap, BuilderContext, BuilderSession, PartName } from './context'
 
 import { TaskGraph } from './taskgraph'
 
-import { Part } from './part'
-import { Widget, makeWidget } from './widget'
-import { Action } from './action'
+import { Part, Widget, makeWidget, Action } from './part'
 
 import {DeclarationProcessor} from './context'
 
