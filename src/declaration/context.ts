@@ -9,11 +9,36 @@ import {yattParams, YattParams, YattConfig} from '../config'
 
 import { Part, Widget } from './part'
 
+import { Variable, SimpleVar } from './vartype'
+
 export type BuilderMap = Map<string, DeclarationProcessor>;
 
 export interface DeclarationProcessor {
   readonly kind: string;
   createPart(ctx: BuilderContext, attlist: AttItem[]): [Part, AttItem[]] | undefined
+}
+
+export type VarTypeMap = {
+  simple: Map<string, SimpleVariableBuilder>;
+  nested: Map<string, CallableVariableBuilder | DelayedVariableBuilder>;
+}
+
+type SimpleVariableBuilder = {
+  kind: "simple", typeName: SimpleVar['typeName'], is_escaped: boolean, is_callable: boolean
+}
+type CallableVariableBuilder = {
+  kind: "callable",
+  typeName: string, 
+  fun: (ctx: BuilderContext, att: AttItem, argNo: number, varName: string, attlist: AttItem[]) => Variable
+}
+type DelayedVariableBuilder = {
+  kind: "delayed",
+  typeName: string,
+  fun: (
+    ctx: BuilderContext, part: Part, gen: Generator<AttItem>,
+    att: AttItem, argNo: number,
+    name: string, restName: string[], attlist: AttItem[]
+  ) => ArgAdder
 }
 
 export type ArgAdder = {
@@ -23,6 +48,7 @@ export type ArgAdder = {
 export type BuilderSession = ParserSession & {
   builders: BuilderMap
   params: YattParams
+  varTypeMap: VarTypeMap
 }
 
 export class BuilderContext extends ScanningContext<BuilderSession> {
@@ -93,9 +119,22 @@ export class BuilderContext extends ScanningContext<BuilderSession> {
   }
 }
 
-export function builderContext(v: {builders: BuilderMap, source: string, filename?: string, config: YattConfig}): BuilderContext {
+export function builderContext(
+  {builders, varTypeMap, source, filename, config}:
+  {
+    builders: BuilderMap,
+    varTypeMap: VarTypeMap,
+    source: string,
+    config: YattConfig,
+    filename?: string
+  }
+): BuilderContext {
 
-  const session: BuilderSession = {builders: v.builders, source: v.source, filename: v.filename, params: yattParams(v.config), patterns: {}}
+  const session: BuilderSession = {
+    builders, varTypeMap,
+    source, filename, params: yattParams(config),
+    patterns: {}
+  }
 
   return new BuilderContext(session)
 }

@@ -9,7 +9,8 @@ import {
 import { YattConfig } from '../config'
 
 import {
-  BuilderMap, BuilderContext, BuilderSession, DeclarationProcessor
+  BuilderMap, BuilderContext, BuilderSession, DeclarationProcessor,
+  VarTypeMap,
   ArgAdder
 } from './context'
 
@@ -116,6 +117,38 @@ export function builtin_builders(): BuilderMap {
   return builders
 }
 
+export function builtin_vartypemap(): VarTypeMap {
+  let tm: VarTypeMap = {simple: new Map, nested: new Map};
+  const simple = (typeName: SimpleVar['typeName'], is_escaped: boolean): {
+    kind: "simple", typeName: SimpleVar['typeName'], is_escaped: boolean, is_callable: false
+  } => ({kind: "simple", typeName, is_escaped, is_callable: false});
+
+  tm.simple.set('text', simple("text", false));
+  tm.simple.set('html', simple("html", true));
+
+  tm.simple.set('scalar', simple("scalar", false));
+  tm.simple.set('value',  tm.simple.get('scalar')!)
+
+  tm.simple.set('list', simple("list", false));
+
+  tm.simple.set('expr', simple("expr", false));
+  tm.simple.set('code',    tm.simple.get('expr')!);
+
+  tm.simple.set('boolean', simple("boolean", false));
+  tm.simple.set('bool',    tm.simple.get('boolean')!);
+
+  tm.nested.set('widget', {
+    kind: "callable", typeName: "widget", fun: build_widget_varialbe
+  })
+  tm.nested.set('code', tm.nested.get('code')!)
+
+  tm.nested.set('delegate', {
+    kind: "delayed", typeName: 'delegate', fun: build_delegate_variable_adder
+  })
+
+  return tm
+}
+
 export function build_simple_variable(
   ctx: BuilderContext, attItem: AttItem, argNo: number, varName: string, spec: VarTypeSpec
 ): Variable
@@ -149,11 +182,17 @@ export function build_template_declaration(
   source: string, config: {filename?: string, builders?: BuilderMap} & YattConfig
 ): [TemplateDeclaration, BuilderSession] {
   // XXX: default private or public
-  let {builders = builtin_builders(), ...rest_config}: {builders?: BuilderMap, filename?: string} & YattConfig = config
+  let {
+    builders = builtin_builders(),
+    varTypeMap = builtin_vartypemap(),
+    ...rest_config
+  }: {builders?: BuilderMap, varTypeMap?: VarTypeMap, filename?: string} & YattConfig = config
 
   const [rawPartList, parser_session] = parse_multipart(source, rest_config)
 
-  const builder_session: BuilderSession = {builders, ...parser_session} as BuilderSession
+  const builder_session: BuilderSession = {
+    builders, varTypeMap, ...parser_session
+  } as BuilderSession
 
   const ctx = new BuilderContext(builder_session)
 
