@@ -14,7 +14,7 @@ import {
 
 import { TaskGraph } from './taskgraph'
 
-import { Part, Widget, makeWidget, Action } from './part'
+import { Part, Widget, makeWidget, Action, Entity } from './part'
 
 import {VarTypeSpec, Variable, WidgetVar, DelegateVar, DefaultFlag} from './vartype'
 
@@ -69,6 +69,23 @@ export class ActionBuilder implements DeclarationProcessor {
   }
 }
 
+export class EntityBuilder implements DeclarationProcessor {
+  readonly kind = 'entity';
+  constructor() {}
+
+  createPart(ctx: BuilderContext, attlist: AttItem[]): [Entity, AttItem[]] {
+    if (! attlist.length || attlist[0] == null) {
+      ctx.throw_error(`Entity name is not given`)
+    }
+    const att = attlist.shift()!
+    if (! isIdentOnly(att))
+      ctx.NIMPL();
+    const name = att.value
+    return [{kind: this.kind, name, is_public: false,
+             argMap: new Map, varMap: new Map}, attlist]
+  }
+}
+
 export type TemplateDeclaration = {
   path: string
   partOrder: [string, string][]; // kind, name
@@ -79,6 +96,7 @@ export type TemplateDeclaration = {
 export interface PartMapType {
   widget:  Map<string, Widget>;
   action:  Map<string, Action>;
+  entity:  Map<string, Entity>;
   [k: string]: Map<string, Part>;
 }
 
@@ -90,8 +108,8 @@ export function builtin_builders(): BuilderMap {
   builders.set('widget', new WidgetBuilder(true, false))
   builders.set('page', new WidgetBuilder(true, true))
   builders.set('action', new ActionBuilder)
+  builders.set('entity', new EntityBuilder)
   builders.set('base', new BaseProcessor)
-  // XXX: entity
   // XXX: import
   builders.set('', builders.get('args'))
   return builders
@@ -144,7 +162,7 @@ export function build_template_declaration(
 
   // For delegate type and ArgMacro
   let partOrder: [string, string][] = []
-  let partMap: PartMapType = {widget: new Map, action: new Map};
+  let partMap: PartMapType = {widget: new Map, action: new Map, entity: new Map};
   let taskGraph = new TaskGraph<Widget>(ctx.debug);
   let routeMap: RouteMapType = new Map
 

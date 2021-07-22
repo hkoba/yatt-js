@@ -26,3 +26,7 @@ export function makeWidget(name: string, isPublic: boolean): Widget {
 export type Action = Part & {
   kind: "action"
 }
+
+export type Entity = Part & {
+  kind: "entity"
+}
