@@ -22,7 +22,7 @@ export class WidgetBuilder implements DeclarationProcessor {
     readonly is_named: boolean, readonly is_public: boolean,
   ) {}
 
-  createPart(ctx: BuilderContext, attlist: AttItem[]): [Widget, AttItem[]] | undefined {
+  createPart(ctx: BuilderContext, attlist: AttItem[]): [Widget, AttItem[]] {
     let name, route, rest
     if (! this.is_named) {
       // yatt:args
@@ -55,7 +55,7 @@ export class ActionBuilder implements DeclarationProcessor {
   readonly kind = 'action';
   constructor() {}
 
-  createPart(ctx: BuilderContext, attlist: AttItem[]): [Action, AttItem[]] | undefined {
+  createPart(ctx: BuilderContext, attlist: AttItem[]): [Action, AttItem[]] {
     if (! attlist.length || attlist[0] == null) {
       ctx.throw_error(`Action name is not given`)
     }
