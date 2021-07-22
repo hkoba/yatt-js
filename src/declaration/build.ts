@@ -60,7 +60,7 @@ export class ActionBuilder implements DeclarationProcessor {
       ctx.throw_error(`Action name is not given`)
     }
     const [name, route] = ctx.cut_name_and_route(attlist)!
-    return [{kind: this.kind, name, route, is_public: false,
+    return [{kind: this.kind, name, route, is_public: true,
              argMap: new Map, varMap: new Map}, attlist]
   }
 }
