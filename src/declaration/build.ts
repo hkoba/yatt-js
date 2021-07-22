@@ -18,7 +18,10 @@ import { TaskGraph } from './taskgraph'
 
 import { Part, Widget, makeWidget, Action, Entity } from './part'
 
-import {VarTypeSpec, Variable, WidgetVar, DelegateVar, DefaultFlag} from './vartype'
+import {
+  VarTypeSpec, WidgetVar, DelegateVar, DefaultFlag,
+  SimpleVar
+} from './vartype'
 
 import { BaseProcessor } from './base'
 
@@ -151,30 +154,22 @@ export function builtin_vartypemap(): VarTypeMap {
 
 export function build_simple_variable(
   ctx: BuilderContext, attItem: AttItem, argNo: number, varName: string, spec: VarTypeSpec
-): Variable
+): SimpleVar
 {
-  let {typeName, defaultSpec} = spec;
+  let givenTypeName = spec.typeName;
+  let defaultSpec = spec.defaultSpec;
   const is_body_argument = ctx.is_body_argument(varName);
-  switch (typeName) {
-    case "text": case "list": case "scalar": case "boolean": return {
-      typeName, varName, defaultSpec, attItem, argNo,
-      from_route: false, is_body_argument,
-      is_escaped: false, is_callable: false
-    }
 
-    case "html": return {
-      typeName, varName, defaultSpec, attItem, argNo,
+  const rec = ctx.session.varTypeMap.simple.get(givenTypeName)
+  if (rec == null)
+    ctx.token_error(attItem, `Unknown type ${givenTypeName} for argument ${varName}`)
+ 
+  const {typeName, is_escaped, is_callable} = rec
+
+  return {
+    typeName: typeName as SimpleVar['typeName'], is_escaped, is_callable,
+    varName, defaultSpec, attItem, argNo,
       from_route: false, is_body_argument,
-      is_escaped: true, is_callable: false
-    }
-    case "code": return {
-      typeName: "expr", varName, defaultSpec, attItem, argNo,
-      from_route: false, is_body_argument,
-      is_escaped: false, is_callable: true
-    }
-    default: {
-      ctx.token_error(attItem, `Unknown argument`);
-    }
   }
 }
 

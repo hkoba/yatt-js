@@ -19,8 +19,8 @@ type TextVar = {typeName: "text"} & VariableBase;
 type ListVar = {typeName: "list"} & VariableBase;
 type ScalarVar = {typeName: "scalar"} & VariableBase;
 type BooleanVar = {typeName: "boolean"} & VariableBase;
-type HtmlVar = {typeName: "html", is_escaped: true} & VariableBase;
-type ExprVar = { typeName: "expr", is_callable: true} & VariableBase;
+type HtmlVar = {typeName: "html"} & VariableBase;
+type ExprVar = { typeName: "expr"} & VariableBase;
 export type SimpleVar = TextVar | ListVar | ScalarVar | BooleanVar | HtmlVar | ExprVar
 
 export type WidgetVar = {
