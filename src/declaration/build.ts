@@ -2,19 +2,23 @@
 
 import {
   parse_multipart, RawPart, AttItem,
-  isBareLabeledAtt, hasStringValue, isIdentOnly, Token,
+  isBareLabeledAtt, isIdentOnly,
   hasLabel, hasQuotedStringValue
 } from 'lrxml-js'
 
 import { YattConfig } from '../config'
 
-import { BuilderMap, BuilderContext, BuilderSession } from './context'
+import {
+  BuilderMap, BuilderContext, BuilderSession, DeclarationProcessor
+} from './context'
 
 import { TaskGraph } from './taskgraph'
 
 import { Part, Widget, makeWidget, Action } from './part'
 
-import {DeclarationProcessor} from './context'
+import {VarTypeSpec, Variable, WidgetVar, DelegateVar, DefaultFlag} from './vartype'
+
+import { BaseProcessor } from './base'
 
 export class WidgetBuilder implements DeclarationProcessor {
   readonly kind: string = 'widget'
@@ -23,7 +27,7 @@ export class WidgetBuilder implements DeclarationProcessor {
   ) {}
 
   createPart(ctx: BuilderContext, attlist: AttItem[]): [Widget, AttItem[]] {
-    let name, route, rest
+    let name, route
     if (! this.is_named) {
       // yatt:args
       // "/route"
@@ -65,10 +69,6 @@ export class ActionBuilder implements DeclarationProcessor {
   }
 }
 
-
-import { BaseProcessor } from './base'
-
-// import { TemplateDeclaration } from './template'
 export type TemplateDeclaration = {
   path: string
   partMap: PartMapType;
@@ -95,8 +95,6 @@ export function builtin_builders(): BuilderMap {
   builders.set('', builders.get('args'))
   return builders
 }
-
-import {VarTypeSpec, Variable, WidgetVar, DelegateVar, DefaultFlag} from './vartype'
 
 export function build_simple_variable(
   ctx: BuilderContext, attItem: AttItem, argNo: number, varName: string, spec: VarTypeSpec
@@ -187,7 +185,6 @@ export function build_template_declaration(
     // XXX: find from vfs
   })
 
-
   return [{path: config.filename ?? "", partMap, routeMap}, builder_session]
 }
 
@@ -241,21 +238,18 @@ function add_args_cont(
         if (isIdentOnly(fst)
             || !hasLabel(fst) && hasQuotedStringValue(fst)) {
           // XXX: ここも型名で拡張可能にしたい
-          if (fst.value === "code") {
+          let [typeName, ...restName] = fst.value.split(/:/)
+          if (typeName === "code") {
             let v = build_widget_varialbe(ctx, att, part.argMap.size, name, attlist)
             part.argMap.set(name, v)
           }
-          else {
-            let [typeName, ...restName] = fst.value.split(/:/)
-            if (typeName === "delegate") {
-              return build_delegate_variable_adder(
-                ctx, part, gen, att, part.argMap.size,
-                name, restName, attlist
-              )
-            }
-            else {
-              ctx.token_error(att, `Unknown arg decl`)
-            }
+          else if (typeName === "delegate") {
+            return build_delegate_variable_adder(
+              ctx, part, gen, att, part.argMap.size,
+              name, restName, attlist
+            )
+          } else {
+            ctx.token_error(att, `Unknown typename: ${typeName}`)
           }
         }
         else {
