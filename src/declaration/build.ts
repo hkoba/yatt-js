@@ -135,7 +135,7 @@ export function builtin_vartypemap(): VarTypeMap {
   tm.simple.set('list', simple("list", false));
 
   tm.simple.set('expr', simple("expr", false));
-  tm.simple.set('code',    tm.simple.get('expr')!);
+  tm.simple.set('code', tm.simple.get('expr')!);
 
   tm.simple.set('boolean', simple("boolean", false));
   tm.simple.set('bool',    tm.simple.get('boolean')!);
