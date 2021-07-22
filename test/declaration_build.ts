@@ -32,7 +32,7 @@ import { build_template_declaration } from '../src/declaration/build'
 
   tap.same(it(`<!yatt:widget container main=[delegate foo baz]>
 
-<!yatt:widget main foo bar baz>
+<!yatt:widget main foo='?xx' bar='/yy' baz>
 `), [
   {name: 'container', args: ['foo', 'baz'], vars: ['main']},
   {name: 'main', args: ['foo', 'bar', 'baz'], vars: []},

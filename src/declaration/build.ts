@@ -348,7 +348,7 @@ function parse_arg_spec(ctx: BuilderContext, str: string, defaultType: string): 
   if (match == null) {
     return { typeName: defaultType }
   } else {
-    let typeName = str.substring(0, match.index)
+    let typeName = match.index ? str.substring(0, match.index) : defaultType;
     let dflag = match[0]
     let defaultValue = str.substring(match.index + 1);
     return { typeName, defaultSpec: [dflag as DefaultFlag, defaultValue] }
