@@ -72,7 +72,7 @@ import { BaseProcessor } from './base'
 export type TemplateDeclaration = {
   path: string
   partMap: PartMapType;
-  routes: Map<string, Part>;
+  routeMap: Map<string, Part>;
 }
 
 export function builtin_builders(): BuilderMap {
@@ -144,6 +144,7 @@ export function build_template_declaration(
   // For delegate type and ArgMacro
   let partMap: PartMapType = {widget: new Map, action: new Map};
   let taskGraph = new TaskGraph<Widget>(ctx.debug);
+  let routeMap = new Map
 
   for (const rawPart of rawPartList) {
     ctx.set_range(rawPart)
@@ -159,7 +160,10 @@ export function build_template_declaration(
       ctx.throw_error(`Duplicate declaration ${part.kind} ${part.name}`);
     }
     partMap[part.kind].set(part.name, part)
-    // XXX: add_route, route_arg
+    if (part.route != null) {
+      add_route(ctx, routeMap, part.route, part);
+    }
+
     let task: ArgAdder | undefined = add_args(ctx, part, attlist)
     if (task) {
       if (part.kind !== "widget") {
@@ -181,11 +185,16 @@ export function build_template_declaration(
     // XXX: find from vfs
   })
 
-  let routes = new Map; // XXX
 
-  return [{path: config.filename ?? "", partMap, routes}, builder_session]
+  return [{path: config.filename ?? "", partMap, routeMap}, builder_session]
 }
 
+function add_route(
+  ctx: BuilderContext, routeMap: Map<string, Part>, route: string, part: Part
+): void {
+  // XXX: path-ro-regexp and add args to part
+  routeMap.set(route, part);
+}
 
 function add_args(
   ctx: BuilderContext, part: Part, attlist: AttItem[]
