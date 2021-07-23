@@ -50,6 +50,10 @@ type EntOpen = Range & {kind: "entpath_open", name: string}
 export type Token = Text | Comment | PI |
   TagOpen | AttToken | TagClose | EntOpen | EntNode | LCMsg
 
+function splitline(text: string): string[] {
+  return text.split(/(?<=\n)/)
+}
+
 export function* tokenize(session: ParserSession, payloadList: Payload[]): Generator<Token,any,any>
   {
   let outerCtx = new ParserContext(session);
@@ -63,7 +67,12 @@ export function* tokenize(session: ParserSession, payloadList: Payload[]): Gener
       while ((globalMatch = ctx.global_match(re))) {
         const prefix = ctx.prefix_of(globalMatch)
         if (prefix != null) {
-          yield { kind: "text", ...prefix }
+          let {start} = prefix;
+          for (const line of splitline(ctx.range_text(prefix))) {
+            let end = start + line.length;
+            yield { kind: "text", start, end }
+            start = end + 1;
+          }
         }
         
         let bm = globalMatch.match.groups as BodyMatch
