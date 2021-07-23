@@ -21,6 +21,10 @@ export type ParserSession = {
   // parent?: ParserSession
 }
 
+export function session_range_text<S extends {source: string}>(session: S, range: Range): string {
+  return range_text(session.source, range)
+}
+
 export type GlobalMatch = {
   match: RegExpExecArray
   lastIndex: number
