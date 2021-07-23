@@ -270,24 +270,27 @@ function add_args_cont(
       console.log('add args from: ', att)
     }
     if (isBareLabeledAtt(att)) {
+      //: name = SOMETHING
       let name = att.label.value
-      if (att.kind === "bare" || att.kind === "sq" || att.kind === "dq" || att.kind === "identplus") {
-        // : name="type?default"
+      if (att.kind === "bare" || att.kind === "sq" || att.kind === "dq"
+          || att.kind === "identplus") {
+        //: name="type?default"
         if (ctx.debug) {
           console.log(`kind ${att.kind}: ${name} = ${att.value}`)
         }
         let spec = parse_arg_spec(ctx, att.value, "text")
-        // XXX: こっちにも delegate 有る…？廃止？
         let v = build_simple_variable(ctx, att, part.argMap.size, name, spec)
         part.argMap.set(name, v)
       }
       else if (att.kind === "nest") {
-        // : name=[code] name=[delegate]
+        //: name=[code] name=[delegate]
         if (att.value.length === 0) {
           ctx.token_error(att, `Empty arg declaration`)
         }
         let attlist = ctx.copy_array(att.value)
+        //: attlist is [code x y z], [delegate x y z], [delegate:foo x y]
         let fst = attlist.shift()!
+        //: fst is code, delegate (or "code", "delegate")
         if (isIdentOnly(fst)
             || !hasLabel(fst) && hasQuotedStringValue(fst)) {
           let [givenTypeName, ...restName] = fst.value.split(/:/)
@@ -297,10 +300,12 @@ function add_args_cont(
             ctx.token_error(fst, `Unknown type ${givenTypeName} for argument ${name}`)
           }
           if (rec.kind === "callable") {
+            //: name=[code]
             let v = rec.fun(ctx, att, part.argMap.size, name, attlist);
             part.argMap.set(name, v)
           }
           else if (rec.kind === "delayed") {
+            //: name=[delegate]
             return rec.fun(
               ctx, part, gen, att, part.argMap.size,
               name, restName, attlist
@@ -319,7 +324,7 @@ function add_args_cont(
       }
     }
     else if (isIdentOnly(att)) {
-      // : name
+      //: nameOnly
       let name = att.value
       let v = build_simple_variable(ctx, att, part.argMap.size, name, {typeName: "text"})
       part.argMap.set(name, v)
