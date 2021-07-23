@@ -36,13 +36,16 @@ type BodyMatch = {
   pi?: string
 } & EntPrefixMatch
 
-type Text = Range & {kind: "text"}
+type Text = Range & {kind: "text", lineEndLength: number}
 type Comment = Range & {kind: "comment", innerRange: Range}
 type PI = Range & {kind: "pi", innerRange: Range}
 
 type TagOpen  = Range & {kind: "tag_open", name: string,
                          is_close: boolean, is_option: boolean}
-export type TagClose = Range & {kind: "tag_close", is_empty_element: boolean}
+export type TagClose = Range & {
+  kind: "tag_close", is_empty_element: boolean,
+  lineEndLength: number
+}
 
 // Entity
 type EntOpen = Range & {kind: "entpath_open", name: string}
@@ -53,8 +56,23 @@ export type Token = Text | Comment | PI |
 function* splitline(text: string, offset: number): Generator<Token> {
   for (const line of text.split(/(?<=\n)/)) {
     let end = offset + line.length;
-    yield { kind: "text", start: offset, end }
+    yield { kind: "text", start: offset, end, lineEndLength: lineEndLength(line) }
     offset = end;
+  }
+}
+
+function lineEndLength(text: string): number {
+  if (text.length < 1
+      || text.charAt(text.length - 1) !== '\n') {
+    return 0
+  }
+  // Found \n
+  else if (text.length < 2 || text.charAt(text.length - 2) !== '\r') {
+    return 1
+  }
+  // Found \r\n
+  else {
+    return 2;
   }
 }
 
@@ -124,9 +142,11 @@ export function* tokenize(session: ParserSession, payloadList: Payload[]): Gener
             }
             return; // NOT REACHED
           }
+          const close = ctx.tab_string(end[0]);
           yield {kind: "tag_close",
                  is_empty_element: end.groups && end.groups.empty_tag != null ? true : false,
-                 ...ctx.tab_string(end[0])}
+                 lineEndLength: lineEndLength(ctx.range_text(close)),
+                 ...close}
         }
         else if (bm.pi != null) {
           const range = ctx.tab(globalMatch)
