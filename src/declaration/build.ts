@@ -290,23 +290,28 @@ function add_args_cont(
         let fst = attlist.shift()!
         if (isIdentOnly(fst)
             || !hasLabel(fst) && hasQuotedStringValue(fst)) {
-          // XXX: ここも型名で拡張可能にしたい
-          let [typeName, ...restName] = fst.value.split(/:/)
-          if (typeName === "code") {
-            let v = build_widget_varialbe(ctx, att, part.argMap.size, name, attlist)
+          let [givenTypeName, ...restName] = fst.value.split(/:/)
+
+          const rec = ctx.session.varTypeMap.nested.get(givenTypeName)
+          if (rec == null) {
+            ctx.token_error(fst, `Unknown type ${givenTypeName} for argument ${name}`)
+          }
+          if (rec.kind === "callable") {
+            let v = rec.fun(ctx, att, part.argMap.size, name, attlist);
             part.argMap.set(name, v)
           }
-          else if (typeName === "delegate") {
-            return build_delegate_variable_adder(
+          else if (rec.kind === "delayed") {
+            return rec.fun(
               ctx, part, gen, att, part.argMap.size,
               name, restName, attlist
             )
-          } else {
-            ctx.token_error(att, `Unknown typename: ${typeName}`)
+          }
+          else {
+            ctx.NEVER();
           }
         }
         else {
-          ctx.token_error(att, `Unknown arg declaration`)
+          ctx.token_error(fst, `Unknown arg declaration`)
         }
       }
       else {
