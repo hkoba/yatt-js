@@ -155,8 +155,9 @@ export function* tokenize(session: ParserSession, payloadList: Payload[]): Gener
             ctx.throw_error("Missing ?>")
             return; // NOT REACHED
           }
-          const innerRange = {start: range.end, end: end.index}
-          yield {kind: "pi", innerRange, ...range}
+          const endRange = ctx.tab_match(end)
+          const innerRange = {start: endRange.start, end: endRange.end-2}
+          yield {kind: "pi", innerRange, start: range.start, end: endRange.end}
         }
         else {
           ctx.NEVER()
