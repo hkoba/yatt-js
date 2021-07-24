@@ -11,13 +11,16 @@ import { parse_attlist, AttItem } from '../attlist/parse'
 
 import { EntNode } from '../entity/parse'
 
-export type Element = Range & {
-  kind: "element"
+type ElementBody = Range & {
   path: string[]
-  attlist: AttItem[]
+  attlist: (AttItem | AttElement)[]
   children?: Node[]
+  footer?: AttElement[]
   // containedRange
 }
+
+export type Element = {kind: "element"} & ElementBody;
+export type AttElement = {kind: "attelem"} & ElementBody;
 
 export type Text    = Range & {kind: "text", lineEndLength: number}
 export type Comment = Range & {kind: "comment"}
@@ -26,20 +29,29 @@ export type PI      = Range & {kind: "pi"}
 export type LCMsg   = Range & {kind: "lcmsg", namespace: string[]
                                , lcmsg: Text[][], bind: EntNode[]}
 
-export type Node = Text | Comment | PI | Element | EntNode | LCMsg
+export type Node = Text | Comment | PI | Element | AttElement | EntNode | LCMsg
 
 export function parse_template(session: ParserSession, part: Part): Node[] {
   let lex = tokenize(session, part.payload)
   let ctx = new ParserContext(session);
-  let nodes = parse_tokens(ctx, part, lex, []);
-  return nodes
+  let nodeList: Node[] = [];
+  parse_tokens(ctx, part, lex, 0, nodeList);
+  return nodeList;
 }
 
-function parse_tokens(ctx: ParserContext, part: Part
-                      , lex: Generator<Token, any, any>, sink: Node[], close?: string): Node[] {
+function parse_tokens(
+  ctx: ParserContext, part: Part, lex: Generator<Token>,
+  depth: number,
+  sink: (Node | AttElement)[], close?: string, parent?: (Element | AttElement)
+): void {
 
-  for (const tok of lex) {
+  let cur;
+  while (!(cur = lex.next()).done) {
+    const tok = cur.value
     ctx.index = tok.start
+    if (ctx.debug) {
+      process.stdout.write('|' + '  '.repeat(depth) + `${tok.start} - ${tok.kind}\n`)
+    }
     switch (tok.kind) {
       case "text": {
         sink.push(tok)
@@ -70,21 +82,45 @@ function parse_tokens(ctx: ParserContext, part: Part
           const nx = lex.next().value
           if (!nx || nx.kind !== 'tag_close')
             ctx.throw_error(`tag is not closed by '>'`)
-          return sink
+          return
         }
         const [attlist, end] = parse_attlist(ctx, lex, "tag_close");
         if (end.kind !== "tag_close") {
           ctx.NEVER()
         }
-        let elem: Element = {
-          kind: "element", path: tok.name.split(/:/), attlist,
+        let elem: Element | AttElement = {
+          kind: tok.is_option ? "attelem" : "element",
+          path: tok.name.split(/:/), attlist,
           start: tok.start, end: tok.end
         }
-        sink.push(elem)
-        if (! end.is_empty_element) {
-          let body = elem.children = []
-          parse_tokens(ctx, part, lex, body, tok.name)
+
+        if (elem.kind === "element") {
+          // <yatt:tag> or <yatt:tag/>
+          sink.push(elem)
         }
+        else if (! parent) {
+          ctx.throw_error(`BUG: parent is empty!`)
+        }
+        else if (end.is_empty_element) {
+          // <:yatt:tag/>
+          parent.footer ??= []
+          parent.footer.push(elem)
+        }
+        else {
+          // <:yatt:tag>
+          parent.attlist.push(elem)
+        }
+
+        if (! end.is_empty_element) {
+          // <yatt:tag> or <:yatt:tag>
+          let body = elem.children = []
+          parse_tokens(ctx, part, lex, depth+1, body, tok.name, elem)
+        }
+        else if (elem.kind === "attelem") {
+          // <:yatt:else/> ...
+          sink = elem.children = []
+        }
+
         break;
       }
       default: {
@@ -92,8 +128,6 @@ function parse_tokens(ctx: ParserContext, part: Part
       }
     }
   }
-  
-  return sink
 }
 
 function parse_lcmsg(ctx: ParserContext, lex: Generator<Token>)
