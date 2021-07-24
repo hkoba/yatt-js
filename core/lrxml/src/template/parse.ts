@@ -5,7 +5,7 @@ import { Range, ParserContext, ParserSession } from '../context'
 
 import { tokenize, Token } from './tokenize'
 
-import { Part, parse_multipart } from '../multipart/parse'
+import { Part } from '../multipart/parse'
 
 import { parse_attlist, AttItem } from '../attlist/parse'
 
@@ -132,22 +132,28 @@ if (module.id === ".") {
   const { readFileSync } = require('fs')
   const [_cmd, _script, ...args] = process.argv;
 
-  const { parse_long_options } = require("../utils/long-options")
-  const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
-  let config: LrxmlConfig = {
-    debug: { parser: debugLevel }
-  }
-  parse_long_options(args, {target: config})
-  
-  for (const fn of args) {
-    const source = readFileSync(fn, { encoding: "utf-8" })
-    let [partList, session] = parse_multipart(source, {
-      filename: fn, ...config
-    })
-    
-    for (const part of partList) {
-      console.dir(part, {colors: true, depth: null})
-      console.dir(parse_template(session, part), {colors: true, depth: null})
+  const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0;
+
+  (async () => {
+    let config: LrxmlConfig = {
+      debug: { parser: debugLevel }
     }
-  }
+
+    const { parse_long_options } = await import("../utils/long-options")
+    parse_long_options(args, {target: config})
+
+    const { parse_multipart } = await import('../multipart/parse')
+
+    for (const fn of args) {
+      const source = readFileSync(fn, { encoding: "utf-8" })
+      let [partList, session] = parse_multipart(source, {
+        filename: fn, ...config
+      })
+      
+      for (const part of partList) {
+        console.dir(part, {colors: true, depth: null})
+        console.dir(parse_template(session, part), {colors: true, depth: null})
+      }
+    }
+  })()
 }
