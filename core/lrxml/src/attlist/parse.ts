@@ -77,7 +77,7 @@ export function parse_attlist<T extends {kind: string} & Range>(
   let had_equal: boolean = false
   let cur
   while (!(cur = lex.next()).done) {
-    if (ctx.debug >= 2) {
+    if (ctx.debug >= 5) {
       console.log('att token: ', cur.value)
     }
     if (cur.value.kind === end_kind) {
@@ -131,7 +131,7 @@ export function parse_attlist<T extends {kind: string} & Range>(
           ctx.throw_error("unexpected = in attribute list")
         }
         had_equal = true
-        if (ctx.debug) {
+        if (ctx.debug >= 3) {
           console.log("found equal for pendingTerm: ", pendingTerm)
         }
         continue; // Important.
@@ -141,12 +141,12 @@ export function parse_attlist<T extends {kind: string} & Range>(
     }
 
     if (term != null) {
-      if (ctx.debug) {
+      if (ctx.debug >= 3) {
         console.log("term: ", term)
       }
       if (! pendingTerm) {
         pendingTerm = term as Term
-        if (ctx.debug) {
+        if (ctx.debug >= 3) {
           console.log("-> pendingTerm")
         }
       } else {
@@ -156,7 +156,7 @@ export function parse_attlist<T extends {kind: string} & Range>(
           }
           const att: AttItem = {label: pendingTerm, ...term};
           attList.push(att)
-          if (ctx.debug) {
+          if (ctx.debug >= 3) {
             console.log("Pushed to attList with label: ", att)
           }
           pendingTerm = undefined
@@ -164,7 +164,7 @@ export function parse_attlist<T extends {kind: string} & Range>(
         }
         else {
           attList.push({...pendingTerm})
-          if (ctx.debug) {
+          if (ctx.debug >= 3) {
             console.log("Pushed to attlist as a standalone term: ", pendingTerm)
           }
           pendingTerm = term as Term
