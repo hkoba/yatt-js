@@ -36,13 +36,17 @@ export function parse_template(session: ParserSession, part: Part): Node[] {
 }
 
 function parse_tokens(ctx: ParserContext, part: Part
-                      , lex: Generator<Token, any, any>, sink: Node[], close?: string) {
+                      , lex: Generator<Token, any, any>, sink: Node[], close?: string): Node[] {
 
   for (const tok of lex) {
     ctx.index = tok.start
     switch (tok.kind) {
-      case "text": case "comment": case "pi": {
-        sink.push({kind: tok.kind, ...(tok as Range)})
+      case "text": {
+        sink.push(tok)
+        break;
+      }
+      case "comment": case "pi": {
+        sink.push({kind: tok.kind, ...ctx.range_of(tok)})
         break;
       }
       case "entpath_open": break;
