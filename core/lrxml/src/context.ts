@@ -166,11 +166,12 @@ export class ParserContext extends ScanningContext<ParserSession> {
 
   _match(re: RegExp): RegExpExecArray | null {
     re.lastIndex = this.index
-    if (this.debug >= 2) {
+    const debugLevel = this.session.params.debug.lexer ?? 0
+    if (debugLevel >= 2) {
       console.log("# match_index regexp: ", re.source)
     }
     const match = re.exec(this.session.source.substring(0, this.end))
-    if (this.debug) {
+    if (debugLevel) {
       console.log("# match: ", trim_input(match))
     }
     return match

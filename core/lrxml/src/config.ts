@@ -5,6 +5,7 @@ export interface LrxmlParams {
   compat_end_of_comment: boolean
   debug: {
     parser?: number
+    lexer?: number
   }
 }
 
