@@ -11,7 +11,7 @@ import { parse_attlist, AttItem } from '../attlist/parse'
 
 import { EntNode } from '../entity/parse'
 
-type Element = Range & {
+export type Element = Range & {
   kind: "element"
   path: string[]
   attlist: AttItem[]
@@ -19,12 +19,12 @@ type Element = Range & {
   // containedRange
 }
 
-type Text = Range & {kind: "text"}
-type Comment = Range & {kind: "comment"}
-type PI = Range & {kind: "pi"}
+export type Text    = Range & {kind: "text", lineEndLength: number}
+export type Comment = Range & {kind: "comment"}
+export type PI      = Range & {kind: "pi"}
 
-type LCMsg = Range & {kind: "lcmsg", namespace: string[]
-                      , lcmsg: Text[][], bind: EntNode[]}
+export type LCMsg   = Range & {kind: "lcmsg", namespace: string[]
+                               , lcmsg: Text[][], bind: EntNode[]}
 
 export type Node = Text | Comment | PI | Element | EntNode | LCMsg
 

@@ -9,7 +9,10 @@ export {tokenize_multipart, tokenize_multipart_context} from './multipart/tokeni
 
 export {parse_multipart, parse_multipart_context, Part as RawPart} from './multipart/parse'
 
-export {parse_template, Node} from './template/parse'
+export {
+  parse_template, Node,
+  Comment, Text, Element, PI, LCMsg
+} from './template/parse'
 
 export {
   AttItem, AttValue,
