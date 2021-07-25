@@ -12,7 +12,7 @@ export {parse_multipart, parse_multipart_context, Part as RawPart} from './multi
 export {
   parse_template, Node,
   Comment, Text, Element, PI, LCMsg
-} from './template/parse'
+} from './template/'
 
 export {
   AttItem, AttValue,
