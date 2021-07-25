@@ -64,7 +64,7 @@ import { build_template_declaration } from '../src/declaration/build'
 
   tap.same(it(`<yatt:foo x=3 y="8"/>
 
-<yatt:widget foo x y>
+<!yatt:widget foo x y>
 <h2>&yatt:x;</h2>
 &yatt:y;
 `), [
