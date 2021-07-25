@@ -50,6 +50,28 @@ import { build_template_declaration } from '../src/declaration/build'
   {name: 'container', args: ['y', 'w'], vars: ['aliased']},
   {name: 'long_widget_name', args: ['x', 'y', 'z', 'w'], vars: []},
 ], "alias")
+
+  tap.same(it(`<!yatt:widget foo x y>
+<h2>&yatt:x;</h2>
+&yatt:y;
+
+<!yatt:args>
+<yatt:foo x=3 y="8"/>
+`), [
+  {name: 'foo', args: ['x', 'y'], vars: []},
+  {name: '', args: [], vars: []},
+])
+
+  tap.same(it(`<yatt:foo x=3 y="8"/>
+
+<yatt:widget foo x y>
+<h2>&yatt:x;</h2>
+&yatt:y;
+`), [
+  {name: '', args: [], vars: []},
+  {name: 'foo', args: ['x', 'y'], vars: []},
+])
+
 }
 
 {
