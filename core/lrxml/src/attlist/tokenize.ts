@@ -37,7 +37,6 @@ export type TokenContent = {text: string, innerRange?: Range} & Range
 type AttTokenOf<T> = {kind: T} & TokenContent
 
 export type AttToken = AttTokenOf<AttComment> |
-  AttTokenOf<AttComment> |
   AttTokenOf<AttSq> |
   AttTokenOf<AttDq> |
   AttTokenOf<AttNest> |
@@ -112,11 +111,16 @@ export function* tokenize_attlist(ctx: ParserContext, entPrefixChar: EntPrefixCh
     else {
       const kv = extractMatch(match.groups as AttMatch)
       if (kv) {
-        const [key, val] = kv
-        yield {kind: key
-               , text: val
-               , start: match.index
-               , end: re.lastIndex}
+        const [kind, text] = kv
+        const start = match.index
+        const end = re.lastIndex
+        if (kind === "comment") {
+          const innerRange = {start: start+2, end: end-2}
+          yield {kind, text, start, end, innerRange}
+        }
+        else {
+          yield {kind, text, start, end}
+        }
       }
     }
     ctx.advance(match)

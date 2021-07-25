@@ -36,9 +36,9 @@ type BodyMatch = {
   pi?: string
 } & EntPrefixMatch
 
-type Text = Range & {kind: "text", lineEndLength: number}
-type Comment = Range & {kind: "comment", innerRange: Range}
-type PI = Range & {kind: "pi", innerRange: Range}
+export type Text = Range & {kind: "text", lineEndLength: number}
+export type Comment = Range & {kind: "comment", innerRange?: Range}
+export type PI = Range & {kind: "pi", innerRange: Range}
 
 type TagOpen  = Range & {kind: "tag_open", name: string,
                          is_close: boolean, is_option: boolean}

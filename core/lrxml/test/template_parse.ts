@@ -4,7 +4,7 @@ import tap from 'tap'
 
 import {parse_multipart} from '../src/multipart/parse'
 
-import {parse_template, Node, Text} from '../src/template/parse'
+import {parse_template, Node, Text} from '../src/template/'
 
 {
   const text = (source: string, nodeList: Node[]) =>

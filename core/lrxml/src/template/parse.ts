@@ -3,7 +3,7 @@
 import {LrxmlConfig} from '../config'
 import { Range, ParserContext, ParserSession } from '../context'
 
-import { tokenize, Token } from './tokenize'
+import { tokenize, Token, Text, Comment, PI } from './tokenize'
 
 import { Part } from '../multipart/parse'
 
@@ -21,10 +21,6 @@ type ElementBody = Range & {
 
 export type Element = {kind: "element"} & ElementBody;
 export type AttElement = {kind: "attelem"} & ElementBody;
-
-export type Text    = Range & {kind: "text", lineEndLength: number}
-export type Comment = Range & {kind: "comment"}
-export type PI      = Range & {kind: "pi"}
 
 export type LCMsg   = Range & {kind: "lcmsg", namespace: string[]
                                , lcmsg: Text[][], bind: EntNode[]}
@@ -53,12 +49,8 @@ function parse_tokens(
       process.stdout.write('|' + '  '.repeat(depth) + `${tok.start} - ${tok.kind}\n`)
     }
     switch (tok.kind) {
-      case "text": {
+      case "text": case "comment": case "pi": {
         sink.push(tok)
-        break;
-      }
-      case "comment": case "pi": {
-        sink.push({kind: tok.kind, ...ctx.range_of(tok)})
         break;
       }
       case "entpath_open": break;
