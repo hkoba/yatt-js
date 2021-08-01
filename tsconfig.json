@@ -68,6 +68,7 @@
   },
   "include": [
     "src/**/*.ts",
+    "example/**/*.ts",
     "test/**/*.ts"
   ]
 }
