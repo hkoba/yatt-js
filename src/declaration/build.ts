@@ -16,7 +16,7 @@ import {
 
 import { TaskGraph } from './taskgraph'
 
-import { Part, Widget, makeWidget, Action, Entity } from './part'
+import { PartBase, Part, Widget, makeWidget, Action, Entity } from './part'
 
 import {
   VarTypeSpec, WidgetVar, DelegateVar, DefaultFlag,
@@ -102,7 +102,7 @@ export interface PartMapType {
   widget:  Map<string, Widget>;
   action:  Map<string, Action>;
   entity:  Map<string, Entity>;
-  [k: string]: Map<string, Part>;
+  [k: string]: Map<string, PartBase>;
 }
 
 export type RouteMapType = Map<string, {part: Part}>;
@@ -210,7 +210,18 @@ export function build_template_declaration(
       // XXX: Better diag
       ctx.throw_error(`Duplicate declaration ${part.kind} ${part.name}`);
     }
-    partMap[part.kind].set(part.name, part)
+    switch (part.kind) {
+      case "widget": partMap.widget.set(part.name, part); break;
+      case "action": partMap.action.set(part.name, part); break;
+      case "entity": partMap.entity.set(part.name, part); break;
+      default:
+        // typeof part.kind is never.
+        // let pm = partMap[part.kind];
+        // if (pm != null) {
+        //   pm.set(part.name, part as PartBase)
+        // }
+    }
+
     partOrder.push([part.kind, part.name]);
     part.raw_part = rawPart
     if (part.route != null) {

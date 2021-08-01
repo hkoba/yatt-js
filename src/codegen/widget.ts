@@ -5,8 +5,8 @@ import { BuilderContext, Part } from '../declaration/'
 export function generate_widget(ctx: BuilderContext, name: string, part: Part, ast: Node[]): string {
   let program = `export function render_${name} `
 
-  const args = ['CON', ...part.argMap.keys()].join(", ")
-  program += `(${args}) {`
+  const args = [...part.argMap.keys()].join(", ")
+  program += `(CON, {${args}}) {`
   //
   program += '\n'
   for (const item of ast) {

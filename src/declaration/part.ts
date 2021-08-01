@@ -2,7 +2,9 @@ import { RawPart } from 'lrxml-js'
 
 import { Variable } from './vartype'
 
-export type Part = {
+export type Part = Widget | Action | Entity
+
+export type PartBase = {
   kind: string
   name: string
   is_public: boolean
@@ -12,7 +14,7 @@ export type Part = {
   route?: string
 }
 
-export type Widget = Part & {
+export type Widget = PartBase & {
   kind: "widget"
 }
 
@@ -23,10 +25,10 @@ export function makeWidget(name: string, isPublic: boolean): Widget {
   }
 }
 
-export type Action = Part & {
+export type Action = PartBase & {
   kind: "action"
 }
 
-export type Entity = Part & {
+export type Entity = PartBase & {
   kind: "entity"
 }
