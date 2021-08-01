@@ -16,7 +16,7 @@ import {
 
 import { TaskGraph } from './taskgraph'
 
-import { PartBase, Part, Widget, makeWidget, Action, Entity } from './part'
+import { PartBase, PartKind, Part, Widget, makeWidget, Action, Entity } from './part'
 
 import {
   VarTypeSpec, WidgetVar, DelegateVar, DefaultFlag,
@@ -93,7 +93,7 @@ export class EntityBuilder implements DeclarationProcessor {
 
 export type TemplateDeclaration = {
   path: string
-  partOrder: [string, string][]; // kind, name
+  partOrder: [PartKind, string][]; // kind, name
   partMap: PartMapType;
   routeMap: RouteMapType;
 }
@@ -192,7 +192,7 @@ export function build_template_declaration(
   const ctx = new BuilderContext(builder_session)
 
   // For delegate type and ArgMacro
-  let partOrder: [string, string][] = []
+  let partOrder: [PartKind, string][] = []
   let partMap: PartMapType = {widget: new Map, action: new Map, entity: new Map};
   let taskGraph = new TaskGraph<Widget>(ctx.debug);
   let routeMap: RouteMapType = new Map

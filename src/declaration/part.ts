@@ -3,6 +3,7 @@ import { RawPart } from 'lrxml-js'
 import { Variable } from './vartype'
 
 export type Part = Widget | Action | Entity
+export type PartKind = Part['kind']
 
 export type PartBase = {
   kind: string
