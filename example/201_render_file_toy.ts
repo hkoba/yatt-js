@@ -6,8 +6,11 @@ import {
 
 import {
   build_template_declaration, TemplateDeclaration,
-  BuilderSession, Part, Widget
+  BuilderSession, Part, Widget,
+  Variable
 } from '../src/declaration/'
+
+import {yatt} from '../src/yatt'
 
 function generate(template: TemplateDeclaration, session: BuilderSession)
 : string
@@ -34,6 +37,27 @@ function generate(template: TemplateDeclaration, session: BuilderSession)
   return program;
 }
 
+class VarScope extends Map<string, Variable> {
+  constructor(vars?: Map<string, Variable>, public parent?: VarScope) {
+    super();
+    if (vars != null) {
+      for (const [k, v] of vars) {
+        this.set(k, v)
+      }
+    }
+  }
+
+  lookup(varName: string): Variable | undefined {
+    if (this.has(varName)) {
+      return this.get(varName)
+    }
+    else if (this.parent) {
+      return this.parent.lookup(varName)
+    }
+  }
+}
+
+
 class CodeGenContext<T extends Part> extends ScanningContext<BuilderSession> {
   constructor(
     public template: TemplateDeclaration, public part: T,
@@ -54,6 +78,9 @@ function generate_widget(ctx: CodeGenContext<Widget>, nodeList: Node[])
     types.push(`${name}: string`); //XXX: ${varSpec.typeName} typeMap
   }
 
+  //XXX: this, CON
+  const scope = new VarScope(new Map, new VarScope(ctx.part.varMap, new VarScope(ctx.part.argMap)))
+
   program += `(CON: yatt.runtime.Connection, {${args.join(',')}}: {${types.join(',')}}) {\n`;
 
   for (const node of nodeList) {
@@ -70,7 +97,12 @@ function generate_widget(ctx: CodeGenContext<Widget>, nodeList: Node[])
         break;
       }
       case "element":
+        break;
       case "entity":
+        program += from_entity(ctx, scope, node);
+        break;
+      default:
+        ctx.NEVER();
     }
   }
 
@@ -79,6 +111,26 @@ function generate_widget(ctx: CodeGenContext<Widget>, nodeList: Node[])
   return program;
 }
 
+function from_entity(
+  ctx: CodeGenContext<Widget>, scope: VarScope, node: Node & {kind: 'entity'}
+) {
+  if (node.path.length !== 1) {
+    ctx.NIMPL()
+  }
+  const head = node.path[0]
+  switch (head.kind) {
+    case 'var': {
+      const variable = scope.lookup(head.name)
+      if (variable == null)
+        ctx.token_error(node, `No such variable: ${head.name}`);
+      // XXX: type specific generation
+      return ` CON.appendUntrusted(${head.name});`
+    }
+    case 'call':
+    default:
+      ctx.NIMPL()
+  }
+}
 
 function escapeAsStringLiteral(text: string): string {
   return "'" + text.replace(
@@ -212,6 +264,9 @@ function makeProgram(input: string, transpileOptions: ts.TranspileOptions)
       buffer: "",
       append(str: string) {
         this.buffer += str;
+      },
+      appendUntrusted(str: string) {
+        this.buffer += yatt.runtime.escape(str)
       }
     }
     fn(CON, {});
