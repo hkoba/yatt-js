@@ -93,9 +93,71 @@ function compile(script: string, filename: string): Module {
   return m as unknown as Module;
 }
 
+import ts from 'typescript'
+
+// Stolen and modified from:
+// transpileModule in TypeScript/src/services/transpile.ts
+// createTypescriptContext in angular-cli/packages/ngtools/webpack/src/transformers/spec_helpers.ts
+//
+function makeProgram(input: string, transpileOptions: ts.TranspileOptions)
+// : ts.CompilerHost
+{
+  const options: ts.CompilerOptions = transpileOptions.compilerOptions ?? {};
+  options.target ??= ts.ScriptTarget.ES2015;
+  options.suppressOutputPathCheck = true;
+  const inputFileName = transpileOptions.fileName ?? "module.ts";
+  const sourceFile = ts.createSourceFile(inputFileName, input, options.target)
+  if (transpileOptions.moduleName) {
+    sourceFile.moduleName = transpileOptions.moduleName
+  }
+
+  let outputText: string | undefined;
+  let sourceMapText: string | undefined;
+  let diagnostics: [string, ts.Diagnostic][] = []
+
+  const compilerHost = ts.createCompilerHost(options, true)
+  const origGetSourceFile = compilerHost.getSourceFile
+  compilerHost.getSourceFile =
+    (fileName, version) => fileName === inputFileName ? sourceFile
+    : origGetSourceFile(fileName, version);
+  compilerHost.writeFile = (name: string, text: string) => {
+    if (/\.map$/.exec(name)) {
+      if (sourceMapText != null)
+        throw new Error(`Multiple sourcemap output`)
+      sourceMapText = text;
+    } else {
+      if (outputText != null)
+        throw new Error(`Multiple output`)
+      outputText = text;
+    }
+  }
+
+  const program = ts.createProgram([inputFileName], options, compilerHost);
+
+  program.emit();
+
+  if (outputText == null) {
+    console.error(`Compilation failed`);
+  }
+
+  for (const diag of program.getSyntacticDiagnostics()) {
+    diagnostics.push(['Syntactic', diag])
+  }
+  for (const diag of program.getGlobalDiagnostics()) {
+    diagnostics.push(['Global', diag])
+  }
+  for (const diag of program.getSemanticDiagnostics()) {
+    diagnostics.push(['Semantic', diag])
+  }
+  for (const diag of program.getDeclarationDiagnostics()) {
+    diagnostics.push(['Declaration', diag])
+  }
+
+  return {program, outputText: outputText ?? '' , sourceMapText, diagnostics};
+}
+
 (async () => {
   let args = process.argv.slice(2)
-  const ts = await import("typescript");
   const { parse_long_options } = await import('lrxml-js')
   const { readFileSync } = await import('fs')
   const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
@@ -113,20 +175,32 @@ function compile(script: string, filename: string): Module {
   )
 
   const script = generate(template, session)
-  process.stdout.write('\n' + script);
+  process.stdout.write('\n' + script + '\n');
 
-  let trans = ts.transpileModule(script, {
-    compilerOptions: {module: ts.ModuleKind.CommonJS}
+  let {program, outputText, diagnostics} = makeProgram(script, {
+    reportDiagnostics: true,
+    compilerOptions: {
+      module: ts.ModuleKind.CommonJS,
+      /* Strict Type-Checking Options */
+      "strict": true,
+      "noImplicitAny": true,
+      "strictNullChecks": true,
+      "strictFunctionTypes": true,
+      "strictBindCallApply": true,
+      "strictPropertyInitialization": true,
+      "noImplicitThis": true,
+      "alwaysStrict": true,
+    }
   })
 
-  console.log(trans)
+  console.log(program)
 
-  if (trans.diagnostics && trans.diagnostics.length > 0) {
-    console.error(trans.diagnostics)
+  if (diagnostics && diagnostics.length > 0) {
+    console.error(diagnostics)
     process.exit(1);
   }
 
-  const mod = compile(trans.outputText, filename)
+  const mod = compile(outputText, filename)
   const fn = mod.exports['render_']
   if (fn != null) {
     let CON = {
