@@ -12,7 +12,8 @@ import {
 function generate(template: TemplateDeclaration, session: BuilderSession)
 : string
 {
-  let program = ""
+  let program = `import {yatt} from '../src/yatt'\n`;
+
   for (const [kind, name] of template.partOrder) {
     const partMap = template.partMap[kind]
     const part = partMap.get(name)
@@ -46,8 +47,14 @@ function generate_widget(ctx: CodeGenContext<Widget>, nodeList: Node[])
 // : string
 {
   let program = `export function render_${ctx.part.name} `;
-  const args = [...ctx.part.argMap.keys()].join(', ');
-  program += `(CON: YattConn, {${args}}) {\n`;
+  const args = []
+  const types = []
+  for (const [name, varSpec] of ctx.part.argMap.entries()) {
+    args.push(name)
+    types.push(`${name}: string`); //XXX: ${varSpec.typeName} typeMap
+  }
+
+  program += `(CON: yatt.runtime.Connection, {${args.join(',')}}: {${types.join(',')}}) {\n`;
 
   for (const node of nodeList) {
     switch (node.kind) {
@@ -111,7 +118,7 @@ function makeProgram(input: string, transpileOptions: ts.TranspileOptions)
     sourceFile.moduleName = transpileOptions.moduleName
   }
 
-  let outputText: string | undefined;
+  let outputText: string[] = []
   let sourceMapText: string | undefined;
   let diagnostics: [string, ts.Diagnostic][] = []
 
@@ -126,9 +133,7 @@ function makeProgram(input: string, transpileOptions: ts.TranspileOptions)
         throw new Error(`Multiple sourcemap output`)
       sourceMapText = text;
     } else {
-      if (outputText != null)
-        throw new Error(`Multiple output`)
-      outputText = text;
+      outputText.push(text);
     }
   }
 
@@ -136,7 +141,7 @@ function makeProgram(input: string, transpileOptions: ts.TranspileOptions)
 
   program.emit();
 
-  if (outputText == null) {
+  if (outputText.length === 0) {
     console.error(`Compilation failed`);
   }
 
@@ -153,7 +158,7 @@ function makeProgram(input: string, transpileOptions: ts.TranspileOptions)
     diagnostics.push(['Declaration', diag])
   }
 
-  return {program, outputText: outputText ?? '' , sourceMapText, diagnostics};
+  return {program, outputText: outputText.join('\n'), sourceMapText, diagnostics};
 }
 
 (async () => {
