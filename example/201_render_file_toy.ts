@@ -5,6 +5,7 @@ import {
   , AttItem
   , isIdentOnly, isBareLabeledAtt
   , hasStringValue
+  , extract_line, extract_prefix_spec
 } from 'lrxml-js'
 
 import {
@@ -276,7 +277,7 @@ function makeProgram(input: string, transpileOptions: ts.TranspileOptions)
     sourceFile.moduleName = transpileOptions.moduleName
   }
 
-  let outputText: string[] = []
+  let outputMap = new Map;
   let sourceMapText: string | undefined;
   let diagnostics: [string, ts.Diagnostic][] = []
 
@@ -291,7 +292,7 @@ function makeProgram(input: string, transpileOptions: ts.TranspileOptions)
         throw new Error(`Multiple sourcemap output`)
       sourceMapText = text;
     } else {
-      outputText.push(text);
+      outputMap.set(name, text)
     }
   }
 
@@ -299,7 +300,7 @@ function makeProgram(input: string, transpileOptions: ts.TranspileOptions)
 
   program.emit();
 
-  if (outputText.length === 0) {
+  if (outputMap.size === 0) {
     console.error(`Compilation failed`);
   }
 
@@ -316,7 +317,7 @@ function makeProgram(input: string, transpileOptions: ts.TranspileOptions)
     diagnostics.push(['Declaration', diag])
   }
 
-  return {program, outputText: outputText.join('\n'), sourceMapText, diagnostics};
+  return {program, outputMap, sourceMapText, diagnostics};
 }
 
 (async () => {
@@ -358,7 +359,7 @@ aaa
   process.stdout.write('\n' + script + '\n');
 
   console.time(`makeProgram (ts to js)`)
-  let {program, outputText, diagnostics} = makeProgram(script, {
+  let {program, outputMap, diagnostics} = makeProgram(script, {
     reportDiagnostics: true,
     compilerOptions: {
       module: ts.ModuleKind.CommonJS,
@@ -375,15 +376,32 @@ aaa
   })
 
   if (diagnostics && diagnostics.length > 0) {
-    console.dir(diagnostics, {color: true, depth: 3})
+    console.dir(outputMap, {color: true, depth: 4});
+    const dummyModName = 'module'
+    for (const [kind, diag] of diagnostics) {
+      if (diag.file && diag.file.fileName === `${dummyModName}.ts`
+          &&
+          diag.start != null && diag.messageText != null) {
+        const output = outputMap.get(`${dummyModName}.js`);
+        const messageText = typeof diag.messageText === 'string' ?
+          diag.messageText : diag.messageText.messageText;
+        console.log(`${kind} error: ${messageText}`)
+        const [lastNl, _lineNo, colNo] = extract_prefix_spec(output, diag.start)
+        const tokenLine = extract_line(output, lastNl, colNo)
+        console.log(tokenLine)
+      }
+      else {
+        console.dir(diagnostics, {color: true, depth: 3})
+      }
+    }
     process.exit(1);
   } else {
-    console.log(outputText)
+    console.log(outputMap)
   }
 
   console.timeEnd(`makeProgram (ts to js)`)
   console.time(`comple nodejs module`)
-  const mod = compile(outputText, filename)
+  const mod = compile([...outputMap.values()].join('\n'), filename)
   console.timeEnd(`comple nodejs module`)
   const ns = mod.exports['tmpl']
   const fn = ns ? ns['render_'] : undefined;
