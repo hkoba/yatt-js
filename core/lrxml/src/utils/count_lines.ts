@@ -18,3 +18,11 @@ export function extract_line(str: string, lastNl: number, colNo: number): string
   const notab = line.replace(/[^\t]/g, ' ');
   return line + '\n' + notab.substr(0, colNo-1) + '^';
 }
+
+export function extract_prefix_spec(src: string, index: number): [number, number, number] {
+  const prefix = src.substring(0, index)
+  const lineNo = lineNumber(prefix)
+  const lastNl = prefix.lastIndexOf('\n')
+  const colNo = index - lastNl
+  return [lastNl, lineNo, colNo]
+}

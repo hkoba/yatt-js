@@ -23,3 +23,4 @@ export {
 export {EntNode, EntTerm, EntPath} from './entity/parse'
 
 export { parse_long_options } from './utils/long-options'
+export {lineNumber, extract_line, extract_prefix_spec} from './utils/count_lines'
