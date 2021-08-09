@@ -81,13 +81,19 @@ function generate_widget(ctx: CodeGenContext<Widget>, nodeList: Node[])
   const types = []
   for (const [name, varSpec] of ctx.part.argMap.entries()) {
     args.push(name); // XXX: default value
-    types.push(`${name}: string`); //XXX: ${varSpec.typeName} typeMap
+    const opt = (() => {
+      if (varSpec.defaultSpec && varSpec.defaultSpec[0] === "!") {
+        return ""
+      }
+      return "?";
+    })()
+    types.push(`${name}${opt}: string`); //XXX: ${varSpec.typeName} typeMap
   }
 
   //XXX: this, CON
   const scope = new VarScope(new Map, new VarScope(ctx.part.varMap, new VarScope(ctx.part.argMap)))
 
-  program += `(this: typeof tmpl, CON: yatt.runtime.Connection, {${args.join(',')}}: {${types.join(',')}}) {\n`;
+  program += `(this: typeof tmpl, CON: yatt.runtime.Connection, {${args.join(', ')}}: {${types.join(', ')}}) {\n`;
 
   for (const node of nodeList) {
     switch (node.kind) {

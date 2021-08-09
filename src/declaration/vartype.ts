@@ -13,7 +13,7 @@ export type VariableBase = {
   is_callable: boolean
 }
 
-export type DefaultFlag = "?" | "|" | "/"
+export type DefaultFlag = "?" | "|" | "/" | "!"
 
 type TextVar = {typeName: "text"} & VariableBase;
 type ListVar = {typeName: "list"} & VariableBase;

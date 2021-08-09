@@ -421,7 +421,8 @@ function createPart(ctx: BuilderContext, rawPart: RawPart): [Part, AttItem[]] | 
 }
 
 function parse_arg_spec(ctx: BuilderContext, str: string, defaultType: string): VarTypeSpec {
-  let match = /([\/\|\?])/.exec(str)
+  // XXX: typescript type extension
+  let match = /([\/\|\?!])/.exec(str)
   if (match == null) {
     return { typeName: defaultType }
   } else {
