@@ -410,7 +410,8 @@ aaa
       append(str: string) {
         this.buffer += str;
       },
-      appendUntrusted(str: string) {
+      appendUntrusted(str?: string) {
+        if (str == null) return;
         this.buffer += yatt.runtime.escape(str)
       }
     }
