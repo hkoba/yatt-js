@@ -376,18 +376,17 @@ aaa
   })
 
   if (diagnostics && diagnostics.length > 0) {
-    console.dir(outputMap, {color: true, depth: 4});
+    // console.dir(outputMap, {color: true, depth: 4});
     const dummyModName = 'module'
     for (const [kind, diag] of diagnostics) {
       if (diag.file && diag.file.fileName === `${dummyModName}.ts`
           &&
           diag.start != null && diag.messageText != null) {
-        const output = outputMap.get(`${dummyModName}.js`);
         const messageText = typeof diag.messageText === 'string' ?
           diag.messageText : diag.messageText.messageText;
         console.log(`${kind} error: ${messageText}`)
-        const [lastNl, _lineNo, colNo] = extract_prefix_spec(output, diag.start)
-        const tokenLine = extract_line(output, lastNl, colNo)
+        const [lastNl, _lineNo, colNo] = extract_prefix_spec(script, diag.start)
+        const tokenLine = extract_line(script, lastNl, colNo)
         console.log(tokenLine)
       }
       else {
