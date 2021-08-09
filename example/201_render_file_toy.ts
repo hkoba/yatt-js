@@ -339,14 +339,19 @@ aaa
 `
   }
 
+  console.time(`parse template declaration`)
   const [template, session] = build_template_declaration(
     source,
     {filename, ...config}
   )
+  console.timeEnd(`parse template declaration`)
 
+  console.time(`generate`)
   const script = generate(template, session)
+  console.timeEnd(`generate`)
   process.stdout.write('\n' + script + '\n');
 
+  console.time(`makeProgram (ts to js)`)
   let {program, outputText, diagnostics} = makeProgram(script, {
     reportDiagnostics: true,
     compilerOptions: {
@@ -364,13 +369,16 @@ aaa
   })
 
   if (diagnostics && diagnostics.length > 0) {
-    console.error(diagnostics)
+    console.dir(diagnostics, {color: true, depth: 3})
     process.exit(1);
   } else {
     console.log(outputText)
   }
 
+  console.timeEnd(`makeProgram (ts to js)`)
+  console.time(`comple nodejs module`)
   const mod = compile(outputText, filename)
+  console.timeEnd(`comple nodejs module`)
   const ns = mod.exports['tmpl']
   const fn = ns ? ns['render_'] : undefined;
   if (fn != null) {
