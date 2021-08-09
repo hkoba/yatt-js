@@ -2,6 +2,9 @@
 
 import {
   parse_template, Node, ScanningContext
+  , AttItem
+  , isIdentOnly, isBareLabeledAtt
+  , hasStringValue
 } from 'lrxml-js'
 
 import {
@@ -16,6 +19,7 @@ function generate(template: TemplateDeclaration, session: BuilderSession)
 : string
 {
   let program = `import {yatt} from '../src/yatt'\n`;
+  program += `export namespace tmpl {\n`
 
   for (const [kind, name] of template.partOrder) {
     const partMap = template.partMap[kind]
@@ -34,6 +38,8 @@ function generate(template: TemplateDeclaration, session: BuilderSession)
       }
     }
   }
+
+  program += '}\n'
   return program;
 }
 
@@ -74,14 +80,14 @@ function generate_widget(ctx: CodeGenContext<Widget>, nodeList: Node[])
   const args = []
   const types = []
   for (const [name, varSpec] of ctx.part.argMap.entries()) {
-    args.push(name)
+    args.push(name); // XXX: default value
     types.push(`${name}: string`); //XXX: ${varSpec.typeName} typeMap
   }
 
   //XXX: this, CON
   const scope = new VarScope(new Map, new VarScope(ctx.part.varMap, new VarScope(ctx.part.argMap)))
 
-  program += `(CON: yatt.runtime.Connection, {${args.join(',')}}: {${types.join(',')}}) {\n`;
+  program += `(this: typeof tmpl, CON: yatt.runtime.Connection, {${args.join(',')}}: {${types.join(',')}}) {\n`;
 
   for (const node of nodeList) {
     switch (node.kind) {
@@ -97,6 +103,7 @@ function generate_widget(ctx: CodeGenContext<Widget>, nodeList: Node[])
         break;
       }
       case "element":
+        program += from_element(ctx, scope, node);
         break;
       case "entity":
         program += from_entity(ctx, scope, node);
@@ -109,6 +116,99 @@ function generate_widget(ctx: CodeGenContext<Widget>, nodeList: Node[])
   program += `}`;
 
   return program;
+}
+
+function from_element(
+  ctx: CodeGenContext<Widget>, scope: VarScope, node: Node & {kind: 'element'}
+) // : string
+{
+  // XXX: macro_if, foreach, ...
+  // XXX: find_callable_var
+
+  const [_ns, wname, ...rest] = node.path;
+
+  let calleeWidget: Widget | undefined
+
+  if (rest.length === 0 && ctx.template.partMap.widget.has(wname)) {
+    calleeWidget = ctx.template.partMap.widget.get(wname)!
+  } else {
+    console.dir(node.path, {color: true, depth: null})
+    ctx.NIMPL()
+  }
+
+  if (calleeWidget == null) {
+    ctx.token_error(node, `No such widget ${node.path.join(':')}`)
+  }
+
+  // XXX: ensure_generated
+  // XXX: add_dependecy
+
+  const argsExpr = gen_putargs(ctx, scope, node, calleeWidget);
+
+  return ` this.render_${wname}(CON, {${argsExpr}});`
+}
+
+function gen_putargs(
+  ctx: CodeGenContext<Widget>, scope: VarScope, node: Node & {kind: 'element'}
+  , calleeWidget: Widget
+  // , delegateVars
+) :string
+{
+  const formalArgs = calleeWidget.argMap;
+  const actualArgs = new Map
+  for (const argSpec of node.attlist) {
+    if (argSpec.kind === "attelem") {
+      // <:yatt:name>...</:yatt:name>
+      ctx.NIMPL()
+    }
+    else if (isBareLabeledAtt(argSpec) && argSpec.kind === "identplus") {
+      // name=name
+      passThrough(argSpec, argSpec.label.value, argSpec.value)
+    }
+    else if (isIdentOnly(argSpec)) {
+      // name
+      passThrough(argSpec, argSpec.value, argSpec.value)
+    }
+    else if (isBareLabeledAtt(argSpec) && hasStringValue(argSpec)) {
+      // name='foo' name="bar"
+      const formalName = argSpec.label.value
+      if (! formalArgs.has(formalName)) {
+        ctx.token_error(argSpec, `No such argument: ${formalName}`)
+      }
+      const formal = formalArgs.get(formalName)!
+      if (actualArgs.has(formalName)) {
+        ctx.token_error(argSpec, `Duplicate argument: ${formalName}`)
+      }
+      const s = escapeAsStringLiteral(argSpec.value)
+      actualArgs.set(formalName, `${formalName}: ${s}`)
+    }
+    else {
+      // 'foo' "bar"
+      // entity, nest
+      console.dir(argSpec, {color: true, depth: null});
+      ctx.NIMPL()
+    }
+  }
+
+  return [...actualArgs.values()].join(', ');
+
+  function passThrough(argSpec: AttItem, formalName: string, actualName: string) {
+    if (! formalArgs.has(formalName)) {
+      ctx.token_error(argSpec, `No such argument: ${formalName}`)
+    }
+    const formal = formalArgs.get(formalName)!
+    const actual = scope.lookup(actualName)
+    if (actual == null) {
+      ctx.token_error(argSpec, `No such variable: ${actualName}`)
+    }
+    if (formal.typeName !== actual.typeName) {
+      ctx.token_error(argSpec, `Variable type mismatch: ${formalName}\nExpected: ${formal.typeName} Got: ${actual.typeName}`)
+    }
+    if (actualArgs.has(formalName)) {
+      ctx.token_error(argSpec, `Duplicate argument: ${formalName}`)
+    }
+    actualArgs.set(formalName, `${formalName}: ${actualName}`)
+  }
 }
 
 function from_entity(
@@ -225,9 +325,22 @@ function makeProgram(input: string, transpileOptions: ts.TranspileOptions)
   }
   parse_long_options(args, {target: config})
 
-  let [filename, ...rest] = args;
+  let filename, source;
+  if (args.length) {
+    filename = args[0]
+    source = readFileSync(filename, {encoding: "utf-8"})
+  } else {
+    filename = `dummy.ytjs`;
+    source = `<yatt:foo x=3 y=8/>
+aaa
+<!yatt:widget foo x y>
+<h2>&yatt:x;</h2>
+&yatt:y;
+`
+  }
+
   const [template, session] = build_template_declaration(
-    readFileSync(filename, {encoding: "utf-8"}),
+    source,
     {filename, ...config}
   )
 
@@ -250,15 +363,16 @@ function makeProgram(input: string, transpileOptions: ts.TranspileOptions)
     }
   })
 
-  console.log(program)
-
   if (diagnostics && diagnostics.length > 0) {
     console.error(diagnostics)
     process.exit(1);
+  } else {
+    console.log(outputText)
   }
 
   const mod = compile(outputText, filename)
-  const fn = mod.exports['render_']
+  const ns = mod.exports['tmpl']
+  const fn = ns ? ns['render_'] : undefined;
   if (fn != null) {
     let CON = {
       buffer: "",
@@ -269,7 +383,7 @@ function makeProgram(input: string, transpileOptions: ts.TranspileOptions)
         this.buffer += yatt.runtime.escape(str)
       }
     }
-    fn(CON, {});
+    fn.apply(ns, [CON, {}]);
 
     process.stdout.write(`\n=== output ====\n`);
     process.stdout.write(CON.buffer);
