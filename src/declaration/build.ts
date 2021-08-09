@@ -20,7 +20,7 @@ import { PartBase, PartKind, Part, Widget, makeWidget, Action, Entity } from './
 
 import {
   VarTypeSpec, WidgetVar, DelegateVar, DefaultFlag,
-  SimpleVar
+  SimpleVar, Variable
 } from './vartype'
 
 import { BaseProcessor } from './base'
@@ -143,7 +143,7 @@ export function builtin_vartypemap(): VarTypeMap {
   tm.nested.set('widget', {
     kind: "callable", typeName: "widget", fun: build_widget_varialbe
   })
-  tm.nested.set('code', tm.nested.get('code')!)
+  tm.nested.set('code', tm.nested.get('widget')!)
 
   tm.nested.set('delegate', {
     kind: "delayed", typeName: 'delegate', fun: build_delegate_variable_adder
@@ -237,6 +237,15 @@ export function build_template_declaration(
       if (ctx.debug >= 2) {
         console.log(`delayed delegate arg ${task.name} in widget :${part.name}, depends on widget :${task.dep}`)
       }
+    }
+
+    if (part.kind === "widget" && !part.argMap.has('BODY')) {
+      const bodyVar: Variable = {
+        typeName: 'widget', is_escaped: true, is_callable: true,
+        varName: 'BODY', widget: makeWidget('(BODY)', false),
+        from_route: false, is_body_argument: true
+      }
+      part.argMap.set('BODY', bodyVar)
     }
   }
 
