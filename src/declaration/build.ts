@@ -238,15 +238,6 @@ export function build_template_declaration(
         console.log(`delayed delegate arg ${task.name} in widget :${part.name}, depends on widget :${task.dep}`)
       }
     }
-
-    if (part.kind === "widget" && !part.argMap.has('BODY')) {
-      const bodyVar: Variable = {
-        typeName: 'widget', is_escaped: true, is_callable: true,
-        varName: 'BODY', widget: makeWidget('(BODY)', false),
-        from_route: false, is_body_argument: true
-      }
-      part.argMap.set('BODY', bodyVar)
-    }
   }
 
   // Resolve
@@ -356,6 +347,15 @@ function add_args_cont(
     else {
       ctx.token_error(att, `Unknown arg declaration`)
     }
+  }
+
+  if (!part.argMap.has('BODY')) {
+    const bodyVar: Variable = {
+      typeName: 'widget', is_escaped: true, is_callable: true,
+      varName: 'BODY', widget: makeWidget('(BODY)', false),
+      from_route: false, is_body_argument: true
+    }
+    part.argMap.set('BODY', bodyVar)
   }
 }
 

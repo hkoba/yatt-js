@@ -16,39 +16,39 @@ import { build_template_declaration } from '../src/declaration/build'
 
   tap.same(it(`<!yatt:widget foo bar='value/0'>
 `), [
-  {name: 'foo', args: ['bar'], vars: []}
+  {name: 'foo', args: ['bar', 'BODY'], vars: []}
 ])
 
   tap.same(it(`<!yatt:widget main title>
 
 <!yatt:widget container main=[delegate]>
 `), [
-  {name: 'main', args: ['title'], vars: []},
-  {name: 'container', args: ['title'], vars: ['main']},
+  {name: 'main', args: ['title', 'BODY'], vars: []},
+  {name: 'container', args: ['title', 'BODY'], vars: ['main']},
 ])
 
   tap.same(it(`<!yatt:widget container main=[delegate]>
 
 <!yatt:widget main title>
 `), [
-  {name: 'container', args: ['title'], vars: ['main']},
-  {name: 'main', args: ['title'], vars: []},
+  {name: 'container', args: ['title', 'BODY'], vars: ['main']},
+  {name: 'main', args: ['title', 'BODY'], vars: []},
 ], "reverse order")
 
   tap.same(it(`<!yatt:widget container main=[delegate foo baz]>
 
 <!yatt:widget main foo='?xx' bar='/yy' baz>
 `), [
-  {name: 'container', args: ['foo', 'baz'], vars: ['main']},
-  {name: 'main', args: ['foo', 'bar', 'baz'], vars: []},
+  {name: 'container', args: ['foo', 'baz', 'BODY'], vars: ['main']},
+  {name: 'main', args: ['foo', 'bar', 'baz', 'BODY'], vars: []},
 ], "specified only")
 
    tap.same(it(`<!yatt:widget container aliased=[delegate:long_widget_name y w]>
 
 <!yatt:widget long_widget_name x y z w>
 `), [
-  {name: 'container', args: ['y', 'w'], vars: ['aliased']},
-  {name: 'long_widget_name', args: ['x', 'y', 'z', 'w'], vars: []},
+  {name: 'container', args: ['y', 'w', 'BODY'], vars: ['aliased']},
+  {name: 'long_widget_name', args: ['x', 'y', 'z', 'w', 'BODY'], vars: []},
 ], "alias")
 
   tap.same(it(`<!yatt:widget foo x y>
@@ -58,8 +58,8 @@ import { build_template_declaration } from '../src/declaration/build'
 <!yatt:args>
 <yatt:foo x=3 y="8"/>
 `), [
-  {name: 'foo', args: ['x', 'y'], vars: []},
-  {name: '', args: [], vars: []},
+  {name: 'foo', args: ['x', 'y', 'BODY'], vars: []},
+  {name: '', args: ['BODY'], vars: []},
 ])
 
   tap.same(it(`<yatt:foo x=3 y="8"/>
@@ -68,8 +68,8 @@ import { build_template_declaration } from '../src/declaration/build'
 <h2>&yatt:x;</h2>
 &yatt:y;
 `), [
-  {name: '', args: [], vars: []},
-  {name: 'foo', args: ['x', 'y'], vars: []},
+  {name: '', args: ['BODY'], vars: []},
+  {name: 'foo', args: ['x', 'y', 'BODY'], vars: []},
 ])
 
 }
