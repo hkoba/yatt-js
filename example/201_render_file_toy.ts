@@ -15,7 +15,7 @@ import {
 } from '../src/declaration/'
 
 import {yatt} from '../src/yatt'
-import {VarScope} from '../src/codegen/varscope'
+import {VarScope} from '../src/codegen0/varscope'
 
 type CGenSession  = BuilderSession & {
 }
