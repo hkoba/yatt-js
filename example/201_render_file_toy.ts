@@ -76,13 +76,43 @@ class CodeGenContext<T extends Part> extends ScanningContext<CGenSession> {
   }
 }
 
+function varTypeExpr(ctx: CodeGenContext<Widget>, vr: Variable): string {
+  switch (vr.typeName) {
+    case "text":
+      return 'string';
+    case "widget": {
+      // [...vr.widget.argMap.values()].map((a) => {
+      // })
+      return `(CON: yatt.runtime.Connection, {}: {}) => void`;
+    }
+    default:
+      ctx.NIMPL();
+  }
+}
+
 function generate_widget(ctx: CodeGenContext<Widget>, nodeList: Node[])
 // : string
 {
   let program = `export function render_${ctx.part.name} `;
+
+  //XXX: this, CON
+  const scope = new VarScope(new Map, new VarScope(ctx.part.varMap, new VarScope(ctx.part.argMap)))
+
+  const argDecls = generate_argdecls(ctx, scope, ctx.part);
+
+  program += `(this: typeof tmpl, CON: yatt.runtime.Connection, ${argDecls}) {\n`;
+
+  program += as_print(ctx, scope, nodeList);
+
+  program += `}`;
+
+  return program;
+}
+
+function generate_argdecls(ctx: CodeGenContext<Widget>, _scope: VarScope, widget: Widget): string {
   const args = []
   const types = []
-  for (const [name, varSpec] of ctx.part.argMap.entries()) {
+  for (const [name, varSpec] of widget.argMap.entries()) {
     args.push(name); // XXX: default value
     const opt = (() => {
       if (varSpec.defaultSpec && varSpec.defaultSpec[0] === "!") {
@@ -90,14 +120,15 @@ function generate_widget(ctx: CodeGenContext<Widget>, nodeList: Node[])
       }
       return "?";
     })()
-    types.push(`${name}${opt}: string`); //XXX: ${varSpec.typeName} typeMap
+    // XXX: readonly?
+    const typeExpr = varTypeExpr(ctx, varSpec)
+    types.push(`${name}${opt}: ${typeExpr}`);
   }
+  return `{${args.join(', ')}}: {${types.join('; ')}}`
+}
 
-  //XXX: this, CON
-  const scope = new VarScope(new Map, new VarScope(ctx.part.varMap, new VarScope(ctx.part.argMap)))
-
-  program += `(this: typeof tmpl, CON: yatt.runtime.Connection, {${args.join(', ')}}: {${types.join(', ')}}) {\n`;
-
+function as_print(ctx: CodeGenContext<Widget>, scope: VarScope, nodeList: Node[]): string {
+  let program = ""
   for (const node of nodeList) {
     switch (node.kind) {
       case "comment":
@@ -122,9 +153,13 @@ function generate_widget(ctx: CodeGenContext<Widget>, nodeList: Node[])
     }
   }
 
-  program += `}`;
-
   return program;
+}
+
+function find_callable_var(scope: VarScope, varName: string): Variable | undefined {
+  const vr = scope.lookup(varName)
+  if (vr != null && vr.is_callable)
+    return vr;
 }
 
 function from_element(
@@ -136,11 +171,26 @@ function from_element(
 
   const [_ns, wname, ...rest] = node.path;
 
+  let callExpr: string | undefined
   let calleeWidget: Widget | undefined
 
-  if (rest.length === 0 && ctx.template.partMap.widget.has(wname)) {
+  const callable_var = find_callable_var(scope, wname);
+
+  if (callable_var) {
+    switch (callable_var.typeName) {
+      case "widget":
+        calleeWidget = callable_var.widget;
+        callExpr = `${callable_var.varName} && ${callable_var.varName}`;
+        break;
+      default:
+        ctx.NIMPL();
+    }
+  }
+  else if (rest.length === 0 && ctx.template.partMap.widget.has(wname)) {
     calleeWidget = ctx.template.partMap.widget.get(wname)!
-  } else {
+    callExpr = `this.render_${wname}`;
+  }
+  else {
     console.dir(node.path, {color: true, depth: null})
     ctx.NIMPL()
   }
@@ -154,7 +204,7 @@ function from_element(
 
   const argsExpr = gen_putargs(ctx, scope, node, calleeWidget);
 
-  return ` this.render_${wname}(CON, {${argsExpr}});`
+  return ` ${callExpr}(CON, {${argsExpr}});`
 }
 
 function gen_putargs(
@@ -171,10 +221,12 @@ function gen_putargs(
       ctx.NIMPL()
     }
     else if (isBareLabeledAtt(argSpec) && argSpec.kind === "identplus") {
+      // XXX: typecheck!
       // name=name
       passThrough(argSpec, argSpec.label.value, argSpec.value)
     }
     else if (isIdentOnly(argSpec)) {
+      // XXX: typecheck!
       // name
       passThrough(argSpec, argSpec.value, argSpec.value)
     }
@@ -188,6 +240,9 @@ function gen_putargs(
       if (actualArgs.has(formalName)) {
         ctx.token_error(argSpec, `Duplicate argument: ${formalName}`)
       }
+      if (formal.typeName !== 'text')
+        ctx.NIMPL(formal);
+
       const s = escapeAsStringLiteral(argSpec.value)
       actualArgs.set(formalName, `${formalName}: ${s}`)
     }
@@ -199,6 +254,24 @@ function gen_putargs(
     }
   }
 
+  // XXX: node.children as BODY
+  if (node.children?.length) {
+    if (actualArgs.has('BODY'))
+      ctx.token_error(node, `BODY argument is already specified`);
+    const BODY = formalArgs.get('BODY')!;
+    switch (BODY.typeName) {
+      case "widget": {
+        const argDecls = generate_argdecls(ctx, scope, BODY.widget);
+        const bodyProgram = as_print(ctx, scope, node.children);
+        actualArgs.set('BODY', `BODY: (CON: yatt.runtime.Connection, ${argDecls}): void => {${bodyProgram}}`)
+        break;
+      }
+      case "html":
+      default:
+        ctx.NIMPL();
+    }
+  }
+  // XXX: node.footer
   return [...actualArgs.values()].join(', ');
 
   function passThrough(argSpec: AttItem, formalName: string, actualName: string) {
