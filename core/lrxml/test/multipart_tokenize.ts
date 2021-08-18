@@ -2,11 +2,7 @@
 
 import tap from 'tap'
 
-import { parserContext, range_text } from '../src/context'
-
-import { tokenize_multipart } from '../src/multipart/tokenize'
-
-// import { createInterface } from 'readline'
+import { parserContext, range_text, tokenize_multipart } from '../src/'
 
 const it = (source: string) => {
   let ctx = parserContext({source, config: {}})

@@ -2,8 +2,7 @@
 
 import tap from 'tap';
 
-import {parse_multipart} from '../src/multipart/parse'
-import {AttItem, hasLabel, isIdentOnly} from '../src/attlist/parse'
+import {parse_multipart, AttItem, hasLabel, isIdentOnly} from '../src/'
 
 {
   const unnest = (att: AttItem): any => {

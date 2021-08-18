@@ -6,12 +6,7 @@
 
 import tap from 'tap'
 
-import { ParserSession, range_text } from '../src/context'
-import {AttItem, hasLabel} from '../src/attlist/parse'
-import { parse_multipart } from '../src/multipart/parse'
-import { tokenize } from '../src/template/tokenize'
-
-// import { createInterface } from 'readline'
+import { range_text, hasLabel, parse_multipart, tokenize } from '../src/'
 
 const it = (source: string) => {
   let [partList, session] = parse_multipart(source, {});
