@@ -16,7 +16,8 @@ export function generate_widget(ctx: CodeGenContext<Widget>, nodeList: Node[])
 
   const argDecls = generate_argdecls(ctx, scope, ctx.part);
 
-  program += `(this: typeof tmpl, CON: yatt.runtime.Connection, ${argDecls}) {\n`;
+  // XXX: tmpl name
+  program += `($this: typeof tmpl, CON: yatt.runtime.Connection, ${argDecls}) {\n`;
 
   program += generate_body(ctx, scope, nodeList);
 

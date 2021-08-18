@@ -9,7 +9,9 @@ import {generate_widget} from './widget/generate'
 export function generate(template: TemplateDeclaration, session: CGenSession)
 : string
 {
-  let program = `import {yatt} from '../src/yatt'\n`;
+  // XXX: runtime path
+  let program = `import {yatt} from '../yatt'\n`;
+  // XXX: tmpl name
   program += `export namespace tmpl {\n`
 
   for (const [kind, name] of template.partOrder) {
@@ -138,7 +140,7 @@ aaa
           this.buffer += yatt.runtime.escape(str)
         }
       }
-      fn.apply(ns, [CON, {}]);
+      fn.apply(ns, [ns, CON, {}]);
 
       process.stdout.write(`\n=== output ====\n`);
       process.stdout.write(CON.buffer);

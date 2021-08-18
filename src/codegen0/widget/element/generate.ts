@@ -15,6 +15,7 @@ export function generate_element(
 
   let callExpr: string | undefined
   let calleeWidget: Widget | undefined
+  let implicitArgs = ['CON'];
 
   const callable_var = find_callable_var(scope, wname);
 
@@ -30,7 +31,8 @@ export function generate_element(
   }
   else if (rest.length === 0 && ctx.template.partMap.widget.has(wname)) {
     calleeWidget = ctx.template.partMap.widget.get(wname)!
-    callExpr = `this.render_${wname}`;
+    callExpr = `render_${wname}`;
+    implicitArgs.unshift('$this')
   }
   else {
     console.dir(node.path, {color: true, depth: null})
@@ -46,7 +48,7 @@ export function generate_element(
 
   const argsExpr = generate_putargs(ctx, scope, node, calleeWidget);
 
-  return ` ${callExpr}(CON, {${argsExpr}});`
+  return ` ${callExpr}(${implicitArgs.join(', ')}, {${argsExpr}});`
 }
 
 function find_callable_var(scope: VarScope, varName: string): Variable | undefined {
