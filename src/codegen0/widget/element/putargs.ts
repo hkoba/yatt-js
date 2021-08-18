@@ -17,11 +17,7 @@ export function generate_putargs(
   const formalArgs = calleeWidget.argMap;
   const actualArgs = new Map
   for (const argSpec of node.attlist) {
-    if (argSpec.kind === "attelem") {
-      // <:yatt:name>...</:yatt:name>
-      ctx.NIMPL()
-    }
-    else if (isBareLabeledAtt(argSpec) && argSpec.kind === "identplus") {
+    if (isBareLabeledAtt(argSpec) && argSpec.kind === "identplus") {
       // XXX: typecheck!
       // name=name
       passThrough(argSpec, argSpec.label.value, argSpec.value)
@@ -46,6 +42,10 @@ export function generate_putargs(
 
       const s = escapeAsStringLiteral(argSpec.value)
       actualArgs.set(formalName, `${formalName}: ${s}`)
+    }
+    else if (argSpec.kind === "attelem") {
+      // <:yatt:name>...</:yatt:name>
+      ctx.NIMPL()
     }
     else {
       // 'foo' "bar"
