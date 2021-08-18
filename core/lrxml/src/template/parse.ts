@@ -7,7 +7,12 @@ import { tokenize, Token, Text, Comment, PI } from './tokenize'
 
 import { Part } from '../multipart/parse'
 
-import { parse_attlist, AttItem } from '../attlist/parse'
+import {
+  parse_attlist, AttItem,
+  Label, StringTerm,
+  attKindIsQuotedString,
+  AttIdentOnly, AttLabeled, AttLabeledNested, AttLabeledByIdent
+} from '../attlist/parse'
 
 import { EntNode } from '../entity/parse'
 
@@ -26,6 +31,35 @@ export type LCMsg   = Range & {kind: "lcmsg", namespace: string[]
                                , lcmsg: Text[][], bind: EntNode[]}
 
 export type Node = Text | Comment | PI | Element | AttElement | EntNode | LCMsg
+
+export function hasStringValue(att: AttItem | AttElement)
+: att is ({label?: Label} & StringTerm) {
+  return att.kind === "bare" || att.kind === "sq" || att.kind === "dq" ||
+    (att.kind === "identplus" && att.label == null)
+}
+
+export function hasQuotedStringValue(att: AttItem | AttElement)
+: att is ({label?: Label} & StringTerm) {
+  return attKindIsQuotedString(att.kind);
+}
+
+export function isIdentOnly(att: AttItem | AttElement)
+: att is AttIdentOnly {
+  return !hasLabel(att) && att.kind === 'identplus'
+}
+
+export function hasNestedLabel(att: AttItem | AttElement)
+: att is AttLabeledNested {
+  return att.kind === 'nest'
+}
+
+export function hasLabel(att: AttItem | AttElement): att is AttLabeled {
+  return (att as AttItem).label !== undefined
+}
+
+export function isBareLabeledAtt(att: AttItem | AttElement): att is AttLabeledByIdent {
+  return hasLabel(att) && att.label.kind === 'identplus'
+}
 
 export function parse_template(session: ParserSession, part: Part): Node[] {
   let lex = tokenize(session, part.payload)

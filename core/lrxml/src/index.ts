@@ -2,6 +2,7 @@ export {lrxmlParams, LrxmlParams, LrxmlConfig} from './config'
 
 export {
   parserContext, parserSession, Range, ParserContext, ParserSession, ScanningContext,
+  range_text,
   Token, TokenT
 } from './context'
 
@@ -10,14 +11,15 @@ export {tokenize_multipart, tokenize_multipart_context} from './multipart/tokeni
 export {parse_multipart, parse_multipart_context, Part as RawPart} from './multipart/parse'
 
 export {
+  tokenize,
   parse_template, Node,
-  Comment, Text, Element, PI, LCMsg
+  Comment, Text, Element, PI, LCMsg,
+  hasStringValue, hasQuotedStringValue, hasNestedLabel, hasLabel,
+  isBareLabeledAtt, isIdentOnly
 } from './template/'
 
 export {
   AttItem, AttValue,
-  hasStringValue, hasQuotedStringValue, hasNestedLabel, hasLabel,
-  isBareLabeledAtt, isIdentOnly
 } from './attlist/parse'
 
 export {EntNode, EntTerm, EntPath} from './entity/parse'

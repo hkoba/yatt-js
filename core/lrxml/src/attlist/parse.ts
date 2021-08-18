@@ -11,7 +11,7 @@ type BaseTerm<T> = Range & {value: T, comment: string[]}
 type QuotedStringTerm = {kind: AttSq | AttDq} & BaseTerm<string>;
 type BareStringTerm = {kind: AttBare} & BaseTerm<string>;
 type IdentplusTerm = {kind: AttIdentPlus, has_three_colon: boolean} & BaseTerm<string>;
-type StringTerm = BareStringTerm | QuotedStringTerm | IdentplusTerm
+export type StringTerm = BareStringTerm | QuotedStringTerm | IdentplusTerm
 
 type NestedTerm = {kind: AttNest} & BaseTerm<AttItem[]>;
 
@@ -20,7 +20,7 @@ type EntTerm = (EntNode & {comment: string[]})
 
 type Term = IdentplusTerm | StringTerm | NestedTerm | EntTerm
 
-type Label = IdentplusTerm | NestedTerm
+export type Label = IdentplusTerm | NestedTerm
 
 export type AttValue = Term
 
@@ -31,42 +31,13 @@ export type AttLabeledNested = {label: NestedTerm} & AttValue
 export type AttIdentOnly = IdentplusTerm
 export type AttLabelPair = {label: Label} & Label
 
-export function hasStringValue(att: AttItem)
-: att is ({label?: Label} & StringTerm) {
-  return att.kind === "bare" || att.kind === "sq" || att.kind === "dq" ||
-    (att.label == null && att.kind === "identplus")
-}
-
-export function hasQuotedStringValue(att: AttItem)
-: att is ({label?: Label} & StringTerm) {
-  return attKindIsQuotedString(att.kind);
-}
-
-function attKindIsQuotedString(kind: string): boolean {
+export function attKindIsQuotedString(kind: string): boolean {
   return kind === "sq" || kind === "dq";
 }
 
 export function isLabelTerm(term: Term)
 : term is Label {
   return term.kind === "identplus" || term.kind === "nest"
-}
-
-export function isIdentOnly(att: AttItem)
-: att is AttIdentOnly {
-  return !hasLabel(att) && att.kind === 'identplus'
-}
-
-export function hasNestedLabel(att: AttItem)
-: att is AttLabeledNested {
-  return att.kind === 'nest'
-}
-
-export function hasLabel(att: AttItem): att is AttLabeled {
-  return att.label !== undefined
-}
-
-export function isBareLabeledAtt(att: AttItem): att is AttLabeledByIdent {
-  return hasLabel(att) && att.label.kind === 'identplus'
 }
 
 export function parse_attlist<T extends {kind: string} & Range>(
