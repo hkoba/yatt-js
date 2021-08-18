@@ -17,43 +17,7 @@ import {
 import {yatt} from '../src/yatt'
 
 type CGenSession  = BuilderSession & {
-  varGen: VarTypeHandler
 }
-
-interface VarTypeHandler {
-  [k: `as_lvalue__${string}`]: (ctx: CodeGenContext<Widget>, v: Variable) => string;
-
-  [k: `as_escaped__${string}`]: (ctx: CodeGenContext<Widget>, v: Variable) => string;
-
-  [k: `as_varcall__${string}`]: (ctx: CodeGenContext<Widget>, v: Variable, node: Node) => string;
-
-  [k: `as_cast_to__${string}`]: (ctx: CodeGenContext<Widget>, v: Variable, node: Node) => string;
-}
-
-export const defaultVarGen = {
-}
-
-function as_lvalue(ctx: CodeGenContext<Widget>, v: Variable): string {
-  const fun = ctx.session.varGen[`as_lvalue__${v.typeName}`]
-  if (fun != null) {
-    return fun(ctx, v)
-  } else {
-    return v.varName;
-  }
-}
-
-function as_escaped(ctx: CodeGenContext<Widget>, v: Variable): string {
-  const fun = ctx.session.varGen[`as_escaped__${v.typeName}`]
-  if (fun != null) {
-    return fun(ctx, v)
-  } else {
-    return `yatt.runtime.escape(${v.varName})`;
-  }
-}
-
-// as_varcall(ctx: CodeGenContext<Widget>, v: Variable, node: Node): string;
-// as_cast_to(ctx: CodeGenContext<Widget>, v: Variable, node: Node): string;
-
 
 function generate(template: TemplateDeclaration, session: CGenSession)
 : string
@@ -393,8 +357,7 @@ aaa
 
   console.time(`generate`)
   const script = generate(template, {
-    ...session,
-    varGen: defaultVarGen
+    ...session
   })
   console.timeEnd(`generate`)
   process.stdout.write('\n' + script + '\n');
