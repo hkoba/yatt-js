@@ -40,11 +40,9 @@ export function generate_namespace(template: TemplateDeclaration, session: CGenS
 
 if (module.id === '.') {
   (async () => {
-    console.time('load');
     const { parse_long_options } = await import('lrxml-js')
     const { readFileSync } = await import('fs')
     const {build_template_declaration} = await import('../../declaration')
-    console.timeEnd('load');
 
     let args = process.argv.slice(2)
     const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
@@ -55,7 +53,6 @@ if (module.id === '.') {
     }
     parse_long_options(args, {target: config})
 
-    console.time('parse')
     let filename, source;
     if (args.length) {
       filename = args[0]
@@ -74,8 +71,6 @@ aaa
       source,
       {filename, ...config}
     )
-
-    console.timeEnd('parse')
 
     const script = generate_namespace(template, {
       ...session
