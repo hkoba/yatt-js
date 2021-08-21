@@ -8,13 +8,22 @@ import {generate_widget} from '../widget/generate'
 
 import path from 'path'
 
+export function templateName(filename: string): string {
+  // XXX: Directory tree under rootDir
+  const tmplName = path.basename(filename, path.extname(filename))
+  if (!/^[_a-z][0-9_a-z]*$/i.exec(tmplName)) {
+    throw new Error(`Filename does not fit for identifier: ${tmplName}`)
+  }
+  return tmplName
+}
+
 export function generate_namespace(template: TemplateDeclaration, session: CGenSession)
 : string
 {
-  const srcDir = path.dirname(__dirname)
+  const srcDir = path.dirname(path.dirname(__dirname))
   let program = `import {yatt} from '${srcDir}/yatt'\n`;
-  // XXX: tmpl name
-  program += `export namespace tmpl {\n`
+
+  program += `export namespace $tmpl.${session.templateName} {\n`
 
   for (const [kind, name] of template.partOrder) {
     const partMap = template.partMap[kind]
@@ -61,6 +70,7 @@ if (module.id === '.') {
       )
 
       const script = generate_namespace(template, {
+        templateName: templateName(filename),
         ...session
       })
       process.stdout.write(script + '\n');

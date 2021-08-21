@@ -1,6 +1,6 @@
 #!/usr/bin/env ts-node
 
-import {generate_namespace} from './generate'
+import {generate_namespace, templateName} from './generate/namespace'
 
 import {YattConfig} from '../config'
 
@@ -28,6 +28,7 @@ export function runSource(source: string, config: YattConfig & {filename: string
   )
 
   const script = generate_namespace(template, {
+    templateName: templateName(config.filename),
     ...session
   })
 
@@ -42,7 +43,11 @@ export function runSource(source: string, config: YattConfig & {filename: string
 
   const mod = compile([...outputMap.values()].join('\n'), config.filename)
 
-  const ns = mod.exports['tmpl']
+  const nsName = templateName(config.filename)
+  const ns = mod.exports['$tmpl'][nsName]
+  if (ns == null) {
+    throw new Error(`Can't find namespace ${nsName}`);
+  }
   const fn = ns ? ns['render_'] : undefined;
 
   if (fn == null) {
