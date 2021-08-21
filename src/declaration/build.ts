@@ -354,13 +354,14 @@ function add_args_cont(
     }
   }
 
-  if (!part.argMap.has('BODY')) {
+  const BODY_NAME = ctx.body_argument_name()
+  if (!part.argMap.has(BODY_NAME)) {
     const bodyVar: Variable = {
       typeName: 'widget', is_escaped: true, is_callable: true,
-      varName: 'BODY', widget: makeWidget('(BODY)', false),
+      varName: BODY_NAME, widget: makeWidget(`(${BODY_NAME})`, false),
       from_route: false, is_body_argument: true
     }
-    part.argMap.set('BODY', bodyVar)
+    part.argMap.set(BODY_NAME, bodyVar)
   }
 }
 

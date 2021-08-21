@@ -69,6 +69,9 @@ export class BuilderContext extends ScanningContext<BuilderSession> {
   is_body_argument(name: string): boolean {
     return this.session.params.body_argument_name === name
   }
+  body_argument_name(): string {
+    return this.session.params.body_argument_name;
+  }
 
   append_stash(key: [string, string], value: any): void {
     if (! this.stash.has(key)) {

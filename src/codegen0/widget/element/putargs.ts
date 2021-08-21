@@ -55,16 +55,16 @@ export function generate_putargs(
     }
   }
 
-  // XXX: node.children as BODY
   if (node.children?.length) {
-    if (actualArgs.has('BODY'))
-      ctx.token_error(node, `BODY argument is already specified`);
-    const BODY = formalArgs.get('BODY')!;
+    const BODY_NAME = ctx.session.params.body_argument_name; // XXX: ctx
+    if (actualArgs.has(BODY_NAME))
+      ctx.token_error(node, `${BODY_NAME} argument is already specified`);
+    const BODY = formalArgs.get(BODY_NAME)!;
     switch (BODY.typeName) {
       case "widget": {
         const argDecls = generate_argdecls(ctx, scope, BODY.widget);
         const bodyProgram = generate_body(ctx, scope, node.children);
-        actualArgs.set('BODY', `BODY: (CON: yatt.runtime.Connection, ${argDecls}): void => {${bodyProgram}}`)
+        actualArgs.set(BODY_NAME, `${BODY_NAME}: (CON: yatt.runtime.Connection, ${argDecls}): void => {${bodyProgram}}`)
         break;
       }
       case "html":
