@@ -14,11 +14,17 @@ import {yatt} from '../yatt'
 
 import { parse_long_options } from 'lrxml-js';
 
-export function run(filename: string, config: YattConfig): void {
+export function runFile(filename: string, config: YattConfig): string {
   const source = readFileSync(filename, {encoding: "utf-8"})
+
+  return runSource(source, {filename, ...config})
+}
+
+export function runSource(source: string, config: YattConfig & {filename: string}) {
+
   const [template, session] = build_template_declaration(
     source,
-    {filename, ...config}
+    config
   )
 
   const script = generate(template, {
@@ -34,27 +40,28 @@ export function run(filename: string, config: YattConfig): void {
     console.log(outputMap)
   }
 
-  const mod = compile([...outputMap.values()].join('\n'), filename)
+  const mod = compile([...outputMap.values()].join('\n'), config.filename)
 
   const ns = mod.exports['tmpl']
   const fn = ns ? ns['render_'] : undefined;
 
-  if (fn != null) {
-    let CON = {
-      buffer: "",
-      append(str: string) {
-        this.buffer += str;
-      },
-      appendUntrusted(str?: string) {
-        if (str == null) return;
-        this.buffer += yatt.runtime.escape(str)
-      }
-    }
-    fn.apply(ns, [CON, {}]);
-
-    process.stdout.write(`\n=== output ====\n`);
-    process.stdout.write(CON.buffer);
+  if (fn == null) {
+    throw new Error(`Can't find render_ in namespace`);
   }
+
+  let CON = {
+    buffer: "",
+    append(str: string) {
+      this.buffer += str;
+    },
+    appendUntrusted(str?: string) {
+      if (str == null) return;
+      this.buffer += yatt.runtime.escape(str)
+    }
+  }
+  fn.apply(ns, [CON, {}]);
+
+  return CON.buffer;
 }
 
 if (module.id === '.') {
@@ -75,6 +82,7 @@ if (module.id === '.') {
     process.exit(1)
   }
 
-  run(filename, config);
-
+  const output = runFile(filename, config);
+  process.stdout.write(`\n=== output ====\n`);
+  process.stdout.write(output);
 }
