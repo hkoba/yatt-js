@@ -6,7 +6,7 @@ import {
   hasLabel, hasQuotedStringValue
 } from 'lrxml-js'
 
-import { YattConfig } from '../config'
+import { YattConfig, yattParams } from '../config'
 
 import {
   BuilderMap, BuilderContext, BuilderSession, DeclarationProcessor,
@@ -183,11 +183,16 @@ export function build_template_declaration(
     ...rest_config
   }: {builders?: BuilderMap, varTypeMap?: VarTypeMap, filename?: string} & YattConfig = config
 
+  const buildParams = yattParams(rest_config);
+
   const [rawPartList, parser_session] = parse_multipart(source, rest_config)
 
+  const {filename, patterns} = parser_session;
+
   const builder_session: BuilderSession = {
-    builders, varTypeMap, ...parser_session
-  } as BuilderSession
+    builders, varTypeMap, source, filename, patterns,
+    params: buildParams
+  };
 
   const ctx = new BuilderContext(builder_session)
 
