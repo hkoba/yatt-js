@@ -3,6 +3,8 @@ import Module = require('module');
 
 import ts = require('typescript')
 
+import {extract_line, extract_prefix_spec} from 'lrxml-js'
+
 export function compile(script: string, filename: string): Module {
   type compiler = (this: Module, src: string, id: string) => any;
   let m = new Module(filename);
@@ -16,7 +18,21 @@ export function compile(script: string, filename: string): Module {
 // transpileModule in TypeScript/src/services/transpile.ts
 // createTypescriptContext in angular-cli/packages/ngtools/webpack/src/transformers/spec_helpers.ts
 //
-export function makeProgram(input: string, transpileOptions: ts.TranspileOptions)
+export function makeProgram(input: string, transpileOptions: ts.TranspileOptions = {
+      reportDiagnostics: true,
+      compilerOptions: {
+        module: ts.ModuleKind.CommonJS,
+        /* Strict Type-Checking Options */
+        "strict": true,
+        "noImplicitAny": true,
+        "strictNullChecks": true,
+        "strictFunctionTypes": true,
+        "strictBindCallApply": true,
+        "strictPropertyInitialization": true,
+        "noImplicitThis": true,
+        "alwaysStrict": true,
+      }
+    })
 // : ts.CompilerHost
 {
   const options: ts.CompilerOptions = transpileOptions.compilerOptions ?? {};
@@ -71,3 +87,22 @@ export function makeProgram(input: string, transpileOptions: ts.TranspileOptions
   return {program, outputMap, sourceMapText, diagnostics};
 }
 
+export function reportDiagnostics(script: string, diagnostics: [string, ts.Diagnostic][]): void {
+  // console.dir(outputMap, {color: true, depth: 4});
+  const dummyModName = 'module'
+  for (const [kind, diag] of diagnostics) {
+    if (diag.file && diag.file.fileName === `${dummyModName}.ts`
+        &&
+        diag.start != null && diag.messageText != null) {
+      const messageText = typeof diag.messageText === 'string' ?
+        diag.messageText : diag.messageText.messageText;
+      console.log(`${kind} error: ${messageText}`)
+      const [lastNl, _lineNo, colNo] = extract_prefix_spec(script, diag.start)
+      const tokenLine = extract_line(script, lastNl, colNo)
+      console.log(tokenLine)
+    }
+    else {
+      console.dir(diagnostics, {color: true, depth: 3})
+    }
+  }
+}

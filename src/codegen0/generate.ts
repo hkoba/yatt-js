@@ -38,13 +38,11 @@ export function generate(template: TemplateDeclaration, session: CGenSession)
 
 if (module.id === '.') {
   (async () => {
-    const ts = await import('typescript')
-    const {compile, makeProgram} = await import('../utils/compileTs')
-    const { parse_long_options, extract_line, extract_prefix_spec } = await import('lrxml-js')
+    console.time('load');
+    const { parse_long_options } = await import('lrxml-js')
     const { readFileSync } = await import('fs')
     const {build_template_declaration} = await import('../declaration')
-
-    const {yatt} = await import('../yatt')
+    console.timeEnd('load');
 
     let args = process.argv.slice(2)
     const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
@@ -55,6 +53,7 @@ if (module.id === '.') {
     }
     parse_long_options(args, {target: config})
 
+    console.time('parse')
     let filename, source;
     if (args.length) {
       filename = args[0]
@@ -69,82 +68,17 @@ aaa
 `
     }
 
-    console.time(`parse template declaration`)
     const [template, session] = build_template_declaration(
       source,
       {filename, ...config}
     )
-    console.timeEnd(`parse template declaration`)
 
-    console.time(`generate`)
+    console.timeEnd('parse')
+
     const script = generate(template, {
       ...session
     })
-    console.timeEnd(`generate`)
-    process.stdout.write('\n' + script + '\n');
-
-    console.time(`makeProgram (ts to js)`)
-    let {program, outputMap, diagnostics} = makeProgram(script, {
-      reportDiagnostics: true,
-      compilerOptions: {
-        module: ts.ModuleKind.CommonJS,
-        /* Strict Type-Checking Options */
-        "strict": true,
-        "noImplicitAny": true,
-        "strictNullChecks": true,
-        "strictFunctionTypes": true,
-        "strictBindCallApply": true,
-        "strictPropertyInitialization": true,
-        "noImplicitThis": true,
-        "alwaysStrict": true,
-      }
-    })
-
-    if (diagnostics && diagnostics.length > 0) {
-      // console.dir(outputMap, {color: true, depth: 4});
-      const dummyModName = 'module'
-      for (const [kind, diag] of diagnostics) {
-        if (diag.file && diag.file.fileName === `${dummyModName}.ts`
-            &&
-            diag.start != null && diag.messageText != null) {
-          const messageText = typeof diag.messageText === 'string' ?
-            diag.messageText : diag.messageText.messageText;
-          console.log(`${kind} error: ${messageText}`)
-          const [lastNl, _lineNo, colNo] = extract_prefix_spec(script, diag.start)
-          const tokenLine = extract_line(script, lastNl, colNo)
-          console.log(tokenLine)
-        }
-        else {
-          console.dir(diagnostics, {color: true, depth: 3})
-        }
-      }
-      process.exit(1);
-    } else {
-      console.log(outputMap)
-    }
-
-    console.timeEnd(`makeProgram (ts to js)`)
-    console.time(`comple nodejs module`)
-    const mod = compile([...outputMap.values()].join('\n'), filename)
-    console.timeEnd(`comple nodejs module`)
-    const ns = mod.exports['tmpl']
-    const fn = ns ? ns['render_'] : undefined;
-    if (fn != null) {
-      let CON = {
-        buffer: "",
-        append(str: string) {
-          this.buffer += str;
-        },
-        appendUntrusted(str?: string) {
-          if (str == null) return;
-          this.buffer += yatt.runtime.escape(str)
-        }
-      }
-      fn.apply(ns, [ns, CON, {}]);
-
-      process.stdout.write(`\n=== output ====\n`);
-      process.stdout.write(CON.buffer);
-    }
+    process.stdout.write(script + '\n');
 
   })()
 }
