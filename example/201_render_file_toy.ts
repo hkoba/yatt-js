@@ -81,7 +81,7 @@ function generate_widget(ctx: CodeGenContext<Widget>, nodeList: Node[])
 
   const argDecls = generate_argdecls(ctx, scope, ctx.part);
 
-  program += `(this: typeof tmpl, CON: yatt.runtime.Connection, ${argDecls}) {\n`;
+  program += `(this: typeof tmpl, CON: yatt.runtime.Connection, ${argDecls}) {const $this = this\n`;
 
   program += as_print(ctx, scope, nodeList);
 
@@ -169,7 +169,7 @@ function from_element(
   }
   else if (rest.length === 0 && ctx.template.partMap.widget.has(wname)) {
     calleeWidget = ctx.template.partMap.widget.get(wname)!
-    callExpr = `this.render_${wname}`;
+    callExpr = `$this.render_${wname}`;
   }
   else {
     console.dir(node.path, {color: true, depth: null})

@@ -31,8 +31,7 @@ export function generate_element(
   }
   else if (rest.length === 0 && ctx.template.partMap.widget.has(wname)) {
     calleeWidget = ctx.template.partMap.widget.get(wname)!
-    callExpr = `render_${wname}`;
-    implicitArgs.unshift('$this')
+    callExpr = `$this.render_${wname}`;
   }
   else {
     console.dir(node.path, {color: true, depth: null})

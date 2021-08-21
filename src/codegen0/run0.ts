@@ -50,7 +50,7 @@ export function run(filename: string, config: YattConfig): void {
         this.buffer += yatt.runtime.escape(str)
       }
     }
-    fn.apply(ns, [ns, CON, {}]);
+    fn.apply(ns, [CON, {}]);
 
     process.stdout.write(`\n=== output ====\n`);
     process.stdout.write(CON.buffer);
