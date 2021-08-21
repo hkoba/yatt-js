@@ -2,9 +2,9 @@
 
 import {parse_template} from 'lrxml-js'
 
-import {CodeGenContext, CGenSession} from './context'
-import {TemplateDeclaration, Widget} from '../declaration'
-import {generate_widget} from './widget/generate'
+import {CodeGenContext, CGenSession} from '../context'
+import {TemplateDeclaration, Widget} from '../../declaration'
+import {generate_widget} from '../widget/generate'
 
 import path from 'path'
 
@@ -43,7 +43,7 @@ if (module.id === '.') {
     console.time('load');
     const { parse_long_options } = await import('lrxml-js')
     const { readFileSync } = await import('fs')
-    const {build_template_declaration} = await import('../declaration')
+    const {build_template_declaration} = await import('../../declaration')
     console.timeEnd('load');
 
     let args = process.argv.slice(2)
