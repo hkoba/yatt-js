@@ -6,11 +6,13 @@ import {CodeGenContext, CGenSession} from './context'
 import {TemplateDeclaration, Widget} from '../declaration'
 import {generate_widget} from './widget/generate'
 
+import path from 'path'
+
 export function generate_namespace(template: TemplateDeclaration, session: CGenSession)
 : string
 {
-  // XXX: runtime path
-  let program = `import {yatt} from '../yatt'\n`;
+  const srcDir = path.dirname(__dirname)
+  let program = `import {yatt} from '${srcDir}/yatt'\n`;
   // XXX: tmpl name
   program += `export namespace tmpl {\n`
 
