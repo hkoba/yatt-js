@@ -1,6 +1,6 @@
 #!/usr/bin/env ts-node
 
-import {generate} from './generate'
+import {generate_namespace} from './generate'
 
 import {YattConfig} from '../config'
 
@@ -27,7 +27,7 @@ export function runSource(source: string, config: YattConfig & {filename: string
     config
   )
 
-  const script = generate(template, {
+  const script = generate_namespace(template, {
     ...session
   })
 

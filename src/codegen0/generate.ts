@@ -6,7 +6,7 @@ import {CodeGenContext, CGenSession} from './context'
 import {TemplateDeclaration, Widget} from '../declaration'
 import {generate_widget} from './widget/generate'
 
-export function generate(template: TemplateDeclaration, session: CGenSession)
+export function generate_namespace(template: TemplateDeclaration, session: CGenSession)
 : string
 {
   // XXX: runtime path
@@ -75,7 +75,7 @@ aaa
 
     console.timeEnd('parse')
 
-    const script = generate(template, {
+    const script = generate_namespace(template, {
       ...session
     })
     process.stdout.write(script + '\n');
