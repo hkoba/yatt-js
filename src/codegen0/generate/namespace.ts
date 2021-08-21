@@ -53,29 +53,17 @@ if (module.id === '.') {
     }
     parse_long_options(args, {target: config})
 
-    let filename, source;
-    if (args.length) {
-      filename = args[0]
-      source = readFileSync(filename, {encoding: "utf-8"})
-    } else {
-      filename = `dummy.ytjs`;
-      source = `<yatt:foo x=3 y=8/>
-aaa
-<!yatt:widget foo x y>
-<h2>&yatt:x;</h2>
-&yatt:y;
-`
+    for (const filename of args) {
+      let source = readFileSync(filename, {encoding: "utf-8"})
+      const [template, session] = build_template_declaration(
+        source,
+        {filename, ...config}
+      )
+
+      const script = generate_namespace(template, {
+        ...session
+      })
+      process.stdout.write(script + '\n');
     }
-
-    const [template, session] = build_template_declaration(
-      source,
-      {filename, ...config}
-    )
-
-    const script = generate_namespace(template, {
-      ...session
-    })
-    process.stdout.write(script + '\n');
-
   })()
 }

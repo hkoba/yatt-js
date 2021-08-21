@@ -21,7 +21,7 @@ export function generate_widget(ctx: CodeGenContext<Widget>, nodeList: Node[])
 
   program += generate_body(ctx, scope, nodeList);
 
-  program += `}`;
+  program += `}\n`;
 
   return program;
 }

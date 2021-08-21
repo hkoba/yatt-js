@@ -34,8 +34,7 @@ export function generate_element(
     callExpr = `$this.render_${wname}`;
   }
   else {
-    console.dir(node.path, {color: true, depth: null})
-    ctx.NIMPL()
+    ctx.token_error(node, `Not yet implemented call`)
   }
 
   if (calleeWidget == null) {
