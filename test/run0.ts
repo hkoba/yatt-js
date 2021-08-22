@@ -4,7 +4,7 @@ import tap from 'tap'
 
 import {YattConfig} from '../src/config'
 
-import {runSource} from '../src/codegen0/run0'
+import {runSource} from '../src/codegen0/namespace/run0'
 
 {
   const it = (filename: string, src: string, config?: YattConfig) =>

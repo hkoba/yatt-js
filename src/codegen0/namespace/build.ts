@@ -1,6 +1,6 @@
 #!/usr/bin/env ts-node
 
-//// ./build.ts --outDir=dist core/lrxml/test/input/t00*~*/t00[25]*
+//// ./build.ts --outDir=example/dist core/lrxml/test/input/t00[^25]*
 
 import {YattConfig} from '../../config'
 
