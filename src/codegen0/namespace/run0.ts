@@ -1,6 +1,6 @@
 #!/usr/bin/env ts-node
 
-import {generate_namespace, templateName} from './generate'
+import {generate_namespace} from './generate'
 
 import {YattConfig} from '../../config'
 
@@ -11,6 +11,8 @@ import {readFileSync} from 'fs'
 import {compile, makeProgram, reportDiagnostics} from '../../utils/compileTs'
 
 import {yatt} from '../../yatt'
+
+import {digEntry, templatePath} from '../../path'
 
 import { parse_long_options } from 'lrxml-js';
 
@@ -35,15 +37,14 @@ export function runSource(source: string, config: YattConfig & {filename: string
 
   const mod = compile([...outputMap.values()].join('\n'), config.filename)
 
-  const nsName = templateName(config.filename)
-  const ns = mod.exports['$tmpl'][nsName]
+  const nsPath = templatePath(config.filename, config.rootDir ?? '')
+  const ns: {[k: string]: any} = digEntry(mod.exports, ['$tmpl', ...nsPath])
   if (ns == null) {
-    throw new Error(`Can't find namespace ${nsName}`);
+    throw new Error(`Can't find namespace ${nsPath}`);
   }
-  const fn = ns ? ns['render_'] : undefined;
-
+  const fn = ns['render_']
   if (fn == null) {
-    throw new Error(`Can't find render_ in namespace`);
+    throw new Error(`Can't find render_ in ${nsPath}`);
   }
 
   let CON = {

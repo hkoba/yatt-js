@@ -7,7 +7,7 @@ import {build_template_declaration, TemplateDeclaration, Widget} from '../../dec
 import {generate_widget} from '../widget/generate'
 import {YattConfig} from '../../config'
 
-import path from 'path'
+import {srcDir, templatePath} from '../../path'
 
 export function generate_namespace(
   source: string, config: YattConfig & {filename: string}
@@ -18,27 +18,19 @@ export function generate_namespace(
     config
   )
 
+  const templateName = templatePath(config.filename, session.params.rootDir).join('.');
+
   // XXX: should return templateName too.
   return generate_namespace_from_template(template, {
-    templateName: templateName(config.filename),
+    templateName,
     ...session
   })
-}
-
-export function templateName(filename: string): string {
-  // XXX: Directory tree under rootDir
-  const tmplName = path.basename(filename, path.extname(filename))
-  if (!/^[_a-z][0-9_a-z]*$/i.exec(tmplName)) {
-    throw new Error(`Filename does not fit for identifier: ${tmplName}`)
-  }
-  return tmplName
 }
 
 export function generate_namespace_from_template(
   template: TemplateDeclaration, session: CGenSession
 ): string
 {
-  const srcDir = path.dirname(path.dirname(__dirname))
   let program = `import {yatt} from '${srcDir}/yatt'\n`;
 
   program += `export namespace $tmpl.${session.templateName} {\n`
