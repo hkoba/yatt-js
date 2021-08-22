@@ -3,10 +3,27 @@
 import {parse_template} from 'lrxml-js'
 
 import {CodeGenContext, CGenSession} from '../context'
-import {TemplateDeclaration, Widget} from '../../declaration'
+import {build_template_declaration, TemplateDeclaration, Widget} from '../../declaration'
 import {generate_widget} from '../widget/generate'
+import {YattConfig} from '../../config'
 
 import path from 'path'
+
+export function generate_namespace(
+  source: string, config: YattConfig & {filename: string}
+): string
+{
+    const [template, session] = build_template_declaration(
+    source,
+    config
+  )
+
+  // XXX: should return templateName too.
+  return generate_namespace_from_template(template, {
+    templateName: templateName(config.filename),
+    ...session
+  })
+}
 
 export function templateName(filename: string): string {
   // XXX: Directory tree under rootDir
@@ -17,8 +34,9 @@ export function templateName(filename: string): string {
   return tmplName
 }
 
-export function generate_namespace(template: TemplateDeclaration, session: CGenSession)
-: string
+export function generate_namespace_from_template(
+  template: TemplateDeclaration, session: CGenSession
+): string
 {
   const srcDir = path.dirname(path.dirname(__dirname))
   let program = `import {yatt} from '${srcDir}/yatt'\n`;
@@ -51,7 +69,6 @@ if (module.id === '.') {
   (async () => {
     const { parse_long_options } = await import('lrxml-js')
     const { readFileSync } = await import('fs')
-    const {build_template_declaration} = await import('../../declaration')
 
     let args = process.argv.slice(2)
     const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
@@ -64,15 +81,7 @@ if (module.id === '.') {
 
     for (const filename of args) {
       let source = readFileSync(filename, {encoding: "utf-8"})
-      const [template, session] = build_template_declaration(
-        source,
-        {filename, ...config}
-      )
-
-      const script = generate_namespace(template, {
-        templateName: templateName(filename),
-        ...session
-      })
+      const script = generate_namespace(source, {filename, ...config})
       process.stdout.write(script + '\n');
     }
   })()

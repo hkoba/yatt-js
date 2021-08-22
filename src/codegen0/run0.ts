@@ -22,15 +22,7 @@ export function runFile(filename: string, config: YattConfig): string {
 
 export function runSource(source: string, config: YattConfig & {filename: string}) {
 
-  const [template, session] = build_template_declaration(
-    source,
-    config
-  )
-
-  const script = generate_namespace(template, {
-    templateName: templateName(config.filename),
-    ...session
-  })
+  const script = generate_namespace(source, config)
 
   let {program: _program, outputMap, diagnostics} = makeProgram(script)
 
@@ -38,7 +30,7 @@ export function runSource(source: string, config: YattConfig & {filename: string
     reportDiagnostics(script, diagnostics);
     process.exit(1)
   } else {
-    console.log(outputMap)
+    // console.log(outputMap)
   }
 
   const mod = compile([...outputMap.values()].join('\n'), config.filename)
