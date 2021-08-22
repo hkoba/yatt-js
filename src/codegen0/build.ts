@@ -11,7 +11,7 @@ import path from 'path'
 
 export function build_namespace(fileList: string[], config: YattConfig): void {
   if (config.rootDir == null || config.rootDir === "") {
-    config.rootDir = longestPrefix(fileList)
+    config.rootDir = path.dirname(longestPrefix(fileList))
   }
 
   for (const filename of fileList) {
