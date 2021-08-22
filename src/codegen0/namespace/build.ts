@@ -1,10 +1,10 @@
 #!/usr/bin/env ts-node
 
-//// ./src/codegen0/build.ts --outDir=dist core/lrxml/test/input/t00*~*/t00[25]*
+//// ./build.ts --outDir=dist core/lrxml/test/input/t00*~*/t00[25]*
 
-import {YattConfig} from '../config'
+import {YattConfig} from '../../config'
 
-import {generate_namespace} from './generate/namespace'
+import {generate_namespace} from './generate'
 
 import {readFileSync, writeFileSync} from 'fs'
 import path from 'path'

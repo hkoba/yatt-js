@@ -1,16 +1,16 @@
 #!/usr/bin/env ts-node
 
-import {generate_namespace, templateName} from './generate/namespace'
+import {generate_namespace, templateName} from './generate'
 
-import {YattConfig} from '../config'
+import {YattConfig} from '../../config'
 
-import {build_template_declaration} from '../declaration'
+import {build_template_declaration} from '../../declaration'
 
 import {readFileSync} from 'fs'
 
-import {compile, makeProgram, reportDiagnostics} from '../utils/compileTs'
+import {compile, makeProgram, reportDiagnostics} from '../../utils/compileTs'
 
-import {yatt} from '../yatt'
+import {yatt} from '../../yatt'
 
 import { parse_long_options } from 'lrxml-js';
 
