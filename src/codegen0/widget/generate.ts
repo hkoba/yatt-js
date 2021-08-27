@@ -16,8 +16,16 @@ export function generate_widget(ctx: CodeGenContext<Widget>, nodeList: Node[])
 
   const argDecls = generate_argdecls(ctx, scope, ctx.part);
 
+  const implicitArgs = []
+  let bodyPreamble = ""
+  if (ctx.hasThis) {
+    implicitArgs.push(`this: typeof ${ctx.session.templateName.join('.')}`)
+    bodyPreamble += `const $this = this`;
+  }
+  implicitArgs.push(`CON: yatt.runtime.Connection`)
+
   // XXX: tmpl name
-  program += `(this: typeof ${ctx.session.templateName}, CON: yatt.runtime.Connection, ${argDecls}) {const $this = this\n`;
+  program += `(${implicitArgs.join(', ')}, ${argDecls}) {${bodyPreamble}\n`;
 
   program += generate_body(ctx, scope, nodeList);
 

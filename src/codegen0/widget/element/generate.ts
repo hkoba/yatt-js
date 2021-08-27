@@ -31,7 +31,7 @@ export function generate_element(
   }
   else if (rest.length === 0 && ctx.template.partMap.widget.has(wname)) {
     calleeWidget = ctx.template.partMap.widget.get(wname)!
-    callExpr = `$this.render_${wname}`;
+    callExpr = (ctx.hasThis ? '$this.' : '') + `render_${wname}`;
   }
   else {
     ctx.token_error(node, `Not yet implemented call`)
