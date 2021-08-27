@@ -18,16 +18,10 @@ export function build_namespace(fileList: string[], config: YattConfig): void {
     let outFn = outFileName(filename, '.ts', config)
     console.log(`Generating ${outFn} from ${filename}`)
     let source = readFileSync(filename, {encoding: 'utf-8'})
-    const script = generate_namespace(source, {filename, ...config});
+    const output = generate_namespace(source, {filename, ...config});
     if (config.noEmit)
       continue
-    writeFileSync(outFn, script)
-  }
-}
-
-function pathUnderRootDir(filename: string, rootDir: string): string | undefined {
-  if (filename.startsWith(rootDir)) {
-    return filename.substring(rootDir.length)
+    writeFileSync(outFn, output.outputText)
   }
 }
 

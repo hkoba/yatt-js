@@ -24,12 +24,12 @@ export function runFile(filename: string, config: YattConfig): string {
 
 export function runSource(source: string, config: YattConfig & {filename: string}) {
 
-  const script = generate_namespace(source, config)
+  const output = generate_namespace(source, config)
 
-  let {program: _program, outputMap, diagnostics} = makeProgram(script)
+  let {program: _program, outputMap, diagnostics} = makeProgram(output.outputText)
 
   if (diagnostics && diagnostics.length > 0) {
-    reportDiagnostics(script, diagnostics);
+    reportDiagnostics(output.outputText, diagnostics);
     process.exit(1)
   } else {
     // console.log(outputMap)

@@ -11,9 +11,9 @@ import {srcDir, templatePath} from '../../path'
 
 export function generate_namespace(
   source: string, config: YattConfig & {filename: string}
-): string
+): {outputText: string, templateName: string[]}
 {
-    const [template, session] = build_template_declaration(
+  const [template, session] = build_template_declaration(
     source,
     config
   )
@@ -21,10 +21,14 @@ export function generate_namespace(
   const templateName = templatePath(config.filename, session.params.rootDir).join('.');
 
   // XXX: should return templateName too.
-  return generate_namespace_from_template(template, {
+  return {
     templateName,
-    ...session
-  })
+    outputText: generate_namespace_from_template(template, {
+      templateName,
+      ...session
+    })
+    // sourceMapText
+  }
 }
 
 export function generate_namespace_from_template(
@@ -73,8 +77,8 @@ if (module.id === '.') {
 
     for (const filename of args) {
       let source = readFileSync(filename, {encoding: "utf-8"})
-      const script = generate_namespace(source, {filename, ...config})
-      process.stdout.write(script + '\n');
+      const output = generate_namespace(source, {filename, ...config})
+      process.stdout.write(output.outputText + '\n');
     }
   })()
 }
