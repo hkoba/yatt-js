@@ -9,9 +9,11 @@ import {generate_namespace} from './generate'
 import {readFileSync, writeFileSync} from 'fs'
 import path from 'path'
 
+import {pathUnderRootDir, longestPrefixDir} from '../../path'
+
 export function build_namespace(fileList: string[], config: YattConfig): void {
-  if (config.rootDir == null || config.rootDir === "") {
-    config.rootDir = path.dirname(longestPrefix(fileList))
+  if (config.rootDir == null) {
+    config.rootDir = longestPrefixDir(fileList)
   }
 
   for (const filename of fileList) {

@@ -9,6 +9,8 @@ import {YattConfig} from '../../config'
 
 import {srcDir, templatePath} from '../../path'
 
+export const DEFAULT_NAMESPACE = '$tmpl'
+
 export function generate_namespace(
   source: string, config: YattConfig & {filename: string}
 ): {outputText: string, templateName: string[]}
@@ -18,7 +20,8 @@ export function generate_namespace(
     config
   )
 
-  const templateName = templatePath(config.filename, session.params.rootDir).join('.');
+  const templateName = [session.params.templateNamespace ?? DEFAULT_NAMESPACE,
+                        ...templatePath(config.filename, config.rootDir)];
 
   // XXX: should return templateName too.
   return {
@@ -37,7 +40,7 @@ export function generate_namespace_from_template(
 {
   let program = `import {yatt} from '${srcDir}/yatt'\n`;
 
-  program += `export namespace $tmpl.${session.templateName} {\n`
+  program += `export namespace ${session.templateName.join('.')} {\n`
 
   for (const [kind, name] of template.partOrder) {
     const partMap = template.partMap[kind]

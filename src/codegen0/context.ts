@@ -3,7 +3,7 @@ import {ScanningContext} from 'lrxml-js'
 import { TemplateDeclaration, BuilderSession, Part } from '../declaration/'
 
 export type CGenSession  = BuilderSession & {
-  templateName: string
+  templateName: string[]
 }
 
 export class CodeGenContext<T extends Part> extends ScanningContext<CGenSession> {

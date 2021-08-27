@@ -12,8 +12,6 @@ import {compile, makeProgram, reportDiagnostics} from '../../utils/compileTs'
 
 import {yatt} from '../../yatt'
 
-import {digEntry, templatePath} from '../../path'
-
 import { parse_long_options } from 'lrxml-js';
 
 export function runFile(filename: string, config: YattConfig): string {
@@ -37,14 +35,18 @@ export function runSource(source: string, config: YattConfig & {filename: string
 
   const mod = compile([...outputMap.values()].join('\n'), config.filename)
 
-  const nsPath = templatePath(config.filename, config.rootDir ?? '')
-  const ns: {[k: string]: any} = digEntry(mod.exports, ['$tmpl', ...nsPath])
+  if (output.templateName.length != 2) {
+    throw new Error(`Invalid output template name: ${output.templateName.join('.')}`)
+  }
+  const [rootNS, fileNS] = output.templateName;
+
+  const ns: {[k: string]: any} = mod.exports[rootNS][fileNS];
   if (ns == null) {
-    throw new Error(`Can't find namespace ${nsPath}`);
+    throw new Error(`Can't find namespace ${rootNS}.${fileNS}`);
   }
   const fn = ns['render_']
   if (fn == null) {
-    throw new Error(`Can't find render_ in ${nsPath}`);
+    throw new Error(`Can't find render_ in ${rootNS}.${fileNS}`);
   }
 
   let CON = {

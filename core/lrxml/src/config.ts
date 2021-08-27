@@ -1,6 +1,6 @@
 export interface LrxmlParams {
   namespace: string[]
-  rootDir: string
+  rootDir?: string
   default_part: string
   compat_end_of_comment: boolean
   debug: {
@@ -24,7 +24,7 @@ export function lrxmlParams(
 
   return {
     namespace,
-    rootDir: rootDir ?? doc_root ?? "",
+    rootDir: rootDir ?? doc_root,
     default_part,
     compat_end_of_comment,
     debug
