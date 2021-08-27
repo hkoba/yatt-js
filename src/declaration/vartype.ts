@@ -16,11 +16,13 @@ export type VariableBase = {
 export type DefaultFlag = "?" | "|" | "/" | "!"
 
 type TextVar = {typeName: "text"} & VariableBase;
+// XXX: AttrVar
+
 type ListVar = {typeName: "list"} & VariableBase;
 type ScalarVar = {typeName: "scalar"} & VariableBase;
 type BooleanVar = {typeName: "boolean"} & VariableBase;
 type HtmlVar = {typeName: "html"} & VariableBase;
-type ExprVar = { typeName: "expr"} & VariableBase;
+type ExprVar = { typeName: "expr"} & VariableBase; // XXX: function, closure, cb
 export type SimpleVar = TextVar | ListVar | ScalarVar | BooleanVar | HtmlVar | ExprVar
 
 export type WidgetVar = {

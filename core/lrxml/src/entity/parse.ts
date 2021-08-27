@@ -91,6 +91,7 @@ type EntPathMatch = {
   dict_open?: string
 }
 
+// XXX: Should preseve ns
 export function parse_entpath(ctx: ParserContext): EntNode {
 
   const start = ctx.index
