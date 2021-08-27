@@ -46,18 +46,6 @@ function outFileName(filename: string, newExt: string, config: YattConfig): stri
   }
 }
 
-function longestPrefix(fileList: string[]): string {
-  const [first, ...rest] = fileList;
-  let prefix = ""
-  for (let i = 0; i < first.length; i++) {
-    let char = first.charAt(i)
-    if (rest.some(fn => fn.charAt(i) !== char))
-      break;
-    prefix += char;
-  }
-  return prefix;
-}
-
 if (module.id === ".") {
   const { parse_long_options } = require('lrxml-js')
 

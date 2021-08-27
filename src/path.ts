@@ -1,16 +1,20 @@
 #!/usr/bin/env ts-node
 
 import path from 'path'
+import {strictEqual} from 'assert'
 
 export const srcDir = __dirname
 
-export function templatePath(filename: string, rootDir: string): string[] {
-  if (! filename.startsWith(rootDir))
-    throw new Error(`File ${filename} is not under ${rootDir}`)
+export function templatePath(filename: string, rootDir?: string): string[] {
 
-  const dir = path.dirname(filename)
-  const tmplDir = dir === '.' ? [] : dir.split(path.sep)
-  const tmplName = path.basename(filename, path.extname(filename))
+  const suffix = pathUnderRootDir(filename, rootDir)
+  if (suffix == null) {
+    throw new Error(`filename '${filename}' doesn't start with ${rootDir}`)
+  }
+
+  const dir = path.dirname(suffix)
+  const tmplDir = dir === '.' ? [] : dir.split(path.sep).filter(s => s.length)
+  const tmplName = path.basename(suffix, path.extname(filename))
   const tmplPath = [...tmplDir, tmplName];
   for (const path of tmplPath) {
     if (!/^[_a-z][0-9_a-z]*$/i.exec(path)) {
@@ -20,15 +24,48 @@ export function templatePath(filename: string, rootDir: string): string[] {
   return tmplPath
 }
 
-type Tree<T> = {[k: string]: T | Tree<T>};
-
-export function digEntry<T>(tree: Tree<T>, path: string[]): T | Tree<T> | undefined {
-  let node: Tree<T> = tree
-  for (const p of path) {
-    let v: T | Tree<T> = node[p]
-    if (v == null)
-      return;
-    node = v as unknown as Tree<T>;
+export function pathUnderRootDir(filename: string, rootDir?: string): string | undefined {
+  if (rootDir == null) {
+    return path.basename(filename);
+  } else {
+    strictEqual(rootDir.charAt(rootDir.length-1), path.sep
+                , `rootDir should end with path.sep`)
+    if (filename.startsWith(rootDir)) {
+      return filename.substring(rootDir.length)
+    }
   }
-  return node;
+}
+
+export function longestPrefixDir(fileList: string[]): string | undefined {
+  const [first, ...rest] = fileList.map(p => path.normalize(p));
+  let prefix = normalizeDir(first)
+  for (const fn of rest) {
+    while (prefix.length && !fn.startsWith(prefix)) {
+      prefix = normalizeDir(prefix);
+    }
+    if (!prefix.length)
+      break;
+  }
+  return prefix;
+
+  function normalizeDir(fn: string): string {
+    let prefix = path.dirname(fn)
+    if (prefix === "." && !fn.startsWith('./')) {
+      return ""
+    } else {
+      return prefix + '/';
+    }
+  }
+}
+
+if (module.id === ".") {
+  const [cmd, ...args] = process.argv.slice(2);
+  switch (cmd) {
+    case "longestPrefixDir":
+      console.log(longestPrefixDir(args)); break
+    case "templatePath":
+      console.log(templatePath(args[0], args[1])); break;
+    default:
+      console.error(`Unknown command: ${cmd}`);
+  }
 }
