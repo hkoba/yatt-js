@@ -7,3 +7,6 @@ package-lock.json
 *.strace
 *.out
 *.log
+lib/example
+lib/src
+lib/test
