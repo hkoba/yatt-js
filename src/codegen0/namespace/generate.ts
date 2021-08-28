@@ -40,7 +40,10 @@ export function generate_namespace_from_template(
 {
   let program = `import {yatt} from '${srcDir}/yatt'\n`;
 
-  program += `export namespace ${session.templateName.join('.')} {\n`
+  if (session.params.exportNamespace) {
+    program += `export `;
+  }
+  program += `namespace ${session.templateName.join('.')} {\n`
 
   for (const [kind, name] of template.partOrder) {
     const partMap = template.partMap[kind]

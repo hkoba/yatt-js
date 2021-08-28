@@ -3,6 +3,7 @@ import {LrxmlParams} from 'lrxml-js'
 export type YattParams = LrxmlParams & {
   outDir?: string;
   templateNamespace?: string;
+  exportNamespace?: boolean;
   noEmit: boolean;
   body_argument_name: string;
   debug: {parser?: number, declaration?: number}
@@ -18,6 +19,7 @@ export function yattParams(
     rootDir,
     outDir,
     templateNamespace,
+    exportNamespace,
     noEmit = false,
     default_part = "page",
     compat_end_of_comment = false,
@@ -30,6 +32,7 @@ export function yattParams(
     rootDir: rootDir ?? doc_root,
     outDir,
     templateNamespace,
+    exportNamespace,
     noEmit,
     default_part,
     compat_end_of_comment,
