@@ -3,6 +3,8 @@
 import path from 'path'
 import {strictEqual} from 'assert'
 
+import {YattConfig} from './config'
+
 export const srcDir = __dirname
 
 export function templatePath(filename: string, rootDir?: string): string[] {
@@ -57,6 +59,22 @@ export function longestPrefixDir(fileList: string[]): string | undefined {
     }
   }
 }
+
+export function outFileName(filename: string, newExt: string, config: YattConfig): string {
+  const ext = path.extname(filename)
+  if (config.outDir != null && config.outDir !== "") {
+    if (config.rootDir == null || config.rootDir === "")
+      throw new Error(`rootDir should not be empty when outDir is specified`);
+    const subName = pathUnderRootDir(filename, config.rootDir)
+    if (subName == null)
+      throw new Error(`Can't determine outFileName for ${filename} under rootDir ${config.rootDir}`);
+    const rootName = path.join(path.dirname(subName), path.basename(subName, ext))
+    return path.join(config.outDir, rootName + newExt)
+  } else {
+    return path.join(path.dirname(filename), path.basename(filename, ext) + newExt)
+  }
+}
+
 
 if (module.id === ".") {
   const [cmd, ...args] = process.argv.slice(2);

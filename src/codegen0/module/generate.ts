@@ -14,7 +14,7 @@ import {generate_widget} from '../widget/generate'
 
 export function generate_module(
   source: string, config: YattConfig & {filename: string}
-): string
+): {outputText: string, templateName: string[]}
 {
   const [template, builderSession] = build_template_declaration(source, config)
   const templateName = templatePath(config.filename, builderSession.params.rootDir);
@@ -43,7 +43,10 @@ export function generate_module(
     }
   }
 
-  return program
+  return {
+    templateName,
+    outputText: program
+  }
 }
 
 if (module.id === '.') {
