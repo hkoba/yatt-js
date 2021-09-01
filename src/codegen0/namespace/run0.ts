@@ -22,6 +22,8 @@ export function runFile(filename: string, config: YattConfig): string {
 
 export function runSource(source: string, config: YattConfig & {filename: string}) {
 
+  config.exportNamespace = true;
+
   const output = generate_namespace(source, config)
 
   let {program: _program, outputMap, diagnostics} = makeProgram(output.outputText)
