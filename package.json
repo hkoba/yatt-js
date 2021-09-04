@@ -3,11 +3,9 @@
   "version": "0.0.1",
   "description": "Yet Another Template Transpiler to TypeScript",
   "main": "lib/index.js",
-  "workspaces": {
-    "packages": [
-      "core/*"
-    ]
-  },
+  "workspaces": [
+    "core/*"
+  ],
   "scripts": {
     "test": "tap"
   },
