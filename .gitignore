@@ -10,3 +10,4 @@ package-lock.json
 lib/example
 lib/src
 lib/test
+example/dist
