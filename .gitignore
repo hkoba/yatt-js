@@ -1,7 +1,7 @@
-/.log
+.log/
 package-lock.json
-/.nyc_output
-/node_modules
+.nyc_output/
+node_modules/
 /dist
 *.pdf
 *.strace
