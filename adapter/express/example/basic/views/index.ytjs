@@ -1,0 +1,11 @@
+<!yatt:args x y>
+あああ
+<yatt:foo x y/>
+いいい
+
+<!yatt:widget foo x="?こんにちわ" y="?さようなら">
+<h2>&yatt:x;</h2>
+<div>
+<yatt:BODY/>
+</div>
+&yatt:y;

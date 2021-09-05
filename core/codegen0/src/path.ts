@@ -75,7 +75,6 @@ export function outFileName(filename: string, newExt: string, config: YattConfig
   }
 }
 
-
 if (module.id === ".") {
   const [cmd, ...args] = process.argv.slice(2);
   switch (cmd) {

@@ -1,5 +1,6 @@
 import Module = require('module');
 // Use this style because class Module is exporeted via 'export ='
+export {Module}
 
 import ts = require('typescript')
 
