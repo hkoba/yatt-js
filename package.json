@@ -4,7 +4,8 @@
   "description": "Yet Another Template Transpiler to TypeScript",
   "main": "lib/index.js",
   "workspaces": [
-    "core/*"
+    "core/*",
+    "adapter/*"
   ],
   "scripts": {
     "test": "tap"
@@ -21,6 +22,7 @@
   "devDependencies": {
     "@types/glob": "^7.1.3",
     "@types/node": "^15.6.1",
+    "@types/tap": "^15.0.2",
     "rollup": "^2.56.2",
     "tap": "^15.0.6",
     "ts-node": "^10.1.0",
