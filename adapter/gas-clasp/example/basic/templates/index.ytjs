@@ -1,0 +1,11 @@
+<yatt:layout title="Hello world!">
+
+Are you ok?
+
+</yatt:layout>
+
+<!yatt:widget layout title>
+<body>
+ <h2>&yatt:title;</h2>
+ <yatt:BODY/>
+</body>

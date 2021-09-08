@@ -1,0 +1,22 @@
+{
+  "name": "yatt-gas-clasp",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hkoba/yatt-js.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/hkoba/yatt-js/issues"
+  },
+  "homepage": "https://github.com/hkoba/yatt-js#readme",
+  "dependencies": {
+    "@types/google-apps-script": "^1.0.37"
+  }
+}
