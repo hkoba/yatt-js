@@ -13,7 +13,7 @@ export const DEFAULT_NAMESPACE = '$tmpl'
 
 export function generate_namespace(
   source: string, config: YattConfig & {filename: string}
-): {outputText: string, templateName: string[]}
+): {outputText: string, templateName: string[], session: CGenSession}
 {
   const [template, session] = build_template_declaration(
     source,
@@ -26,7 +26,7 @@ export function generate_namespace(
   // XXX: should return templateName too.
   return {
     templateName,
-    outputText: generate_namespace_from_template(template, {
+    ...generate_namespace_from_template(template, {
       templateName,
       ...session
     })
@@ -36,13 +36,15 @@ export function generate_namespace(
 
 export function generate_namespace_from_template(
   template: TemplateDeclaration, session: CGenSession
-): string
+): {outputText: string, session: CGenSession}
 {
-  let program = `import {yatt} from '${srcDir}/yatt'\n`;
+  let program = ''
 
   if (session.params.exportNamespace) {
+    program += `import {yatt} from '${srcDir}/yatt'\n`;
     program += `export `;
   }
+
   program += `namespace ${session.templateName.join('.')} {\n`
 
   for (const [kind, name] of template.partOrder) {
@@ -64,7 +66,7 @@ export function generate_namespace_from_template(
   }
 
   program += '}\n'
-  return program;
+  return {outputText: program, session};
 }
 
 if (module.id === '.') {
