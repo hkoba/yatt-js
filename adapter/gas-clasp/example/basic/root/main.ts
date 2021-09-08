@@ -1,4 +1,4 @@
-function doGet(request: GoogleAppsScript.Events.DoGet): void {
+function doGet(request: GoogleAppsScript.Events.DoGet): GoogleAppsScript.HTML.HtmlOutput {
   let output = HtmlService.createHtmlOutput()
   let CON = {
     append(str: string) {
@@ -10,4 +10,6 @@ function doGet(request: GoogleAppsScript.Events.DoGet): void {
   }
 
   $tmpl.index.render_(CON, {})
+
+  return output
 }
