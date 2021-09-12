@@ -12,7 +12,7 @@ const webConfig = /** @type WebpackConfig */ {
 	mode: 'none', // this leaves the source code as close as possible to the original (when packaging we set this to 'production')
 	target: 'webworker', // extensions run in a webworker context
 	entry: {
-		'extension': './src/web/extension.ts',
+		'extension': './src/extension.ts',
 		'test/suite/index': './src/web/test/suite/index.ts'
 	},
 	resolve: {
@@ -49,8 +49,8 @@ const webConfig = /** @type WebpackConfig */ {
 		hints: false
 	},
 	output: {
-		filename: '[name].js',
-		path: path.join(__dirname, 'dist/web'),
+		filename: '[name]-web.js',
+		path: path.join(__dirname, 'dist/'),
 		libraryTarget: 'commonjs'
 	},
 	devtool: 'nosources-source-map' // create a source map that points to the original source file
