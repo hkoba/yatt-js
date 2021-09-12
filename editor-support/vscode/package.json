@@ -13,7 +13,7 @@
           "onLanguage:yatt-js",
           "onCommand:yatt-js.helloWorld"
 	],
-	"browser": "./dist/web/extension.js",
+	"browser": "./dist/extension-web",
 	"contributes": {
 		"languages": [
 			{
