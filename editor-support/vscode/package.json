@@ -10,10 +10,41 @@
 		"Other"
 	],
 	"activationEvents": [
+          "onLanguage:yatt-js",
           "onCommand:yatt-js.helloWorld"
 	],
 	"browser": "./dist/web/extension.js",
 	"contributes": {
+		"languages": [
+			{
+				"id": "yatt-js",
+				"aliases": [
+				],
+				"extensions": [
+					".ytjs"
+				],
+				"configuration": "./language-configuration.json"
+			}
+		],
+		"themes": [
+			{
+				"label": "yatt default",
+				"uiTheme": "vs",
+				"path": "themes/yatt_default.json"
+			}
+		],
+		"grammars": [
+			{
+				"language": "yatt-js",
+				"scopeName": "text.html.yatt",
+				"path": "./syntaxes/yatt-js.tmLanguage.json"
+			},
+			{
+				"language": "yatt-js",
+				"scopeName": "text.multipart.yatt",
+				"path": "./syntaxes/yatt-js-multipart.tmLanguage.json"
+			}
+		],
 		"commands": [
 			{
 				"command": "yatt-js.helloWorld",
