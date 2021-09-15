@@ -1,11 +1,34 @@
+'use strict';
 // https://github.com/rollup/rollup-starter-lib/blob/typescript/rollup.config.js
 
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import typescript from '@rollup/plugin-typescript';
 import { preserveShebangs } from 'rollup-plugin-preserve-shebangs';
+import MagicString from 'magic-string'
 
 import pkg from './package.json';
+
+const StripToplevelGuard = {
+  name: 'strip-toplevel-guard',
+  renderChunk(code, chunk, _a) {
+    const PAT = /(?<=^|\n)if\s*\(module\.id\s*===\s*"[.]"\s*\)\s*\{\s+?[\s\S]*?\n\}/g
+    let map = _a.sourcemap;
+    let str = new MagicString(code)
+    let match, matchCount = 0
+    while ((match = PAT.exec(code)) != null) {
+      str.overwrite(match.index, match.index + match[0].length, '')
+      matchCount++
+    }
+    if (matchCount) {
+      return {
+        code: str.toString(), map: map ? str.generateMap({ hires: true}) : null
+      }
+    } else {
+      return {code, map: null}
+    }
+  }
+}
 
 export default [
   // browser-friendly UMD build
@@ -36,6 +59,7 @@ export default [
     external: [],
     plugins: [
       preserveShebangs(),
+      StripToplevelGuard,
       typescript({module: "esnext"}) // so Rollup can convert TypeScript to JavaScript
     ],
     output: [
