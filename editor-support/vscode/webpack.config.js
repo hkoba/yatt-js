@@ -93,4 +93,4 @@ const nodeConfig = /** @type WebpackConfig */ {
   }
 };
 
-module.exports = [webConfig, nodeConfig];
+module.exports = [nodeConfig]; // , webConfig, 
