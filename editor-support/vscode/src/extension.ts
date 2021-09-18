@@ -3,6 +3,7 @@
 import * as vscode from 'vscode';
 
 import * as cgen from 'yatt-codegen0'
+import {TokenError} from 'lrxml-js'
 
 const LANG_ID = 'yatt-js'
 const COMMAND_ID = `${LANG_ID}.lint`
@@ -17,7 +18,21 @@ export function activate(context: vscode.ExtensionContext) {
       const output = cgen.generate_module(source, {filename: event.document.fileName})
       console.log(`transpiled: `, output.outputText)
     } catch (err) {
-      console.log(`error: `, err)
+      // XXX: rejected promise not handled within 1 second: Error: Unexpected type
+      // Why?
+      event.waitUntil((async () => {
+        console.log(`error: `, err)
+        if (err instanceof TokenError) {
+          vscode.commands.executeCommand(
+            'editor.action.goToLocations',
+            event.document.uri,
+            new vscode.Position(err.token.line, err.token.column)
+          )
+        }
+        if (err instanceof Error) {
+          vscode.window.showErrorMessage(err.message)
+        }
+      })())
     }
   }
 
