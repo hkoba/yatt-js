@@ -23,11 +23,9 @@ export function activate(context: vscode.ExtensionContext) {
       event.waitUntil((async () => {
         console.log(`error: `, err)
         if (err instanceof TokenError) {
-          vscode.commands.executeCommand(
-            'editor.action.goToLocations',
-            event.document.uri,
-            new vscode.Position(err.token.line, err.token.column)
-          )
+          console.log(`line ${err.token.line} col ${err.token.column}`)
+          const pos = new vscode.Position(err.token.line - 1, err.token.column - 1)
+          vscode.window.activeTextEditor!.selection = new vscode.Selection(pos, pos)
         }
         if (err instanceof Error) {
           vscode.window.showErrorMessage(err.message)
