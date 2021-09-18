@@ -25,6 +25,12 @@ export function session_range_text<S extends {source: string}>(session: S, range
   return range_text(session.source, range)
 }
 
+export class TokenError extends Error {
+  constructor(public token: Token & {line: number, column: number}, message: string) {
+    super(message)
+  }
+}
+
 export type GlobalMatch = {
   match: RegExpExecArray
   lastIndex: number
@@ -96,7 +102,8 @@ export class ScanningContext<S extends ParserSession> {
     const tokenLine = extract_line(this.session.source, lastNl, colNo)
     const fileInfo = this.session.filename ? ` at ${this.session.filename}` : ""
     const longMessage = `${message} for token ${token.kind}${fileInfo} line ${lineNo} column ${colNo}`
-    throw new Error(longMessage + '\n' + tokenLine)
+    throw new TokenError({...token, line: lineNo, column: colNo}
+                         , longMessage + '\n' + tokenLine)
   }
 
   NEVER(): never {
