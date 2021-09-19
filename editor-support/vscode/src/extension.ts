@@ -12,22 +12,29 @@ export function activate(context: vscode.ExtensionContext) {
 
   console.log('Congratulations, extension "yatt-js" is now active!');
 
+  const diagSet = vscode.languages.createDiagnosticCollection(COMMAND_ID)
+
   const handler = (event: vscode.TextDocumentWillSaveEvent) => {
+
+    if (event.reason !== vscode.TextDocumentSaveReason.Manual)
+      return;
+
     try {
       const source = event.document.getText()
-      const output = cgen.generate_module(source, {filename: event.document.fileName})
-      console.log(`transpiled: `, output.outputText)
+      let _ = cgen.generate_module(source, {filename: event.document.fileName})
+      diagSet.set(event.document.uri, [])
+
     } catch (err) {
-      // XXX: rejected promise not handled within 1 second: Error: Unexpected type
-      // Why?
-      console.log(`error: `, err)
+      if (err instanceof Error) {
+        console.log(`error: `, err.message)
+      }
       if (err instanceof TokenError && vscode.window.activeTextEditor != null) {
         console.log(`line ${err.token.line} col ${err.token.column}`)
-        const pos = new vscode.Position(err.token.line - 1, err.token.column - 1)
-        vscode.window.activeTextEditor.selection = new vscode.Selection(pos, pos)
-      }
-      if (err instanceof Error) {
-        vscode.window.showErrorMessage(err.message)
+        const {startLine, startCharacter, endLine, endCharacter} = err.token
+        const range = new vscode.Range(startLine, startCharacter, endLine, endCharacter)
+        vscode.window.activeTextEditor.selection = new vscode.Selection(range.start, range.start)
+        const diag = new vscode.Diagnostic(range, err.message, vscode.DiagnosticSeverity.Error)
+        diagSet.set(event.document.uri, [diag])
       }
     }
   }
