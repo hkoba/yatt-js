@@ -10,6 +10,10 @@ export function varTypeExpr(ctx: CodeGenContext<Widget>, vr: Variable): string {
       // })
       return `(CON: yatt.runtime.Connection, {}: {}) => void`;
     }
+    case "scalar": {
+      // XXX: better type
+      return "any"
+    }
     default:
       ctx.NIMPL();
   }
