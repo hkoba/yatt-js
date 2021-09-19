@@ -1,6 +1,7 @@
+<!yatt:args request="value/">
 <yatt:layout title="Hello world!">
 
-Are you ok?
+Are you ok? request=(&yatt:request;)
 
 </yatt:layout>
 

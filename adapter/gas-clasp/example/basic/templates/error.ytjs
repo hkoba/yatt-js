@@ -1,0 +1,3 @@
+<!yatt:args msg>
+<h2>Error</h2>
+&yatt:msg;
