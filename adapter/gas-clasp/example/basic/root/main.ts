@@ -1,12 +1,8 @@
 function doGet(request: GoogleAppsScript.Events.DoGet): GoogleAppsScript.HTML.HtmlOutput {
   let output = HtmlService.createHtmlOutput()
   let CON = {
-    append(str: string) {
-      output.append(str)
-    },
-    appendUntrusted(str: string) {
-      output.appendUntrusted(yatt.runtime.escape(str))
-    }
+    append: output.append.bind(output),
+    appendUntrusted: output.appendUntrusted.bind(output)
   }
 
   $tmpl.index.render_(CON, {})
