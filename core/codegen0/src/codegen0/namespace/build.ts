@@ -12,22 +12,28 @@ import {dirname} from 'path'
 
 import {longestPrefixDir, outFileName, srcDir} from '../../path'
 
+export function compose_namespace(fileList: string[], config: YattConfig): string {
+  let program = ""
+  for (const filename of fileList) {
+    const source = readFileSync(filename, {encoding: 'utf-8'})
+    const output = generate_namespace(source, {filename, ...config});
+    program += output.outputText
+  }
+  return program
+}
+
 export function build_namespace(fileList: string[], config: YattConfig): void {
   if (config.rootDir == null) {
     config.rootDir = longestPrefixDir(fileList)
   }
 
-  let outDir
-  for (const filename of fileList) {
-    let outFn = outFileName(filename, '.ts', config)
-    if (outDir == null)
-      outDir = dirname(outFn);
-    console.log(`Generating ${outFn} from ${filename}`)
-    let source = readFileSync(filename, {encoding: 'utf-8'})
-    const output = generate_namespace(source, {filename, ...config});
-    if (config.noEmit)
-      continue
-    writeFileSync(outFn, output.outputText)
+  const outDir = config.outDir ?? config.rootDir
+  const outFn = `${outDir}/index.ts`
+  const program = compose_namespace(fileList, config)
+
+  if (! config.noEmit) {
+    console.log(`Generating ${outFn}`)
+    writeFileSync(outFn, program)
   }
 
   if (outDir != null && ! config.noEmit) {
