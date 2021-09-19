@@ -33,7 +33,9 @@ type VSCodeRange = {
 }
 
 export class TokenError extends Error {
-  constructor(public token: Token & VSCodeRange, message: string) {
+  constructor(public token: Token
+              & {line: number, column: number}
+              & VSCodeRange, message: string) {
     super(message)
   }
 }
@@ -114,7 +116,8 @@ export class ScanningContext<S extends ParserSession> {
     const startLine = lineNo-1
     const startCharacter = colNo-1;
     const endLine = startLine + numLines
-    throw new TokenError({...token,
+    throw new TokenError({...token, line: lineNo,
+                          column: colNo, // XXX: really?
                           startLine, startCharacter,
                           endLine, endCharacter}
                          , longMessage + '\n' + tokenLine)
