@@ -26,3 +26,11 @@ export function extract_prefix_spec(src: string, index: number): [number, number
   const colNo = index - lastNl
   return [lastNl, lineNo, colNo]
 }
+
+export function extract_suffix_spec(src: string, start: number, end: number): [number, number] {
+  const content = src.substring(start, end)
+  const numLines = count_newlines(content)
+  const lastNl = content.lastIndexOf('\n')
+  const colNo = end - lastNl
+  return [numLines, colNo]
+}

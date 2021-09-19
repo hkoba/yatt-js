@@ -1,6 +1,6 @@
 import { LrxmlParams, lrxmlParams, LrxmlConfig } from './config'
 
-import { lineNumber, extract_line, extract_prefix_spec } from './utils/count_lines'
+import { lineNumber, extract_line, extract_prefix_spec, extract_suffix_spec } from './utils/count_lines'
 
 export type Range = {start: number, end: number}
 export type Token = {kind: string} & Range
@@ -25,8 +25,15 @@ export function session_range_text<S extends {source: string}>(session: S, range
   return range_text(session.source, range)
 }
 
+type VSCodeRange = {
+  startLine: number
+  startCharacter: number
+  endLine: number
+  endCharacter: number
+}
+
 export class TokenError extends Error {
-  constructor(public token: Token & {line: number, column: number}, message: string) {
+  constructor(public token: Token & VSCodeRange, message: string) {
     super(message)
   }
 }
@@ -102,7 +109,14 @@ export class ScanningContext<S extends ParserSession> {
     const tokenLine = extract_line(this.session.source, lastNl, colNo)
     const fileInfo = this.session.filename ? ` at ${this.session.filename}` : ""
     const longMessage = `${message} for token ${token.kind}${fileInfo} line ${lineNo} column ${colNo}`
-    throw new TokenError({...token, line: lineNo, column: colNo}
+
+    const [numLines, endCharacter] = extract_suffix_spec(this.session.source, token.start, token.end)
+    const startLine = lineNo-1
+    const startCharacter = colNo-1;
+    const endLine = startLine + numLines
+    throw new TokenError({...token,
+                          startLine, startCharacter,
+                          endLine, endCharacter}
                          , longMessage + '\n' + tokenLine)
   }
 
