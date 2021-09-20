@@ -25,6 +25,8 @@ import {
 
 import { BaseProcessor } from './base'
 
+import {isError} from '../utils/isError'
+
 export class WidgetBuilder implements DeclarationProcessor {
   readonly kind: string = 'widget'
   constructor(
@@ -154,7 +156,7 @@ export function builtin_vartypemap(): VarTypeMap {
 
 export function build_simple_variable(
   ctx: BuilderContext, attItem: AttItem, argNo: number, varName: string, spec: VarTypeSpec
-): SimpleVar
+): {ok: SimpleVar} | {err: string, value: AttItem}
 {
   let givenTypeName = spec.typeName;
   let defaultSpec = spec.defaultSpec;
@@ -162,15 +164,16 @@ export function build_simple_variable(
 
   const rec = ctx.session.varTypeMap.simple.get(givenTypeName)
   if (rec == null)
-    ctx.token_error(attItem, `Unknown type ${givenTypeName} for argument ${varName}`)
- 
+    return {err: `Unknown type ${givenTypeName} for argument ${varName}`, value: attItem}
+
   const {typeName, is_escaped, is_callable} = rec
 
-  return {
+  const ok = {
     typeName: typeName as SimpleVar['typeName'], is_escaped, is_callable,
     varName, defaultSpec, attItem, argNo,
       from_route: false, is_body_argument,
   }
+  return {ok}
 }
 
 export function build_template_declaration(
@@ -295,8 +298,10 @@ function add_args_cont(
           console.log(`kind ${att.kind}: ${name} = ${att.value}`)
         }
         let spec = parse_arg_spec(ctx, att.value, "text")
-        let v = build_simple_variable(ctx, att, part.argMap.size, name, spec)
-        part.argMap.set(name, v)
+        let res = build_simple_variable(ctx, att, part.argMap.size, name, spec)
+        if (isError(res))
+          ctx.token_error(res.value, res.err)
+        part.argMap.set(name, res.ok)
       }
       else if (att.kind === "nest") {
         //: name=[code] name=[delegate]
@@ -342,8 +347,10 @@ function add_args_cont(
     else if (isIdentOnly(att)) {
       //: nameOnly
       let name = att.value
-      let v = build_simple_variable(ctx, att, part.argMap.size, name, {typeName: "text"})
-      part.argMap.set(name, v)
+      let res = build_simple_variable(ctx, att, part.argMap.size, name, {typeName: "text"})
+      if (isError(res))
+        ctx.token_error(res.value, res.err)
+      part.argMap.set(name, res.ok)
     }
     else if (att.kind === "entity") {
       // XXX: entity (ArgMacro)
