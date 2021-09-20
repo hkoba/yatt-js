@@ -24,13 +24,13 @@ type ElementBody = Range & {
   // containedRange
 }
 
-export type Element = {kind: "element"} & ElementBody;
+export type ElementNode = {kind: "element"} & ElementBody;
 export type AttElement = {kind: "attelem"} & ElementBody;
 
 export type LCMsg   = Range & {kind: "lcmsg", namespace: string[]
                                , lcmsg: Text[][], bind: EntNode[]}
 
-export type Node = Text | Comment | PI | Element | AttElement | EntNode | LCMsg
+export type Node = Text | Comment | PI | ElementNode | AttElement | EntNode | LCMsg
 
 export function hasStringValue(att: AttItem | AttElement)
 : att is ({label?: Label} & StringTerm) {
@@ -72,7 +72,7 @@ export function parse_template(session: ParserSession, part: Part): Node[] {
 function parse_tokens(
   ctx: ParserContext, part: Part, lex: Generator<Token>,
   depth: number,
-  sink: (Node | AttElement)[], close?: string, parent?: (Element | AttElement)
+  sink: (Node | AttElement)[], close?: string, parent?: (ElementNode | AttElement)
 ): void {
 
   let cur;
@@ -114,7 +114,7 @@ function parse_tokens(
         if (end.kind !== "tag_close") {
           ctx.NEVER()
         }
-        let elem: Element | AttElement = {
+        let elem: ElementNode | AttElement = {
           kind: tok.is_option ? "attelem" : "element",
           path: tok.name.split(/:/), attlist,
           start: tok.start, end: tok.end
