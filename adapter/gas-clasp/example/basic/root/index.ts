@@ -14,6 +14,8 @@ export function render_ (this: typeof $tmpl.index, CON: yatt.runtime.Connection,
  $this.render_layout(CON, {title: 'Hello world!', BODY: (CON: yatt.runtime.Connection, {}: {}): void => { CON.append('\n');
  CON.append('Are you ok? request=('); CON.appendUntrusted(request); CON.append(')\n');
  CON.append('\n');
+for (const x of [3,4,5]) { CON.append('    <li>'); CON.appendUntrusted(x); CON.append('</li>\n');
+} CON.append('\n');
 }}); CON.append('\n');
 }
 export function render_layout (this: typeof $tmpl.index, CON: yatt.runtime.Connection, {title, BODY}: {title?: string; BODY?: (CON: yatt.runtime.Connection, {}: {}) => void}) {const $this = this
