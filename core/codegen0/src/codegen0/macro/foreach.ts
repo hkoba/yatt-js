@@ -7,6 +7,8 @@ import {CodeGenContext} from '../context'
 
 import {VarScope} from '../varscope'
 
+import {isError} from '../../utils/isError'
+
 export function macro_foreach(
   ctx: CodeGenContext, scope: VarScope,
   node: ElementNode,
@@ -21,11 +23,6 @@ export function macro_foreach(
   console.log(`my: `, actualArgs.my)
   console.log(`list: `, actualArgs.list)
   return ''
-}
-
-function isError<T, E>(value: {ok: T} | {err: string, value: E})
-: value is {err: string, value: E} {
-  return (value as {err: string, value: E}).err !== undefined
 }
 
 function collect_arg_spec<T extends {[k: string]: AttValue}>(
