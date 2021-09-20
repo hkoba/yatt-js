@@ -8,7 +8,7 @@ import {build_template_declaration} from '../../declaration'
 
 import {srcDir, templatePath} from '../../path'
 
-import {CodeGenContext} from '../context'
+import {CodeGenContextClass} from '../context'
 
 import {generate_widget} from '../widget/generate'
 
@@ -43,7 +43,7 @@ export function generate_module(
       case "widget": {
         if (part.raw_part == null)
           continue;
-        let ctx = new CodeGenContext(template, part, session);
+        let ctx = new CodeGenContextClass(template, part, session);
         let ast = parse_template(session, part.raw_part)
         program += generate_widget(ctx, ast)
       }

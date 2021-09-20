@@ -2,17 +2,23 @@
 
 import {parse_template} from 'lrxml-js'
 
-import {CodeGenContext, CGenSession} from '../context'
+import {CodeGenContextClass, CGenSession} from '../context'
 import {build_template_declaration, TemplateDeclaration, Widget} from '../../declaration'
 import {generate_widget} from '../widget/generate'
 import {YattConfig} from '../../config'
 
 import {srcDir, templatePath} from '../../path'
 
+import {CGenMacro} from '../macro'
+import {builtinMacros} from '../macro/'
+
 export const DEFAULT_NAMESPACE = '$tmpl'
 
 export function generate_namespace(
-  source: string, config: YattConfig & {filename: string}
+  source: string, config: YattConfig & {
+    filename: string,
+    macro?: Partial<CGenMacro>
+  }
 ): {outputText: string, templateName: string[], session: CGenSession}
 {
   const [template, session] = build_template_declaration(
@@ -28,6 +34,7 @@ export function generate_namespace(
     templateName,
     ...generate_namespace_from_template(template, {
       templateName,
+      macro: Object.assign({}, builtinMacros, config.macro ?? {}),
       ...session
     })
     // sourceMapText
@@ -58,7 +65,7 @@ export function generate_namespace_from_template(
       case "widget": {
         if (part.raw_part == null)
           continue;
-        let ctx = new CodeGenContext(template, part, session, {hasThis: true});
+        let ctx = new CodeGenContextClass(template, part, session, {hasThis: true});
         let ast = parse_template(session, part.raw_part)
         program += generate_widget(ctx, ast)
       }

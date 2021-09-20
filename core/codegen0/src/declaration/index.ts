@@ -13,6 +13,6 @@ export {
 } from './vartype'
 
 export {
-  BuilderContext, BuilderSession,
+  BuilderContext, BuilderContextClass, BuilderSession,
   BuilderMap, DeclarationProcessor
 } from '../declaration/context'

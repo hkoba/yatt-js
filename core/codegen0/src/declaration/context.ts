@@ -51,14 +51,16 @@ export type BuilderSession = ParserSession & {
   varTypeMap: VarTypeMap
 }
 
-export class BuilderContext extends ScanningContext<BuilderSession> {
+export type BuilderContext = BuilderContextClass<BuilderSession>
+
+export class BuilderContextClass<S extends BuilderSession> extends ScanningContext<S> {
   public debug: number = 0
   stash: Map<[string, string], any>;
-  constructor(session: BuilderSession,
+  constructor(session: S,
               index: number = 0,
               start: number = 0,
               end: number = session.source.length,
-              parent?: BuilderContext) {
+              parent?: BuilderContextClass<S>) {
     super(session, index, start, end, parent)
     this.stash = new Map;
     if (session.params.debug.declaration !== undefined) {
@@ -139,5 +141,5 @@ export function builderContext(
     patterns: {}
   }
 
-  return new BuilderContext(session)
+  return new BuilderContextClass<BuilderSession>(session)
 }

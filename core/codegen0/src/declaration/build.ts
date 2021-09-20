@@ -9,7 +9,7 @@ import {
 import { YattConfig, yattParams } from '../config'
 
 import {
-  BuilderMap, BuilderContext, BuilderSession, DeclarationProcessor,
+  BuilderMap, BuilderContext, BuilderContextClass, BuilderSession, DeclarationProcessor,
   VarTypeMap,
   ArgAdder
 } from './context'
@@ -194,7 +194,7 @@ export function build_template_declaration(
     params: buildParams
   };
 
-  const ctx = new BuilderContext(builder_session)
+  const ctx = new BuilderContextClass(builder_session)
 
   // For delegate type and ArgMacro
   let partOrder: [PartKind, string][] = []
