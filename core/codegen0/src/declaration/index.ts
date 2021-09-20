@@ -2,6 +2,7 @@ export {
   build_template_declaration,
   TemplateDeclaration, PartMapType, RouteMapType,
   builtin_builders
+  , build_simple_variable
 } from '../declaration/build'
 
 export {

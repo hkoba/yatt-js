@@ -153,7 +153,8 @@ export function builtin_vartypemap(): VarTypeMap {
 }
 
 export function build_simple_variable(
-  ctx: BuilderContext, attItem: AttItem, argNo: number, varName: string, spec: VarTypeSpec
+  ctx: BuilderContext, varName: string, spec: VarTypeSpec,
+  {attItem, argNo}: {attItem?: AttItem, argNo?: number}
 ): SimpleVar
 {
   let givenTypeName = spec.typeName;
@@ -295,7 +296,9 @@ function add_args_cont(
           console.log(`kind ${att.kind}: ${name} = ${att.value}`)
         }
         let spec = parse_arg_spec(ctx, att.value, "text")
-        let v = build_simple_variable(ctx, att, part.argMap.size, name, spec)
+        let v = build_simple_variable(ctx, name, spec, {
+          attItem: att, argNo: part.argMap.size
+        })
         part.argMap.set(name, v)
       }
       else if (att.kind === "nest") {
@@ -342,7 +345,9 @@ function add_args_cont(
     else if (isIdentOnly(att)) {
       //: nameOnly
       let name = att.value
-      let v = build_simple_variable(ctx, att, part.argMap.size, name, {typeName: "text"})
+      let v = build_simple_variable(ctx, name, {typeName: "text"}, {
+        attItem: att, argNo: part.argMap.size
+      })
       part.argMap.set(name, v)
     }
     else if (att.kind === "entity") {
