@@ -3,6 +3,10 @@
 
 Are you ok? request=(&yatt:request;)
 
+<yatt:foreach my=x list="3,4,5">
+    <li>&yatt:x;</li>
+</yatt:foreach>
+
 </yatt:layout>
 
 <!yatt:widget layout title>
