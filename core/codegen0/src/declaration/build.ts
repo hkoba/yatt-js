@@ -162,7 +162,7 @@ export function build_simple_variable(
 
   const rec = ctx.session.varTypeMap.simple.get(givenTypeName)
   if (rec == null)
-    ctx.token_error(attItem, `Unknown type ${givenTypeName} for argument ${varName}`)
+    ctx.maybe_token_error(attItem, `Unknown type ${givenTypeName} for argument ${varName}`)
  
   const {typeName, is_escaped, is_callable} = rec
 

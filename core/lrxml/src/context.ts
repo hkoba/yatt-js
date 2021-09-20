@@ -105,6 +105,14 @@ export class ScanningContext<S extends ParserSession> {
     throw new Error(longMessage)
   }
 
+  maybe_token_error(
+    token: Token | undefined, message: string, options?: {index?: number}
+  ): never {
+    if (token === undefined)
+      this.throw_error(message, options)
+    this.token_error(token, message, options)
+  }
+
   token_error(token: Token, message: string, options?: {index?: number}): never {
     const index = token.start + (options?.index ?? 0);
     const [lastNl, lineNo, colNo] = extract_prefix_spec(this.session.source, index)
