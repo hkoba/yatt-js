@@ -14,14 +14,14 @@ export function build(fileList: string[], config: YattConfig): void {
     config.rootDir = longestPrefixDir(fileList)
   }
 
-  let generator = config.templateNamespace ? generate_namespace :
+  let generate = config.templateNamespace ? generate_namespace :
     generate_module;
 
   for (const filename of fileList) {
     let outFn = outFileName(filename, '.ts', config)
     console.log(`Generating ${outFn} from ${filename}`)
     let source = readFileSync(filename, {encoding: 'utf-8'})
-    const output = generator(source, {filename, ...config});
+    const output = generate(source, {filename, ...config});
     if (config.noEmit)
       continue
     writeFileSync(outFn, output.outputText)
