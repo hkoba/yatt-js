@@ -40,6 +40,12 @@ export function isLabelTerm(term: Term)
   return term.kind === "identplus" || term.kind === "nest"
 }
 
+export function attValue(att: AttItem): AttValue {
+  return Object.fromEntries(
+    Object.entries(att).filter(([k]) => k !== "label")
+  ) as AttValue
+}
+
 export function parse_attlist<T extends {kind: string} & Range>(
   ctx: ParserContext, lex: Generator<T,any,any>, end_kind: string
 ): [AttItem[], T] {

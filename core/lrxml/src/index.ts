@@ -19,7 +19,7 @@ export {
 } from './template/'
 
 export {
-  AttItem, AttValue,
+  AttItem, AttValue, attValue
 } from './attlist/parse'
 
 export {EntNode, EntTerm, EntPath} from './entity/parse'
