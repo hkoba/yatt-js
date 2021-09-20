@@ -4,7 +4,7 @@ import {Widget} from '../../../declaration'
 import {VarScope} from '../../varscope'
 
 export function generate_entity(
-  ctx: CodeGenContext<Widget>, scope: VarScope, node: Node & {kind: 'entity'}
+  ctx: CodeGenContext, scope: VarScope, node: Node & {kind: 'entity'}
 ) {
   if (node.path.length !== 1) {
     ctx.NIMPL()

@@ -9,7 +9,7 @@ import {generate_argdecls} from '../argdecls'
 import {generate_body} from '../body'
 
 export function generate_putargs(
-  ctx: CodeGenContext<Widget>, scope: VarScope, node: Node & {kind: 'element'}
+  ctx: CodeGenContext, scope: VarScope, node: Node & {kind: 'element'}
   , calleeWidget: Widget
   // , delegateVars
 ) :string

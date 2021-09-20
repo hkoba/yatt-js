@@ -5,7 +5,7 @@ import {VarScope} from '../../varscope'
 import {generate_putargs} from './putargs'
 
 export function generate_element(
-  ctx: CodeGenContext<Widget>, scope: VarScope, node: Node & {kind: 'element'}
+  ctx: CodeGenContext, scope: VarScope, node: Node & {kind: 'element'}
 ) // : string
 {
   // XXX: macro_if, foreach, ...

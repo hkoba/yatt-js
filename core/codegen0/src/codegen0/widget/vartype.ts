@@ -1,7 +1,7 @@
 import {CodeGenContext} from '../context'
 import {Variable, Widget} from '../../declaration'
 
-export function varTypeExpr(ctx: CodeGenContext<Widget>, vr: Variable): string {
+export function varTypeExpr(ctx: CodeGenContext, vr: Variable): string {
   switch (vr.typeName) {
     case "text":
       return 'string';

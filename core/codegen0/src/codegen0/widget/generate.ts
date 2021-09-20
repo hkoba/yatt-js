@@ -6,7 +6,7 @@ import {VarScope} from '../varscope'
 import {generate_argdecls} from './argdecls'
 import {generate_body} from './body'
 
-export function generate_widget(ctx: CodeGenContext<Widget>, nodeList: Node[])
+export function generate_widget(ctx: CodeGenContext, nodeList: Node[])
 // : string
 {
   let program = `export function render_${ctx.part.name} `;

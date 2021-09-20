@@ -58,7 +58,7 @@ export function generate_namespace_from_template(
       case "widget": {
         if (part.raw_part == null)
           continue;
-        let ctx = new CodeGenContext<Widget>(template, part, session, {hasThis: true});
+        let ctx = new CodeGenContext(template, part, session, {hasThis: true});
         let ast = parse_template(session, part.raw_part)
         program += generate_widget(ctx, ast)
       }

@@ -1,15 +1,15 @@
 import {ScanningContext} from 'lrxml-js'
 
-import { TemplateDeclaration, BuilderSession, Part } from '../declaration/'
+import { TemplateDeclaration, BuilderSession, Widget } from '../declaration/'
 
 export type CGenSession  = BuilderSession & {
   templateName: string[]
 }
 
-export class CodeGenContext<T extends Part> extends ScanningContext<CGenSession> {
+export class CodeGenContext extends ScanningContext<CGenSession> {
   public hasThis: boolean
   constructor(
-    public template: TemplateDeclaration, public part: T,
+    public template: TemplateDeclaration, public part: Widget,
     session: CGenSession,
     params?: {hasThis?: boolean}
   ) {
