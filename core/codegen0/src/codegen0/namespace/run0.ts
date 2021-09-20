@@ -56,9 +56,13 @@ export function runSource(source: string, config: YattConfig & {filename: string
     append(str: string) {
       this.buffer += str;
     },
-    appendUntrusted(str?: string) {
+    appendUntrusted(str?: string | number) {
       if (str == null) return;
-      this.buffer += yatt.runtime.escape(str)
+      if (typeof str === "number") {
+        this.buffer += str
+      } else {
+        this.buffer += yatt.runtime.escape(str)
+      }
     }
   }
   fn.apply(ns, [CON, {}]);

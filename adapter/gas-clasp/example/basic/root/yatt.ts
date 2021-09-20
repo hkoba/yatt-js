@@ -4,7 +4,7 @@ namespace yatt {}
 namespace yatt.runtime {
   export interface Connection {
     append(str: string): void;
-    appendUntrusted(str?: string): void;
+    appendUntrusted(str?: string | number): void;
   }
 
   const escapeMap = {
