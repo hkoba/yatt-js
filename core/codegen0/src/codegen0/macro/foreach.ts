@@ -13,7 +13,7 @@ export function macro_foreach(
   ctx: CodeGenContext, scope: VarScope,
   node: ElementNode,
 )
-: string
+: {output: string, fragment?: any}
 {
   console.dir(node, {depth: null, color: true})
   const primary = collect_arg_spec(node.attlist, ['my', 'list'])

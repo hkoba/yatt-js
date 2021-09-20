@@ -6,6 +6,6 @@ import {VarScope} from './varscope'
 
 export type CGenMacro = (
   ctx: CodeGenContext, scope: VarScope, node: ElementNode
-) => string; // XXX: may need emitter abstraction
+) => {output: string, fragment?: any}; // XXX: may need emitter abstraction
 
 export type MacroDict = {[k: `macro_${string}`]: CGenMacro}

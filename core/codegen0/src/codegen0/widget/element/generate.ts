@@ -15,7 +15,7 @@ export function generate_element(
 
   const macroHandler = ctx.session.macro[`macro_${wname}`]
   if (macroHandler) {
-    return macroHandler(ctx, scope, node)
+    return macroHandler(ctx, scope, node).output
   }
 
   let callExpr: string | undefined
