@@ -2,8 +2,11 @@ import {ScanningContext} from 'lrxml-js'
 
 import { TemplateDeclaration, BuilderSession, Widget } from '../declaration/'
 
+import {MacroDict} from './macro'
+
 export type CGenSession  = BuilderSession & {
   templateName: string[]
+  macro: MacroDict
 }
 
 export class CodeGenContext extends ScanningContext<CGenSession> {

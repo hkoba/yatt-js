@@ -13,6 +13,11 @@ export function generate_element(
 
   const [_ns, wname, ...rest] = node.path;
 
+  const macroHandler = ctx.session.macro[`macro_${wname}`]
+  if (macroHandler) {
+    return macroHandler(ctx, scope, node)
+  }
+
   let callExpr: string | undefined
   let calleeWidget: Widget | undefined
   let implicitArgs = ['CON'];

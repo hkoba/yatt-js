@@ -12,14 +12,21 @@ import {CodeGenContext} from '../context'
 
 import {generate_widget} from '../widget/generate'
 
+import {CGenMacro} from '../macro'
+import {builtinMacros} from '../macro/'
+
 export function generate_module(
-  source: string, config: YattConfig & {filename: string}
+  source: string, config: YattConfig & {
+    filename: string,
+    macro?: Partial<CGenMacro>
+  }
 ): {outputText: string, templateName: string[]}
 {
   const [template, builderSession] = build_template_declaration(source, config)
   const templateName = templatePath(config.filename, builderSession.params.rootDir);
   const session = {
     templateName,
+    macro: Object.assign({}, builtinMacros, config.macro ?? {}),
     ...builderSession
   }
 
