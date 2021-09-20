@@ -67,7 +67,7 @@ if (module.id === '.') {
 
   for (const filename of args) {
     let source = readFileSync(filename, {encoding: "utf-8"})
-    const script = generate_module(source, {filename, ...config})
-    process.stdout.write(script + '\n');
+    const output = generate_module(source, {filename, ...config})
+    process.stdout.write(output.outputText + '\n');
   }
 }
