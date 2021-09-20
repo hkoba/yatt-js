@@ -17,6 +17,7 @@ export function build(fileList: string[], config: YattConfig): void {
   let generate = config.templateNamespace ? generate_namespace :
     generate_module;
 
+  // XXX: if generating namespace, output should go into single index.ts
   for (const filename of fileList) {
     let outFn = outFileName(filename, '.ts', config)
     console.log(`Generating ${outFn} from ${filename}`)
