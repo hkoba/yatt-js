@@ -237,7 +237,12 @@ export class ParserContext extends ScanningContext<ParserSession> {
     this.index = match.index + match[matchIndex].length
     return {start, end: this.index}
   }
-  
+
+  tab_range(range: Range): Range {
+    this.index = range.end
+    return range
+  }
+
   prefix_of(globalMatch: GlobalMatch): Range | null {
     if (this.index >= globalMatch.match.index) {
       return null;

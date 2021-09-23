@@ -55,7 +55,7 @@ export function* tokenize_multipart_context(ctx: ParserContext): ChunkGenerator 
 
     const prefix = ctx.prefix_of(globalMatch)
     if (prefix != null) {
-      yield { kind: "text", ...prefix }
+      yield { kind: "text", ...ctx.tab_range(prefix) }
     }
 
     if (globalMatch.match.groups == null) continue
