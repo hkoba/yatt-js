@@ -40,10 +40,15 @@ export function isLabelTerm(term: Term)
   return term.kind === "identplus" || term.kind === "nest"
 }
 
+// This returns copy of att with filtering att.label
 export function attValue(att: AttItem): AttValue {
-  return Object.fromEntries(
-    Object.entries(att).filter(([k]) => k !== "label")
-  ) as AttValue
+  let obj: any = {}
+  for (const [k, v] of Object.entries(att)) {
+    if (k === "label")
+      continue
+    obj[k] = v
+  }
+  return obj as AttValue
 }
 
 export function parse_attlist<T extends {kind: string} & Range>(
