@@ -142,7 +142,7 @@ export function* tokenize(session: ParserSession, payloadList: Payload[]): Gener
             }
             return; // NOT REACHED
           }
-          const close = ctx.tab_string(end[0]);
+          const close = ctx.tab_match(end);
           yield {kind: "tag_close",
                  is_empty_element: end.groups && end.groups.empty_tag != null ? true : false,
                  lineEndLength: lineEndLength(ctx.range_text(close)),

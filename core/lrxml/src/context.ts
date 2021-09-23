@@ -232,18 +232,9 @@ export class ParserContext extends ScanningContext<ParserSession> {
     return matched
   }
 
-  tab_match(match: RegExpExecArray): Range {
+  tab_match(match: RegExpExecArray, matchIndex: number = 0): Range {
     const start = this.index
-    this.index += match[0].length
-    return {start, end: this.index}
-  }
-  
-  tab_string(str: string, diff?: number) : Range {
-    const start = this.index;
-    this.index += str.length
-    if (diff != null) {
-      this.index += diff
-    }
+    this.index = match.index + match[matchIndex].length
     return {start, end: this.index}
   }
   

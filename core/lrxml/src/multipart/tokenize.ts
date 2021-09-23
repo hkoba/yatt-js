@@ -63,7 +63,7 @@ export function* tokenize_multipart_context(ctx: ParserContext): ChunkGenerator 
     const dm: DeclMatch = globalMatch.match.groups
 
     if (dm.comment != null) {
-      ctx.tab_string(globalMatch.match[0])
+      ctx.tab_match(globalMatch.match)
       const end = ctx.match_index(re_comment_end)
       if (!end || !end.groups) {
         ctx.throw_error("Comment is not closed by '#-->'!", { index: globalMatch.match.index })
@@ -92,7 +92,7 @@ export function* tokenize_multipart_context(ctx: ParserContext): ChunkGenerator 
         ctx.throw_error("yatt declaration is not closed", { index: globalMatch.match.index })
       }
 
-      yield { kind: "decl_end", ...ctx.tab_string(end[0]) }
+      yield { kind: "decl_end", ...ctx.tab_match(end) }
     } else {
       ctx.throw_error("Unknown case!")
     }
