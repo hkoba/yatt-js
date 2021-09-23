@@ -2,10 +2,9 @@
 
 import tap from 'tap'
 
-import { parserContext, range_text, tokenize_multipart } from '../src/'
+import { range_text, tokenize_multipart } from '../src/'
 
 const it = (source: string) => {
-  let ctx = parserContext({source, config: {}})
   let lex = tokenize_multipart(source, {})
 
   return Array.from(lex).map((tok) => {
