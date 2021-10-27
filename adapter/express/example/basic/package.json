@@ -1,0 +1,21 @@
+{
+  "name": "yatt-appengine-basic",
+  "version": "0.0.1",
+  "description": "appengine example",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "build": "./build.ts && tsc -p",
+    "watch-node": "nodemon index.js",
+    "test": "tap"
+  },
+  "tap": {
+    "ts": true,
+    "coverage": false
+  },
+  "author": "buribullet@gmail.com",
+  "license": "MIT",
+  "dependencies": {
+    "glob": "^7.2.0"
+  }
+}

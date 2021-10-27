@@ -3,6 +3,9 @@
 <yatt:foo x y/>
 いいい
 
+<!yatt:page bar="/bar">
+bar です
+
 <!yatt:widget foo x="?こんにちわ" y="?さようなら">
 <h2>&yatt:x;</h2>
 <div>

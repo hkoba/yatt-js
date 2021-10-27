@@ -16,7 +16,7 @@
   },
   "scripts": {
     "b": "tsc -p tsconfig.build.json",
-    "build": "tsc -p tsconfig.build.json && rollup -c",
+    "build": "tsc -p tsconfig.build.json",
     "test": "tap"
   },
   "repository": {
