@@ -4,7 +4,10 @@ import {parse_template} from 'lrxml-js'
 
 import {YattConfig} from '../../config'
 
-import {build_template_declaration} from '../../declaration'
+import {
+  build_template_declaration
+  , TemplateDeclaration
+} from '../../declaration'
 
 import {srcDir, templatePath} from '../../path'
 
@@ -20,7 +23,7 @@ export function generate_module(
     filename: string,
     macro?: Partial<CGenMacro>
   }
-): {outputText: string, templateName: string[]}
+): {outputText: string, template: TemplateDeclaration, templateName: string[]}
 {
   const [template, builderSession] = build_template_declaration(source, config)
   const templateName = templatePath(config.filename, builderSession.params.rootDir);
@@ -52,6 +55,7 @@ export function generate_module(
 
   return {
     templateName,
+    template,
     outputText: program
   }
 }
