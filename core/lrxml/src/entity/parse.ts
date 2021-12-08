@@ -75,8 +75,8 @@ function re_entpath_open() {
 }
 
 function re_enttext(other: string[]) {
-  const head = '\\[\\](){}\\ \\t\\n,;';
-  const rest = head + ':';
+  const rest = '\\[\\](){}\\ \\t\\n,;';
+  const head = rest + ':';
   const re_str = re_join(
     `[^${head}][^${rest}]*`, '(?<paren>[(])'
     , ...other
