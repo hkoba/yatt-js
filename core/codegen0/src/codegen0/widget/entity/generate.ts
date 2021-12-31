@@ -24,7 +24,7 @@ export function generate_entity(
         ctx.token_error(node, `No such entity function: ${head.name}`)
       console.dir(node, {depth: null, color: true})
       // XXX: arguments
-      return ` entities.${head.name}.apply(CON, [])`;
+      return ` \$${ctx.primaryNS()}.${head.name}.apply(CON, [])`;
     }
     default:
       ctx.NIMPL()

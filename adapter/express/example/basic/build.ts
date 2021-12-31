@@ -14,8 +14,7 @@ import type {Connection} from './entity-fn'
 async function build(config: cgen.YattConfig) {
   const rootDir = config.rootDir ?? "pages"
   console.log('rootDir:', rootDir)
-  const entFns = await import('./entity-fn')
-  console.log('entity-fn: ', entFns)
+  const entFnsFile = __dirname + '/entity-fn'
 
   const pagesMap: Map<string, cgen.TemplateDeclaration> = new Map;
   for (const fn of glob.sync('**/*.ytjs', {root: rootDir, cwd: rootDir})) {
@@ -36,20 +35,8 @@ async function build(config: cgen.YattConfig) {
   let routingScript = `
 import type {Request, Response, NextFunction, Router} from 'express'
 import {yatt} from '${cgen.path.srcDir}/yatt'
-
-const makeConnection = () => {
-  return {
-    buffer: "",
-    append(str: string) {
-      this.buffer += str;
-    },
-    appendUntrusted(str?: string) {
-      if (str == null) return;
-      this.buffer += yatt.runtime.escape(str)
-    }
-  }
-}
-
+import type {Connection} from '${entFnsFile}'
+import {makeConnection} from '${entFnsFile}'
 `
 
   let routerBody = `export function express(router: Router): Router {\n`
@@ -68,7 +55,7 @@ const makeConnection = () => {
         paramsExpr.push(`${name}: req.params.${name}`)
       }
       const handler = `(req: Request, res: Response) => {
-    let CON = makeConnection()
+    let CON = makeConnection(req, res)
     ${viewId}.render_${widget.name}(CON, {${paramsExpr.join(', ')}})
     res.send(CON.buffer)
   }`

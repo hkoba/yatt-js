@@ -2,7 +2,7 @@
 
 import {parse_template} from 'lrxml-js'
 
-import {YattConfig} from '../../config'
+import {YattConfig, primaryNS} from '../../config'
 
 import {
   build_template_declaration
@@ -43,8 +43,12 @@ export async function generate_module(
   }
 
   let program = `import {yatt} from '${srcDir}/yatt'\n`;
-  if (config.entFns) {
-    program += `import * as entities from '../entity-fn'\n`
+  if (config.entFnsFile) {
+    const nsName = primaryNS(builderSession.params);
+    program += `import * as \$${nsName} from '${config.entFnsFile}'\n`
+    program += `import type {Connection} from '${config.entFnsFile}'\n`
+  } else {
+    program += `type Connection = yatt.runtime.Connection\n`
   }
 
   for (const [kind, name] of template.partOrder) {

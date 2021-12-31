@@ -22,7 +22,7 @@ export function generate_widget(ctx: CodeGenContext, nodeList: Node[])
     implicitArgs.push(`this: typeof ${ctx.session.templateName.join('.')}`)
     bodyPreamble += `const $this = this`;
   }
-  implicitArgs.push(`CON: yatt.runtime.Connection`)
+  implicitArgs.push(`CON: Connection`)
 
   // XXX: tmpl name
   program += `(${implicitArgs.join(', ')}, ${argDecls}) {${bodyPreamble}\n`;
