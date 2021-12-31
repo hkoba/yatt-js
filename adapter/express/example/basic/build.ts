@@ -52,7 +52,7 @@ import {makeConnection} from '${entFnsFile}'
       for (const [name, argSpec] of widget.argMap) {
         if (argSpec.is_body_argument)
           continue
-        paramsExpr.push(`${name}: req.params.${name}`)
+        paramsExpr.push(`${name}: req.params.${name} ?? req.query.${name}`)
       }
       const handler = `(req: Request, res: Response) => {
     let CON = makeConnection(req, res)
