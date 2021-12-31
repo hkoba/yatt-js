@@ -26,7 +26,7 @@ export function generate_body(ctx: CodeGenContext, scope: VarScope, nodeList: No
         program += generate_element(ctx, scope, node);
         break;
       case "entity":
-        program += generate_entity(ctx, scope, node);
+        program += generate_entity(ctx, scope, node) + '; ';
         break;
       default:
         ctx.NEVER();

@@ -21,7 +21,8 @@ import {builtinMacros} from '../macro/'
 export function generate_module(
   source: string, config: YattConfig & {
     filename: string,
-    macro?: Partial<CGenMacro>
+    macro?: Partial<CGenMacro>,
+    entFns?: {[k: string]: any},
   }
 ): {outputText: string, template: TemplateDeclaration, templateName: string[]}
 {
@@ -30,10 +31,14 @@ export function generate_module(
   const session = {
     templateName,
     macro: Object.assign({}, builtinMacros, config.macro ?? {}),
+    entFns: config.entFns ?? {},
     ...builderSession
   }
 
   let program = `import {yatt} from '${srcDir}/yatt'\n`;
+  if (config.entFns) {
+    program += `import * as entities from '../entity-fn'\n`
+  }
 
   for (const [kind, name] of template.partOrder) {
     const partMap = template.partMap[kind]

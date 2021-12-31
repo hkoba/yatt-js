@@ -8,6 +8,8 @@
 <!yatt:widget bar>
 <h2>Bar</h2>
 
+&yatt:BODY;
+
 <!--#yatt
 
 <!yatt:widget baz>

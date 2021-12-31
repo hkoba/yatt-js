@@ -18,7 +18,14 @@ export function generate_entity(
       // XXX: type specific generation
       return ` CON.appendUntrusted(${head.name});`
     }
-    case 'call':
+    case 'call': {
+      const fn = ctx.session.entFns[head.name]
+      if (fn == null)
+        ctx.token_error(node, `No such entity function: ${head.name}`)
+      console.dir(node, {depth: null, color: true})
+      // XXX: arguments
+      return ` entities.${head.name}.apply(CON, [])`;
+    }
     default:
       ctx.NIMPL()
   }

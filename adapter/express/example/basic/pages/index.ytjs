@@ -1,5 +1,10 @@
 <!yatt:args x y>
-あああ
+
+<form>
+foo:<input type="text" name="foo" value="&yatt:param(foo);"><br>
+bar:<input type="text" name="bar" value="&yatt:param(bar);"><br>
+</form>
+
 <yatt:foo x y/>
 いいい
 

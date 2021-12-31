@@ -17,7 +17,8 @@ export const DEFAULT_NAMESPACE = '$tmpl'
 export function generate_namespace(
   source: string, config: YattConfig & {
     filename: string,
-    macro?: Partial<CGenMacro>
+    macro?: Partial<CGenMacro>,
+    entFns?: {[k: string]: any},
   }
 ): {outputText: string, templateName: string[], session: CGenSession}
 {
@@ -35,6 +36,7 @@ export function generate_namespace(
     ...generate_namespace_from_template(template, {
       templateName,
       macro: Object.assign({}, builtinMacros, config.macro ?? {}),
+      entFns: config.entFns ?? {},
       ...session
     })
     // sourceMapText

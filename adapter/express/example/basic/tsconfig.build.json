@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.json",
+  "outFile": "./index.js",
+  "exclude": [
+    "build.ts",
+    "test",
+    "example",
+    "node_modules"
+  ]
+}

@@ -12,6 +12,7 @@
   },
   "tap": {
     "ts": true,
+    "test-ignore": "/vscode/",
     "coverage": false
   },
   "author": "buribullet@gmail.com",

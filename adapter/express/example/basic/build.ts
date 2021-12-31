@@ -7,14 +7,21 @@ import {glob} from 'glob'
 
 import * as cgen from 'yatt-codegen0'
 
-function build(config: cgen.YattConfig) {
+// ↓ここが微妙…
+import type {Connection} from './entity-fn'
+
+
+async function build(config: cgen.YattConfig) {
   const rootDir = config.rootDir ?? "pages"
   console.log('rootDir:', rootDir)
+  const entFns = await import('./entity-fn')
+  console.log('entity-fn: ', entFns)
+
   const pagesMap: Map<string, cgen.TemplateDeclaration> = new Map;
   for (const fn of glob.sync('**/*.ytjs', {root: rootDir, cwd: rootDir})) {
     const filename = Path.join(rootDir, fn)
     const source = fs.readFileSync(filename, {encoding: 'utf-8'})
-    const output = cgen.generate_module(source, {filename})
+    const output = cgen.generate_module(source, {filename, entFns})
     if (output == null)
       throw new Error(`yatt transpile error found in: ${filename}`)
     pagesMap.set('/' + output.templateName, output.template)
@@ -45,7 +52,7 @@ const makeConnection = () => {
 
 `
 
-  let routerBody = `export function express(router: Router): Router {`
+  let routerBody = `export function express(router: Router): Router {\n`
 
   for (const [path, template] of pagesMap) {
     const viewId = `v${++viewNo}`
@@ -96,5 +103,9 @@ if (module.id === ".") {
   }
   parse_long_options(args, {target: config})
 
-  build(config)
+  build(config).catch((err) => {
+    // XXX:
+    console.error(err)
+    // exit failure
+  })
 }

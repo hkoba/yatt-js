@@ -10,6 +10,7 @@ import {MacroDict} from './macro'
 export type CGenSession  = BuilderSession & {
   templateName: string[]
   macro: MacroDict
+  entFns: {[k: string]: any}
 }
 
 export type CodeGenContext = CodeGenContextClass<CGenSession>
