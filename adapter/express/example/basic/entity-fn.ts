@@ -11,6 +11,8 @@ export type Connection = yatt.runtime.Connection & {
 }
 
 export function makeConnection(req: Request, res: Response): Connection {
+  console.log('params:', req.params)
+  console.log('query:', req.query)
   return {
     req, res,
     buffer: "",
@@ -25,6 +27,13 @@ export function makeConnection(req: Request, res: Response): Connection {
 }
 
 export function param(this: Connection, name: string): any {
-  return this.req.params[name]
+  return this.req.params[name] ?? ''
 }
 
+export function query(this: Connection, name: string): any {
+  return this.req.query[name] ?? ''
+}
+
+export function req(this: Connection): Request {
+  return this.req
+}

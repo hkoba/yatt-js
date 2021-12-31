@@ -1,8 +1,11 @@
 <!yatt:args x y>
 
+foo=&yatt:param(foo);<br>
+
 <form>
-foo:<input type="text" name="foo" value="&yatt:param(foo);"><br>
-bar:<input type="text" name="bar" value="&yatt:param(bar);"><br>
+foo:<input type="text" name="foo" value="&yatt:query(foo);"><br>
+bar:<input type="text" name="bar" value="&yatt:query(bar);"><br>
+<input type="submit" value="go">
 </form>
 
 <yatt:foo x y/>

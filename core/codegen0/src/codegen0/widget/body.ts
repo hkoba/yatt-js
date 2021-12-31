@@ -6,6 +6,7 @@ import {escapeAsStringLiteral} from '../escape'
 
 import {generate_element} from './element/generate'
 import {generate_entity} from './entity/generate'
+import type {Printable} from './entity/types'
 
 export function generate_body(ctx: CodeGenContext, scope: VarScope, nodeList: Node[]): string {
   let program = ""
@@ -26,7 +27,7 @@ export function generate_body(ctx: CodeGenContext, scope: VarScope, nodeList: No
         program += generate_element(ctx, scope, node);
         break;
       case "entity":
-        program += generate_entity(ctx, scope, node) + '; ';
+        program += ' ' + as_print(ctx, generate_entity(ctx, scope, node)) + ';';
         break;
       default:
         ctx.NEVER();
@@ -34,4 +35,25 @@ export function generate_body(ctx: CodeGenContext, scope: VarScope, nodeList: No
   }
 
   return program;
+}
+
+function as_print(ctx: CodeGenContext, printable: Printable): string {
+  switch (printable.kind) {
+    case 'var': {
+      switch (printable.variable.typeName) {
+        case 'text':
+          return `CON.appendUntrusted(${printable.variable.varName})`
+        case 'html':
+          return `CON.append(${printable.variable.varName})`
+        default:
+          ctx.NIMPL()
+      }
+      break;
+    }
+    case 'expr': {
+      return `CON.append(${printable.text})`
+    }
+    default:
+      ctx.NIMPL()
+  }
 }
