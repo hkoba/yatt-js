@@ -13,13 +13,16 @@ import {dirname} from 'path'
 import {longestPrefixDir, outFileName, srcDir} from '../../path'
 
 export function compose_namespace(fileList: string[], config: YattConfig): string {
-  let program = ""
+  let program = []
   for (const filename of fileList) {
     const source = readFileSync(filename, {encoding: 'utf-8'})
-    const output = generate_namespace(source, {filename, ...config});
-    program += output.outputText
+    const pos = program.length;
+    program.push("")
+    generate_namespace(source, {filename, ...config}).then(output => {
+      program[pos] = output.outputText
+    })
   }
-  return program
+  return program.join('')
 }
 
 export function build_namespace(fileList: string[], config: YattConfig): void {

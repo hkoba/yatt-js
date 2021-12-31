@@ -14,13 +14,13 @@ import {builtinMacros} from '../macro/'
 
 export const DEFAULT_NAMESPACE = '$tmpl'
 
-export function generate_namespace(
+export async function generate_namespace(
   source: string, config: YattConfig & {
     filename: string,
     macro?: Partial<CGenMacro>,
     entFns?: {[k: string]: any},
   }
-): {outputText: string, templateName: string[], session: CGenSession}
+): Promise<{outputText: string, templateName: string[], session: CGenSession}>
 {
   const [template, session] = build_template_declaration(
     source,
@@ -55,6 +55,8 @@ export function generate_namespace_from_template(
   }
 
   program += `namespace ${session.templateName.join('.')} {\n`
+
+  // XXX: todo: build file-scope entity functions first
 
   for (const [kind, name] of template.partOrder) {
     const partMap = template.partMap[kind]
@@ -94,8 +96,11 @@ if (module.id === '.') {
 
     for (const filename of args) {
       let source = readFileSync(filename, {encoding: "utf-8"})
-      const output = generate_namespace(source, {filename, ...config})
-      process.stdout.write(output.outputText + '\n');
+      generate_namespace(source, {filename, ...config}).then(output => {
+        process.stdout.write(output.outputText + '\n');
+      }).catch(err => {
+        throw err
+      })
     }
   })()
 }

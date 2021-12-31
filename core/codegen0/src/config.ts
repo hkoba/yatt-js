@@ -4,11 +4,16 @@ export type YattParams = LrxmlParams & {
   outDir?: string;
   templateNamespace?: string;
   exportNamespace?: boolean;
+  entFnsFile?: string,
   noEmit: boolean;
   body_argument_name: string;
   debug: {parser?: number, declaration?: number}
 }
 export type YattConfig = Partial<YattParams>;
+
+export function primaryNS(params: YattParams): string {
+  return params.namespace[0]
+}
 
 export function yattParams(
   config: YattConfig & {doc_root?: string}
@@ -20,6 +25,7 @@ export function yattParams(
     outDir,
     templateNamespace,
     exportNamespace,
+    entFnsFile,
     noEmit = false,
     default_part = "page",
     compat_end_of_comment = false,
@@ -33,6 +39,7 @@ export function yattParams(
     outDir,
     templateNamespace,
     exportNamespace,
+    entFnsFile,
     noEmit,
     default_part,
     compat_end_of_comment,

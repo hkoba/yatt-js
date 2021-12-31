@@ -9,7 +9,7 @@ import {generate_module} from './module/generate'
 
 import {readFileSync, writeFileSync} from 'fs'
 
-export function build(fileList: string[], config: YattConfig): void {
+export async function build(fileList: string[], config: YattConfig) {
   if (config.rootDir == null) {
     config.rootDir = longestPrefixDir(fileList)
   }
@@ -22,12 +22,12 @@ export function build(fileList: string[], config: YattConfig): void {
     let outFn = outFileName(filename, '.ts', config)
     console.log(`Generating ${outFn} from ${filename}`)
     let source = readFileSync(filename, {encoding: 'utf-8'})
-    const output = generate(source, {filename, ...config});
-    if (config.noEmit)
-      continue
-    writeFileSync(outFn, output.outputText)
+    generate(source, {filename, ...config}).then(output => {
+      if (! config.noEmit) {
+        writeFileSync(outFn, output.outputText)
+      }
+    })
   }
-
 }
 
 if (module.id === ".") {
