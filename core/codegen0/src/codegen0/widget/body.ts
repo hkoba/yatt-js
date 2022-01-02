@@ -46,7 +46,7 @@ function as_print(ctx: CodeGenContext, printable: Printable): string {
         case 'html':
           return `CON.append(${printable.variable.varName})`
         default:
-          ctx.NIMPL()
+          ctx.NIMPL(printable.variable)
       }
       break;
     }
@@ -54,6 +54,6 @@ function as_print(ctx: CodeGenContext, printable: Printable): string {
       return `CON.append(${printable.text})`
     }
     default:
-      ctx.NIMPL()
+      ctx.NIMPL(printable)
   }
 }
