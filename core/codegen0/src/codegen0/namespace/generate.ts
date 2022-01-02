@@ -22,6 +22,9 @@ export async function generate_namespace(
   }
 ): Promise<{outputText: string, templateName: string[], session: CGenSession}>
 {
+  if (! config.connectionTypeName)
+    config.connectionTypeName = 'yatt.Connection';
+
   const [template, session] = build_template_declaration(
     source,
     config

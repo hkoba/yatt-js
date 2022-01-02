@@ -1,6 +1,7 @@
-function doGet(request: {pathInfo?: string} & GoogleAppsScript.Events.DoGet): GoogleAppsScript.HTML.HtmlOutput {
+function doGet(request: yatt.Request): GoogleAppsScript.HTML.HtmlOutput {
   let output = HtmlService.createHtmlOutput()
   let CON = {
+    request,
     append: output.append.bind(output),
     appendUntrusted: output.appendUntrusted.bind(output)
   }

@@ -5,7 +5,10 @@ import {strictEqual} from 'assert'
 
 import {YattConfig} from './config'
 
-export const srcDir = __dirname
+// After transpilation, jsDir will become $base/lib
+export const jsDir = __dirname
+// Revert $base/src
+export const srcDir = path.join(path.dirname(jsDir), 'src')
 
 export function templatePath(filename: string, rootDir?: string): string[] {
 

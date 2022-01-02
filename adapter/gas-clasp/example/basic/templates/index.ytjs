@@ -1,7 +1,10 @@
-<!yatt:args request="value/">
+<!yatt:args>
 <yatt:layout title="Hello world!">
 
-Are you ok? request=(&yatt:request;)
+<form>
+foo: <input name="foo" value="&yatt:param(foo);">
+<input type=submit>
+</form>
 
 <yatt:foreach my=x list="3,4,5">
     <li>&yatt:x;</li>

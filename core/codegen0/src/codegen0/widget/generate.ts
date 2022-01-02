@@ -22,8 +22,9 @@ export function generate_widget(ctx: CodeGenContext, nodeList: Node[])
     implicitArgs.push(`this: typeof ${ctx.session.templateName.join('.')}`)
     bodyPreamble += `const $this = this`;
   }
-  implicitArgs.push(`CON: Connection`)
+  implicitArgs.push(`CON: ${ctx.session.params.connectionTypeName}`)
 
+  // XXX: default value
   // XXX: tmpl name
   program += `(${implicitArgs.join(', ')}, ${argDecls}) {${bodyPreamble}\n`;
 

@@ -64,7 +64,7 @@ export function generate_putargs(
       case "widget": {
         const argDecls = generate_argdecls(ctx, scope, BODY.widget);
         const bodyProgram = generate_body(ctx, scope, node.children);
-        actualArgs.set(BODY_NAME, `${BODY_NAME}: (CON: yatt.runtime.Connection, ${argDecls}): void => {${bodyProgram}}`)
+        actualArgs.set(BODY_NAME, `${BODY_NAME}: (CON: ${ctx.session.params.connectionTypeName}, ${argDecls}): void => {${bodyProgram}}`)
         break;
       }
       case "html":

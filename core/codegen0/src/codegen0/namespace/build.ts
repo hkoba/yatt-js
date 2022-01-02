@@ -12,27 +12,25 @@ import {dirname} from 'path'
 
 import {longestPrefixDir, outFileName, srcDir} from '../../path'
 
-export function compose_namespace(fileList: string[], config: YattConfig): string {
-  let program = []
+export async function compose_namespace(fileList: string[], config: YattConfig): Promise<string> {
+  let tasks = []
   for (const filename of fileList) {
     const source = readFileSync(filename, {encoding: 'utf-8'})
-    const pos = program.length;
-    program.push("")
-    generate_namespace(source, {filename, ...config}).then(output => {
-      program[pos] = output.outputText
-    })
+    tasks.push(generate_namespace(source, {filename, ...config}))
   }
-  return program.join('')
+  return Promise.all(tasks).then(values => {
+    return values.map(o => o.outputText).join('');
+  }).catch(err => {throw err});
 }
 
-export function build_namespace(fileList: string[], config: YattConfig): void {
+export async function build_namespace(fileList: string[], config: YattConfig) {
   if (config.rootDir == null) {
     config.rootDir = longestPrefixDir(fileList)
   }
 
   const outDir = config.outDir ?? config.rootDir
   const outFn = `${outDir}/index.ts`
-  const program = compose_namespace(fileList, config)
+  const program = await compose_namespace(fileList, config)
 
   if (! config.noEmit) {
     console.log(`Generating ${outFn}`)
@@ -42,6 +40,7 @@ export function build_namespace(fileList: string[], config: YattConfig): void {
   if (outDir != null && ! config.noEmit) {
     let outFn = `${outDir}/yatt.ts`
     let filename = `${srcDir}/yatt.ts`
+    console.log(`srcDir = ${srcDir}`)
     console.log(`Generating ${outFn} from ${filename}`)
     let source = readFileSync(filename, {encoding: 'utf-8'}).
       replace(/^\#![^\n]*\n/, '');

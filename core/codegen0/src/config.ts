@@ -5,6 +5,7 @@ export type YattParams = LrxmlParams & {
   templateNamespace?: string;
   exportNamespace?: boolean;
   entFnsFile?: string,
+  connectionTypeName: string,
   noEmit: boolean;
   body_argument_name: string;
   debug: {parser?: number, declaration?: number}
@@ -26,6 +27,7 @@ export function yattParams(
     templateNamespace,
     exportNamespace,
     entFnsFile,
+    connectionTypeName = 'Connection',
     noEmit = false,
     default_part = "page",
     compat_end_of_comment = false,
@@ -40,6 +42,7 @@ export function yattParams(
     templateNamespace,
     exportNamespace,
     entFnsFile,
+    connectionTypeName,
     noEmit,
     default_part,
     compat_end_of_comment,
