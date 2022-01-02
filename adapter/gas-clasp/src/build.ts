@@ -5,12 +5,12 @@ import * as Path from 'path'
 
 import * as cgen from 'yatt-codegen0'
 
-async function build(templateDir: string, config: cgen.YattConfig) {
+async function build(templateDir: string, config: cgen.YattConfig): Promise<void> {
   const fileList = glob.sync('**/*.ytjs', {root: templateDir, cwd: templateDir})
 
   console.log(fileList)
 
-  cgen.build_namespace(fileList.map(f => Path.join(templateDir, f)), config)
+  await cgen.build_namespace(fileList.map(f => Path.join(templateDir, f)), config)
 }
 
 if (module.id === ".") {
@@ -28,8 +28,7 @@ if (module.id === ".") {
   parse_long_options(args, {target: config})
 
   build(config.rootDir, config).catch((err) => {
-    // XXX:
-    console.error(err)
-    // exit failure
+    console.error(`Found build error: `, err)
+    process.exit(1)
   })
 }

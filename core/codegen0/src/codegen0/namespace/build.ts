@@ -23,7 +23,7 @@ export async function compose_namespace(fileList: string[], config: YattConfig):
   }).catch(err => {throw err});
 }
 
-export async function build_namespace(fileList: string[], config: YattConfig) {
+export async function build_namespace(fileList: string[], config: YattConfig): Promise<void> {
   if (config.rootDir == null) {
     config.rootDir = longestPrefixDir(fileList)
   }
