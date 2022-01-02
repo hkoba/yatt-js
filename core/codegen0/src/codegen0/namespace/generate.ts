@@ -5,12 +5,16 @@ import {parse_template} from 'lrxml-js'
 import {CodeGenContextClass, CGenSession} from '../context'
 import {build_template_declaration, TemplateDeclaration, Widget} from '../../declaration'
 import {generate_widget} from '../widget/generate'
-import {YattConfig} from '../../config'
+import {YattConfig, entFnPrefix} from '../../config'
 
 import {srcDir, templatePath} from '../../path'
 
 import {CGenMacro} from '../macro'
 import {builtinMacros} from '../macro/'
+
+import {list_entity_functions} from './list_entity_functions'
+
+import * as Path from 'path'
 
 export const DEFAULT_NAMESPACE = '$tmpl'
 
@@ -18,7 +22,6 @@ export async function generate_namespace(
   source: string, config: YattConfig & {
     filename: string,
     macro?: Partial<CGenMacro>,
-    entFns?: {[k: string]: any},
   }
 ): Promise<{outputText: string, templateName: string[], session: CGenSession}>
 {
@@ -33,13 +36,20 @@ export async function generate_namespace(
   const templateName = [session.params.templateNamespace ?? DEFAULT_NAMESPACE,
                         ...templatePath(config.filename, config.rootDir)];
 
+  const rootDir = Path.dirname(Path.dirname(Path.resolve(config.filename)))
+  console.log('rootDir: ', rootDir);
+
+  const entFns = list_entity_functions(
+    `${rootDir}/root/entity-fn`, entFnPrefix(session.params)
+  )
+
   // XXX: should return templateName too.
   return {
     templateName,
     ...generate_namespace_from_template(template, {
       templateName,
       macro: Object.assign({}, builtinMacros, config.macro ?? {}),
-      entFns: config.entFns ?? {},
+      entFns,
       ...session
     })
     // sourceMapText

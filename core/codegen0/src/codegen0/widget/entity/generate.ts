@@ -39,7 +39,7 @@ export function generate_entpath(
       if (fn == null)
         ctx.token_error(head, `No such entity function: ${head.name}`)
       const args = generate_entlist(ctx, scope, head.elements)
-      result.push(`\$${ctx.primaryNS()}.${head.name}.apply(CON, [${args}])`);
+      result.push(`${ctx.entFnPrefix()}.${head.name}.apply(CON, [${args}])`);
       break;
     }
     default:

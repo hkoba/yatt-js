@@ -16,6 +16,10 @@ export function primaryNS(params: YattParams): string {
   return params.namespace[0]
 }
 
+export function entFnPrefix(params: YattParams): string {
+  return '$' + primaryNS(params)
+}
+
 export function yattParams(
   config: YattConfig & {doc_root?: string}
 ): YattParams {

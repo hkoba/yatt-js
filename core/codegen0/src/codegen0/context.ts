@@ -7,7 +7,7 @@ import {
 
 import {MacroDict} from './macro'
 
-import {primaryNS} from '../config'
+import {primaryNS, entFnPrefix} from '../config'
 
 export type CGenSession  = BuilderSession & {
   templateName: string[]
@@ -33,5 +33,9 @@ export class CodeGenContextClass<S extends CGenSession>
 
     primaryNS(): string {
       return primaryNS(this.session.params)
+    }
+
+    entFnPrefix(): string {
+      return entFnPrefix(this.session.params)
     }
 }
