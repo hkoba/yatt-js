@@ -109,11 +109,8 @@ if (module.id === '.') {
 
     for (const filename of args) {
       let source = readFileSync(filename, {encoding: "utf-8"})
-      generate_namespace(source, {filename, ...config}).then(output => {
-        process.stdout.write(output.outputText + '\n');
-      }).catch(err => {
-        throw err
-      })
+      const output = await generate_namespace(source, {filename, ...config})
+      process.stdout.write(output.outputText + '\n');
     }
   })()
 }

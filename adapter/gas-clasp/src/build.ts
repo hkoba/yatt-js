@@ -14,21 +14,20 @@ async function build(templateDir: string, config: cgen.YattConfig): Promise<void
 }
 
 if (module.id === ".") {
-  const { parse_long_options } = require('lrxml-js')
+  (async () => {
+    const { parse_long_options } = require('lrxml-js')
 
-  let args = process.argv.slice(2)
-  const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
-  let config = {
-    outDir: './root',
-    rootDir: 'templates/',
-    exportNamespace: false,
-    debug: { declaration: debugLevel },
-    // ext: 'ytjs',
-  }
-  parse_long_options(args, {target: config})
+    let args = process.argv.slice(2)
+    const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
+    let config = {
+      outDir: './root',
+      rootDir: 'templates/',
+      exportNamespace: false,
+      debug: { declaration: debugLevel },
+      // ext: 'ytjs',
+    }
+    parse_long_options(args, {target: config})
 
-  build(config.rootDir, config).catch((err) => {
-    console.error(`Found build error: `, err)
-    process.exit(1)
-  })
+    await build(config.rootDir, config)
+  })()
 }

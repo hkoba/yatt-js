@@ -71,27 +71,25 @@ export async function runSource(source: string, config: YattConfig & {filename: 
 }
 
 if (module.id === '.') {
+  (async () => {
+    let args = process.argv.slice(2)
+    const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
+    let config = {
+      body_argument_name: "body",
+      debug: { declaration: debugLevel },
+      // ext: 'ytjs',
+    }
+    parse_long_options(args, {target: config})
 
-  let args = process.argv.slice(2)
-  const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
-  let config = {
-    body_argument_name: "body",
-    debug: { declaration: debugLevel },
-    // ext: 'ytjs',
-  }
-  parse_long_options(args, {target: config})
+    const filename = args[0]
 
-  const filename = args[0]
+    if (filename == null) {
+      console.error(`Usage: ${process.argv[0]} sourceFile`)
+      process.exit(1)
+    }
 
-  if (filename == null) {
-    console.error(`Usage: ${process.argv[0]} sourceFile`)
-    process.exit(1)
-  }
-
-  runFile(filename, config).then(output => {
+    let output = await runFile(filename, config)
     process.stdout.write(`\n=== output ====\n`);
     process.stdout.write(output);
-  }).catch(err => {
-    throw err
-  })
+  })()
 }

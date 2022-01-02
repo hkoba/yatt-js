@@ -13,14 +13,13 @@ import {dirname} from 'path'
 import {longestPrefixDir, outFileName, srcDir} from '../../path'
 
 export async function compose_namespace(fileList: string[], config: YattConfig): Promise<string> {
-  let tasks = []
+  let program = ""
   for (const filename of fileList) {
     const source = readFileSync(filename, {encoding: 'utf-8'})
-    tasks.push(generate_namespace(source, {filename, ...config}))
+    const output = await generate_namespace(source, {filename, ...config})
+    program += output.outputText
   }
-  return Promise.all(tasks).then(values => {
-    return values.map(o => o.outputText).join('');
-  }).catch(err => {throw err});
+  return program
 }
 
 export async function build_namespace(fileList: string[], config: YattConfig): Promise<void> {
@@ -51,15 +50,17 @@ export async function build_namespace(fileList: string[], config: YattConfig): P
 }
 
 if (module.id === ".") {
-  const { parse_long_options } = require('lrxml-js')
+  (async () => {
+    const { parse_long_options } = require('lrxml-js')
 
-  let args = process.argv.slice(2)
-  const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
-  let config = {
-    debug: { declaration: debugLevel },
-    // ext: 'ytjs',
-  }
-  parse_long_options(args, {target: config})
+    let args = process.argv.slice(2)
+    const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
+    let config = {
+      debug: { declaration: debugLevel },
+      // ext: 'ytjs',
+    }
+    parse_long_options(args, {target: config})
 
-  build_namespace(args, config);
+    await build_namespace(args, config);
+  })()
 }

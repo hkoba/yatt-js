@@ -14,32 +14,33 @@ export async function build(fileList: string[], config: YattConfig) {
     config.rootDir = longestPrefixDir(fileList)
   }
 
-  let generate = config.templateNamespace ? generate_namespace :
+  const generate = config.templateNamespace ? generate_namespace :
     generate_module;
 
   // XXX: if generating namespace, output should go into single index.ts
   for (const filename of fileList) {
-    let outFn = outFileName(filename, '.ts', config)
+    const outFn = outFileName(filename, '.ts', config)
     console.log(`Generating ${outFn} from ${filename}`)
-    let source = readFileSync(filename, {encoding: 'utf-8'})
-    generate(source, {filename, ...config}).then(output => {
-      if (! config.noEmit) {
-        writeFileSync(outFn, output.outputText)
-      }
-    })
+    const source = readFileSync(filename, {encoding: 'utf-8'})
+    const output = await generate(source, {filename, ...config})
+    if (! config.noEmit) {
+      writeFileSync(outFn, output.outputText)
+    }
   }
 }
 
 if (module.id === ".") {
-  const { parse_long_options } = require('lrxml-js')
+  (async () => {
+    const { parse_long_options } = require('lrxml-js')
 
-  let args = process.argv.slice(2)
-  const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
-  let config = {
-    debug: { declaration: debugLevel },
-    // ext: 'ytjs',
-  }
-  parse_long_options(args, {target: config})
+    let args = process.argv.slice(2)
+    const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
+    let config = {
+      debug: { declaration: debugLevel },
+      // ext: 'ytjs',
+    }
+    parse_long_options(args, {target: config})
 
-  build(args, config);
+    await build(args, config);
+  })()
 }

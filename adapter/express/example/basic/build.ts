@@ -80,19 +80,17 @@ routingScript += routerBody + `
 }
 
 if (module.id === ".") {
-  const { parse_long_options } = require('lrxml-js')
+  (async () => {
+    const { parse_long_options } = require('lrxml-js')
 
-  let args = process.argv.slice(2)
-  const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
-  let config = {
-    debug: { declaration: debugLevel },
-    // ext: 'ytjs',
-  }
-  parse_long_options(args, {target: config})
+    let args = process.argv.slice(2)
+    const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
+    let config = {
+      debug: { declaration: debugLevel },
+      // ext: 'ytjs',
+    }
+    parse_long_options(args, {target: config})
 
-  build(config).catch((err) => {
-    // XXX:
-    console.error(err)
-    // exit failure
-  })
+    build(config)
+  })()
 }

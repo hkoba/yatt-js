@@ -77,20 +77,19 @@ export async function generate_module(
 }
 
 if (module.id === '.') {
-  const { parse_long_options } = require('lrxml-js')
-  const { readFileSync } = require('fs')
+  (async () => {
+    const { parse_long_options } = require('lrxml-js')
+    const { readFileSync } = require('fs')
 
-  let args = process.argv.slice(2)
-  const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
-  let config = {debug: { declaration: debugLevel }}
-  parse_long_options(args, {target: config})
+    let args = process.argv.slice(2)
+    const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
+    let config = {debug: { declaration: debugLevel }}
+    parse_long_options(args, {target: config})
 
-  for (const filename of args) {
-    let source = readFileSync(filename, {encoding: "utf-8"})
-    generate_module(source, {filename, ...config}).then(output => {
+    for (const filename of args) {
+      let source = readFileSync(filename, {encoding: "utf-8"})
+      const output = await generate_module(source, {filename, ...config})
       process.stdout.write(output.outputText + '\n');
-    }).catch(err => {
-      throw err
-    })
-  }
+    }
+  })()
 }
