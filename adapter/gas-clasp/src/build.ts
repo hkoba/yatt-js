@@ -19,15 +19,17 @@ if (module.id === ".") {
 
     let args = process.argv.slice(2)
     const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
-    let config = {
+    const rootDir = 'templates/'
+    let config: cgen.YattConfig = {
       outDir: './root',
-      rootDir: 'templates/',
+      rootDir,
       exportNamespace: false,
+      connectionTypeName: 'yatt.Connection',
       debug: { declaration: debugLevel },
       // ext: 'ytjs',
     }
     parse_long_options(args, {target: config})
 
-    await build(config.rootDir, config)
+    await build(rootDir, config)
   })()
 }

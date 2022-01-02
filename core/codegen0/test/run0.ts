@@ -8,7 +8,7 @@ import {runSource} from '../src/codegen0/namespace/run0'
 
 (async () => {
   const it = async (filename: string, src: string, config?: YattConfig) =>
-    await runSource(src, {filename});
+    await runSource(src, {filename, connectionTypeName: 'yatt.runtime.Connection'});
 
   tap.test(`basic`, async t => {
     t.same(await it('test', `<yatt:foo x=3 y=8>hoehoe</yatt:foo>

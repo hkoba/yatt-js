@@ -15,6 +15,7 @@ import {builtinMacros} from '../macro/'
 import {list_entity_functions} from './list_entity_functions'
 
 import * as Path from 'path'
+import {statSync} from 'fs'
 
 export const DEFAULT_NAMESPACE = '$tmpl'
 
@@ -25,8 +26,6 @@ export async function generate_namespace(
   }
 ): Promise<{outputText: string, templateName: string[], session: CGenSession}>
 {
-  if (! config.connectionTypeName)
-    config.connectionTypeName = 'yatt.Connection';
 
   const [template, session] = build_template_declaration(
     source,
@@ -37,11 +36,12 @@ export async function generate_namespace(
                         ...templatePath(config.filename, config.rootDir)];
 
   const rootDir = Path.dirname(Path.dirname(Path.resolve(config.filename)))
-  console.log('rootDir: ', rootDir);
+  const entFnFile = `${rootDir}/root/entity-fn.ts`
 
-  const entFns = list_entity_functions(
-    `${rootDir}/root/entity-fn.ts`, entFnPrefix(session.params)
-  )
+  const entFns = statSync(entFnFile, {throwIfNoEntry: false}) ?
+    list_entity_functions(
+      entFnFile, entFnPrefix(session.params)
+    ) : {}
 
   // XXX: should return templateName too.
   return {
