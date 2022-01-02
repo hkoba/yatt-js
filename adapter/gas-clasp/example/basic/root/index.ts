@@ -12,7 +12,8 @@ export function render_ (this: typeof $tmpl.error, CON: yatt.Connection, {msg, B
 namespace $tmpl.index {
 export function render_ (this: typeof $tmpl.index, CON: yatt.Connection, {BODY}: {BODY?: (CON: yatt.Connection, {}: {}) => void}) {const $this = this
  $this.render_layout(CON, {title: 'Hello world!', BODY: (CON: yatt.Connection, {}: {}): void => { CON.append('\n');
- CON.append('<form>\n');
+ CON.append('Url: '); CON.append($yatt.getUrl.apply(CON, [])); CON.append('\n');
+ CON.append('<form target="_top" action="'); CON.append($yatt.getUrl.apply(CON, [])); CON.append('">\n');
  CON.append('foo: <input name="foo" value="'); CON.append($yatt.param.apply(CON, ['foo'])); CON.append('">\n');
  CON.append('<input type=submit>\n');
  CON.append('</form>\n');

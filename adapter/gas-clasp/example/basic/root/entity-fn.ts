@@ -12,4 +12,8 @@ namespace $yatt {
   export function param(this: yatt.Connection, name: string): string | undefined {
     return this.request.parameter[name]
   }
+
+  export function getUrl(): string {
+    return ScriptApp.getService().getUrl()
+  }
 }

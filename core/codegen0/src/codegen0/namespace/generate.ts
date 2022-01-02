@@ -40,7 +40,7 @@ export async function generate_namespace(
   console.log('rootDir: ', rootDir);
 
   const entFns = list_entity_functions(
-    `${rootDir}/root/entity-fn`, entFnPrefix(session.params)
+    `${rootDir}/root/entity-fn.ts`, entFnPrefix(session.params)
   )
 
   // XXX: should return templateName too.

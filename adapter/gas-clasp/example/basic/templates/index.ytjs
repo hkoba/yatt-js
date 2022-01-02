@@ -1,7 +1,8 @@
 <!yatt:args>
 <yatt:layout title="Hello world!">
 
-<form>
+Url: &yatt:getUrl();
+<form target="_top" action="&yatt:getUrl();">
 foo: <input name="foo" value="&yatt:param(foo);">
 <input type=submit>
 </form>
