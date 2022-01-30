@@ -176,36 +176,38 @@ export function* tokenize(session: ParserSession, payloadList: Payload[]): Gener
 }
 
 if (module.id === ".") {
-  const { readFileSync } = require('fs')
-  const [_cmd, _script, ...args] = process.argv;
-  const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0;
-
   (async () => {
-    let config: LrxmlConfig = {
-      debug: { parser: debugLevel }
-    }
+    const { readFileSync } = require('fs')
+    const [_cmd, _script, ...args] = process.argv;
+    const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0;
 
-    const { session_range_text } = await import('../context')
-    const { parse_multipart } = await import('../multipart/parse')
-    const { parse_long_options } = await import("../utils/long-options")
-    parse_long_options(args, {target: config})
-    
-    for (const fn of args) {
-      const source = readFileSync(fn, { encoding: "utf-8" })
-      let [partList, session] = parse_multipart(source, {
-        filename: fn, ...config
-      })
-
-      process.stdout.write(JSON.stringify({FILENAME: fn}) + "\n")
-      for (const part of partList) {
-        process.stdout.write(JSON.stringify({part: part.kind, attlist: part.attlist}) + "\n")
-        for (const tok of tokenize(session, part.payload)) {
-          const text = session_range_text(session, tok)
-          process.stdout.write(JSON.stringify([tok, text]) + "\n")
-        }
+    (async () => {
+      let config: LrxmlConfig = {
+        debug: { parser: debugLevel }
       }
-      process.stdout.write("\n")
-    }
 
+      const { session_range_text } = await import('../context')
+      const { parse_multipart } = await import('../multipart/parse')
+      const { parse_long_options } = await import("../utils/long-options")
+      parse_long_options(args, {target: config})
+      
+      for (const fn of args) {
+        const source = readFileSync(fn, { encoding: "utf-8" })
+        let [partList, session] = parse_multipart(source, {
+          filename: fn, ...config
+        })
+
+        process.stdout.write(JSON.stringify({FILENAME: fn}) + "\n")
+        for (const part of partList) {
+          process.stdout.write(JSON.stringify({part: part.kind, attlist: part.attlist}) + "\n")
+          for (const tok of tokenize(session, part.payload)) {
+            const text = session_range_text(session, tok)
+            process.stdout.write(JSON.stringify([tok, text]) + "\n")
+          }
+        }
+        process.stdout.write("\n")
+      }
+
+    })()
   })()
 }

@@ -454,32 +454,34 @@ function parse_arg_spec(ctx: BuilderContext, str: string, defaultType: string): 
 }
 
 if (module.id === ".") {
-  let [...args] = process.argv.slice(2);
-  console.time('load lrxml-js');
-  const { parse_long_options } = require("lrxml-js")
-  console.timeLog('load lrxml-js');
-  const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
-  let config = {
-    body_argument_name: "body",
-    debug: { declaration: debugLevel }
-  }
-  parse_long_options(args, {target: config})
-
-  const { readFileSync } = require('fs')
-
-  console.time('run');
-  for (const fn of args) {
-    const [template, _session] = build_template_declaration(
-      readFileSync(fn, { encoding: "utf-8" }),
-      {filename: fn, ...config}
-    )
-
-    const {partMap} = template;
-    for (const [name, widget] of partMap.widget) {
-      const args = [...widget.argMap.keys()].join(", ");
-      const proto = `function render_${name}(${args})`
-      console.log(proto);
+  (async () => {
+    let [...args] = process.argv.slice(2);
+    console.time('load lrxml-js');
+    const { parse_long_options } = require("lrxml-js")
+    console.timeLog('load lrxml-js');
+    const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
+    let config = {
+      body_argument_name: "body",
+      debug: { declaration: debugLevel }
     }
-  }
-  console.timeLog('run');
+    parse_long_options(args, {target: config})
+
+    const { readFileSync } = require('fs')
+
+    console.time('run');
+    for (const fn of args) {
+      const [template, _session] = build_template_declaration(
+        readFileSync(fn, { encoding: "utf-8" }),
+        {filename: fn, ...config}
+      )
+
+      const {partMap} = template;
+      for (const [name, widget] of partMap.widget) {
+        const args = [...widget.argMap.keys()].join(", ");
+        const proto = `function render_${name}(${args})`
+        console.log(proto);
+      }
+    }
+    console.timeLog('run');
+  })()
 }

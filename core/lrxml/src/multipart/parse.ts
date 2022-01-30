@@ -107,24 +107,26 @@ function push_payload(ctx: ParserContext, partList: [number, PartBase][], payloa
 // console.log(this)
 
 if (module.id === ".") {
-  const { readFileSync } = require('fs')
-  const [_cmd, _script, ...args] = process.argv;
-  const { parse_long_options } = require("../utils/long-options")
-  const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
-  let config: LrxmlConfig = {
-    debug: { parser: debugLevel }
-  }
-  parse_long_options(args, {target: config})
-
-  for (const fn of args) {
-    const source = readFileSync(fn, { encoding: "utf-8" })
-    let [partList, ] = parse_multipart(source, {
-      filename: fn, ...config
-    })
-    process.stdout.write(JSON.stringify({FILENAME: fn}) + "\n")
-    for (const part of partList) {
-      process.stdout.write(JSON.stringify(part) + "\n")
+  (async () => {
+    const { readFileSync } = require('fs')
+    const [_cmd, _script, ...args] = process.argv;
+    const { parse_long_options } = require("../utils/long-options")
+    const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
+    let config: LrxmlConfig = {
+      debug: { parser: debugLevel }
     }
-    process.stdout.write("\n")
-  }
+    parse_long_options(args, {target: config})
+
+    for (const fn of args) {
+      const source = readFileSync(fn, { encoding: "utf-8" })
+      let [partList, ] = parse_multipart(source, {
+        filename: fn, ...config
+      })
+      process.stdout.write(JSON.stringify({FILENAME: fn}) + "\n")
+      for (const part of partList) {
+        process.stdout.write(JSON.stringify(part) + "\n")
+      }
+      process.stdout.write("\n")
+    }
+  })()
 }

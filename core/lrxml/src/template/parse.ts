@@ -189,31 +189,33 @@ function parse_lcmsg(ctx: ParserContext, lex: Generator<Token>)
 }
 
 if (module.id === ".") {
-  const { readFileSync } = require('fs')
-  const [_cmd, _script, ...args] = process.argv;
-
-  const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0;
-
   (async () => {
-    let config: LrxmlConfig = {
-      debug: { parser: debugLevel }
-    }
+    const { readFileSync } = require('fs')
+    const [_cmd, _script, ...args] = process.argv;
 
-    const { parse_long_options } = await import("../utils/long-options")
-    parse_long_options(args, {target: config})
+    const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0;
 
-    const { parse_multipart } = await import('../multipart/parse')
-
-    for (const fn of args) {
-      const source = readFileSync(fn, { encoding: "utf-8" })
-      let [partList, session] = parse_multipart(source, {
-        filename: fn, ...config
-      })
-      
-      for (const part of partList) {
-        console.dir(part, {colors: true, depth: null})
-        console.dir(parse_template(session, part), {colors: true, depth: null})
+    (async () => {
+      let config: LrxmlConfig = {
+        debug: { parser: debugLevel }
       }
-    }
+
+      const { parse_long_options } = await import("../utils/long-options")
+      parse_long_options(args, {target: config})
+
+      const { parse_multipart } = await import('../multipart/parse')
+
+      for (const fn of args) {
+        const source = readFileSync(fn, { encoding: "utf-8" })
+        let [partList, session] = parse_multipart(source, {
+          filename: fn, ...config
+        })
+        
+        for (const part of partList) {
+          console.dir(part, {colors: true, depth: null})
+          console.dir(parse_template(session, part), {colors: true, depth: null})
+        }
+      }
+    })()
   })()
 }
