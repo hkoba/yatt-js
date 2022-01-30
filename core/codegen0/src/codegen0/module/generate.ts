@@ -18,6 +18,8 @@ import {generate_widget} from '../widget/generate'
 import {CGenMacro} from '../macro'
 import {builtinMacros} from '../macro/'
 
+import {list_entity_functions} from './list_entity_functions'
+
 export async function generate_module(
   source: string, config: YattConfig & {
     filename: string,
@@ -27,14 +29,9 @@ export async function generate_module(
 {
   const [template, builderSession] = build_template_declaration(source, config)
   const templateName = templatePath(config.filename, builderSession.params.rootDir);
-  let entFns: {[k: string]: any} = {}
-  if (config.entFnsFile) {
-    try {
-      entFns = await import(config.entFnsFile)
-    } catch (err) {
-      throw `Can't import entity file ${config.entFnsFile}`
-    }
-  }
+  const entFns: {[k: string]: any} = config.entFnsFile ?
+    list_entity_functions(config.entFnsFile) : {}
+
   const session = {
     templateName,
     macro: Object.assign({}, builtinMacros, config.macro ?? {}),
