@@ -9,7 +9,7 @@ import {generate_module} from './module/generate'
 
 import {readFileSync, writeFileSync} from 'fs'
 
-export async function build(fileList: string[], config: YattConfig) {
+export function build(fileList: string[], config: YattConfig) {
   if (config.rootDir == null) {
     config.rootDir = longestPrefixDir(fileList)
   }
@@ -22,7 +22,7 @@ export async function build(fileList: string[], config: YattConfig) {
     const outFn = outFileName(filename, '.ts', config)
     console.log(`Generating ${outFn} from ${filename}`)
     const source = readFileSync(filename, {encoding: 'utf-8'})
-    const output = await generate(source, {filename, ...config})
+    const output = generate(source, {filename, ...config})
     if (! config.noEmit) {
       writeFileSync(outFn, output.outputText)
     }
@@ -41,6 +41,6 @@ if (module.id === ".") {
     }
     parse_long_options(args, {target: config})
 
-    await build(args, config);
+    build(args, config);
   })()
 }

@@ -20,12 +20,12 @@ import {builtinMacros} from '../macro/'
 
 import {list_entity_functions} from './list_entity_functions'
 
-export async function generate_module(
+export function generate_module(
   source: string, config: YattConfig & {
     filename: string,
     macro?: Partial<CGenMacro>,
   }
-): Promise<{outputText: string, template: TemplateDeclaration, templateName: string[]}>
+): {outputText: string, template: TemplateDeclaration, templateName: string[]}
 {
   const [template, builderSession] = build_template_declaration(source, config)
   const templateName = templatePath(config.filename, builderSession.params.rootDir);
@@ -85,7 +85,7 @@ if (module.id === '.') {
 
     for (const filename of args) {
       let source = readFileSync(filename, {encoding: "utf-8"})
-      const output = await generate_module(source, {filename, ...config})
+      const output = generate_module(source, {filename, ...config})
       process.stdout.write(output.outputText + '\n');
     }
   })()

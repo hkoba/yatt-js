@@ -19,12 +19,12 @@ import {statSync} from 'fs'
 
 export const DEFAULT_NAMESPACE = '$tmpl'
 
-export async function generate_namespace(
+export function generate_namespace(
   source: string, config: YattConfig & {
     filename: string,
     macro?: Partial<CGenMacro>,
   }
-): Promise<{outputText: string, templateName: string[], session: CGenSession}>
+): {outputText: string, templateName: string[], session: CGenSession}
 {
 
   const [template, session] = build_template_declaration(
@@ -109,7 +109,7 @@ if (module.id === '.') {
 
     for (const filename of args) {
       let source = readFileSync(filename, {encoding: "utf-8"})
-      const output = await generate_namespace(source, {filename, ...config})
+      const output = generate_namespace(source, {filename, ...config})
       process.stdout.write(output.outputText + '\n');
     }
   })()

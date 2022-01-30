@@ -14,17 +14,17 @@ import {yatt} from '../../yatt'
 
 import { parse_long_options } from 'lrxml-js';
 
-export async function runFile(filename: string, config: YattConfig): Promise<string> {
+export function runFile(filename: string, config: YattConfig): string {
   const source = readFileSync(filename, {encoding: "utf-8"})
 
-  return await runSource(source, {filename, ...config})
+  return runSource(source, {filename, ...config})
 }
 
-export async function runSource(source: string, config: YattConfig & {filename: string}) {
+export function runSource(source: string, config: YattConfig & {filename: string}) {
 
   config.exportNamespace = true;
 
-  const output = await generate_module(source, config)
+  const output = generate_module(source, config)
 
   let {program: _program, outputMap, diagnostics} = makeProgram(output.outputText)
 
@@ -75,7 +75,7 @@ if (module.id === '.') {
       process.exit(1)
     }
 
-    const output = await runFile(filename, config)
+    const output = runFile(filename, config)
     process.stdout.write(`\n=== output ====\n`);
     process.stdout.write(output);
   })()
