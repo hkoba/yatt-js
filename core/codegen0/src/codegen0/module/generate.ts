@@ -75,8 +75,8 @@ export function generate_module(
 
 if (module.id === '.') {
   (async () => {
-    const { parse_long_options } = require('lrxml-js')
-    const { readFileSync } = require('fs')
+    const { parse_long_options } = await import('lrxml-js')
+    const { readFileSync } = await import('fs')
 
     let args = process.argv.slice(2)
     const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0

@@ -457,7 +457,7 @@ if (module.id === ".") {
   (async () => {
     let [...args] = process.argv.slice(2);
     console.time('load lrxml-js');
-    const { parse_long_options } = require("lrxml-js")
+    const { parse_long_options } = await import("lrxml-js")
     console.timeLog('load lrxml-js');
     const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
     let config = {
@@ -466,7 +466,7 @@ if (module.id === ".") {
     }
     parse_long_options(args, {target: config})
 
-    const { readFileSync } = require('fs')
+    const { readFileSync } = await import('fs')
 
     console.time('run');
     for (const fn of args) {

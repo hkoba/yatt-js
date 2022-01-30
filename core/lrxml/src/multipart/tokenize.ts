@@ -106,9 +106,9 @@ export function* tokenize_multipart_context(ctx: ParserContext): ChunkGenerator 
 
 if (module.id === ".") {
   (async () => {
-    const { readFileSync } = require("fs")
+    const { readFileSync } = await import("fs")
     const [_cmd, _script, ...args] = process.argv;
-    const { parse_long_options } = require("../utils/long-options")
+    const { parse_long_options } = await import("../utils/long-options")
     const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
 
     let config: LrxmlConfig = {

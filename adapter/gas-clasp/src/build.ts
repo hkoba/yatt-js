@@ -15,7 +15,7 @@ async function build(templateDir: string, config: cgen.YattConfig): Promise<void
 
 if (module.id === ".") {
   (async () => {
-    const { parse_long_options } = require('lrxml-js')
+    const { parse_long_options } = await import('lrxml-js')
 
     let args = process.argv.slice(2)
     const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
