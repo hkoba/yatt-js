@@ -2,7 +2,10 @@
   "name": "yatt-codegen0",
   "version": "1.0.0",
   "description": "",
-  "main": "lib/index.js",
+  "main": "dist/index.js",
+  "bin": {
+    "yatt-js-lint": "dist/bin/yatt-js-lint.js"
+  },
   "devDependencies": {
     "@types/node": "^16.7.10",
     "@types/tap": "^15.0.2",
