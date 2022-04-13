@@ -30,7 +30,7 @@ export function templatePath(filename: string, rootDir?: string): string[] {
 }
 
 export function pathUnderRootDir(filename: string, rootDir?: string): string | undefined {
-  if (rootDir == null) {
+  if (rootDir == null || rootDir === '') {
     return path.basename(filename);
   } else {
     strictEqual(rootDir.charAt(rootDir.length-1), path.sep
@@ -38,6 +38,15 @@ export function pathUnderRootDir(filename: string, rootDir?: string): string | u
     if (filename.startsWith(rootDir)) {
       return filename.substring(rootDir.length)
     }
+  }
+}
+
+export function guessRootDir(fileList: string[]): string {
+  const path = longestPrefixDir(fileList)
+  if (path == null || path === "") {
+    return "./"
+  } else {
+    return path
   }
 }
 
