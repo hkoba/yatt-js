@@ -11,9 +11,8 @@ import pkg from './package.json';
 
 const StripToplevelGuard = {
   name: 'strip-toplevel-guard',
-  renderChunk(code, chunk, _a) {
+  transform(code, id) {
     const PAT = /(?<=^|\n)if\s*\(module\.id\s*===\s*"[.]"\s*\)\s*\{\s+?[\s\S]*?\n\}/g
-    let map = _a.sourcemap;
     let str = new MagicString(code)
     let match, matchCount = 0
     while ((match = PAT.exec(code)) != null) {
@@ -21,10 +20,12 @@ const StripToplevelGuard = {
       matchCount++
     }
     if (matchCount) {
+      // console.log(`Changed by strip-toplevel-guard: ${id}`)
       return {
-        code: str.toString(), map: map ? str.generateMap({ hires: true}) : null
+        code: str.toString(), map: str.generateMap({ hires: true})
       }
     } else {
+      // console.log(`Nothing matched by strip-toplevel-guard: ${id}`)
       return {code, map: null}
     }
   }
@@ -42,6 +43,7 @@ export default [
     },
     plugins: [
       preserveShebangs(),
+      StripToplevelGuard,
       resolve(),   // so Rollup can find external modules
       commonjs(),  // so Rollup can convert external modules to an ES module
       typescript({module: "esnext"}) // so Rollup can convert TypeScript to JavaScript
