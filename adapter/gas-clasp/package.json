@@ -16,7 +16,5 @@
     "url": "https://github.com/hkoba/yatt-js/issues"
   },
   "homepage": "https://github.com/hkoba/yatt-js#readme",
-  "dependencies": {
-    "@types/google-apps-script": "^1.0.37"
-  }
+  "dependencies": {}
 }
