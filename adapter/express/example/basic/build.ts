@@ -12,6 +12,12 @@ async function build(config: cgen.YattConfig) {
   console.log('rootDir:', rootDir)
   const entFnsFile = __dirname + '/entity-fn'
 
+  const yattRuntimeFile = __dirname + '/yatt.ts';
+  if (! fs.existsSync(yattRuntimeFile)) {
+    fs.copyFileSync(cgen.path.srcDir + '/yatt.ts', yattRuntimeFile)
+    console.log(`Copied ${yattRuntimeFile} from ${cgen.path.srcDir}`)
+  }
+
   const pagesMap: Map<string, cgen.TemplateDeclaration> = new Map;
   for (const fn of glob.sync('**/*.ytjs', {root: rootDir, cwd: rootDir})) {
     const filename = Path.join(rootDir, fn)
@@ -30,7 +36,7 @@ async function build(config: cgen.YattConfig) {
   let viewNo = 0
   let routingScript = `
 import type {Request, Response, NextFunction, Router} from 'express'
-import {yatt} from '${cgen.path.srcDir}/yatt'
+import {yatt} from './yatt'
 import type {Connection} from '${entFnsFile}'
 import {makeConnection} from '${entFnsFile}'
 `

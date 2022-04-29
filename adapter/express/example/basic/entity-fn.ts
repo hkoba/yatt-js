@@ -1,6 +1,7 @@
 #!/usr/bin/env ts-node
 
-import {yatt} from 'yatt-codegen0/lib/yatt'
+// yatt.ts should be copied to the same directory
+import {yatt} from './yatt'
 
 import type {Request, Response} from 'express'
 
