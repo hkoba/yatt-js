@@ -3,8 +3,8 @@
   "version": "0.0.1",
   "description": "Yet Another Template Transpiler to TypeScript",
   "workspaces": [
-    "core/*",
-    "adapter/*"
+    "core/lrxml",
+    "core/codegen0"
   ],
   "scripts": {
     "test": "tap"
