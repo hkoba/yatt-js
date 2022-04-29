@@ -1,15 +1,18 @@
 #!/usr/bin/env ts-node
 
-import {readFileSync} from 'fs'
+import {readFileSync, existsSync} from 'fs'
+
+// import {YattConfig} from '../../config'
 
 type FunctionMG = {name?: string}
 
-export function list_entity_functions(fileName: string): {[k: string]: any} {
+export function list_entity_functions(rootName: string): {[k: string]: any} {
 
-  const funcRe = /^export function (?<name>\w+)\(this: Connection,/mg
+  const funcRe = /^export (?:declare )?function (?<name>\w+)\(this: Connection,/mg
 
   let dict: {[k: string]: any} = {}
 
+  const fileName = find_file_with_extension(rootName, ['d.ts', 'ts']);
   const source = readFileSync(fileName, {encoding: 'utf-8'})
   let m
   while (m = funcRe.exec(source)) {
@@ -20,6 +23,16 @@ export function list_entity_functions(fileName: string): {[k: string]: any} {
   }
 
   return dict
+}
+
+function find_file_with_extension(rootName: string, extensions: string[]): string {
+  for (const ext of extensions) {
+    const fn = rootName + '.' + ext;
+    if (existsSync(fn)) {
+      return fn
+    }
+  }
+  throw new Error(`Can't find '${rootName}' with extensions: ${extensions}`)
 }
 
 if (module.id === '.') {

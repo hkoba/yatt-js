@@ -7,10 +7,6 @@ import {glob} from 'glob'
 
 import * as cgen from 'yatt-codegen0'
 
-// ↓ここが微妙…
-import type {Connection} from './entity-fn'
-
-
 async function build(config: cgen.YattConfig) {
   const rootDir = config.rootDir ?? "pages"
   console.log('rootDir:', rootDir)
