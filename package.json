@@ -1,5 +1,5 @@
 {
-  "name": "yatt-js",
+  "name": "yatt",
   "version": "0.0.1",
   "description": "Yet Another Template Transpiler to TypeScript",
   "workspaces": [

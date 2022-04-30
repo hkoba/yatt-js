@@ -1,5 +1,5 @@
 {
-  "name": "lrxml-js",
+  "name": "lrxml",
   "version": "1.0.0",
   "description": "Loose but Recursive XML",
   "main": "lib/index.js",
