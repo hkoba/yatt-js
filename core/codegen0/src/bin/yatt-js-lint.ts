@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import {TokenError} from 'lrxml'
 import {YattConfig} from '../config'
 import * as yattPath from '../path'
 import {generate_namespace} from '../codegen0/namespace/generate'
@@ -18,9 +19,17 @@ export function lint(fileList: string[], config: YattConfig) {
     generate_module;
 
   for (const filename of fileList) {
-    const outFn = yattPath.outFileName(filename, '.ts', config)
     const source = readFileSync(filename, {encoding: 'utf-8'})
-    const _output = generate(source, {filename, ...config})
+    try {
+      generate(source, {filename, ...config})
+    } catch (e) {
+      if (e instanceof TokenError) {
+        console.error(e.message)
+      } else {
+        console.error(e)
+      }
+      process.exit(1)
+    }
   }
 }
 
