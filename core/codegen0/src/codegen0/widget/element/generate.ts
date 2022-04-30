@@ -1,4 +1,4 @@
-import { Node } from 'lrxml-js'
+import { Node } from 'lrxml'
 import {CodeGenContext} from '../../context'
 import {Widget, Variable} from '../../../declaration'
 import {VarScope} from '../../varscope'

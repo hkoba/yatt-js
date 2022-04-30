@@ -3,7 +3,7 @@ import {
   ScanningContext,
   AttItem, hasStringValue, hasQuotedStringValue, hasNestedLabel, hasLabel,
   isIdentOnly
-} from 'lrxml-js'
+} from 'lrxml'
 
 import {yattParams, YattParams, YattConfig} from '../config'
 

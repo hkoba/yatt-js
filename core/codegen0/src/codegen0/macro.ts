@@ -1,4 +1,4 @@
-import {ElementNode} from 'lrxml-js'
+import {ElementNode} from 'lrxml'
 
 import {CodeGenContext} from './context'
 

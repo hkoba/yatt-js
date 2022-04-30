@@ -3,7 +3,7 @@
 import * as vscode from 'vscode';
 
 import * as cgen from 'yatt-codegen0'
-import {TokenError} from 'lrxml-js'
+import {TokenError} from 'lrxml'
 
 const LANG_ID = 'yatt-js'
 const COMMAND_ID = `${LANG_ID}.lint`

@@ -4,7 +4,7 @@ import {
   parse_multipart, RawPart, AttItem,
   isBareLabeledAtt, isIdentOnly,
   hasLabel, hasQuotedStringValue
-} from 'lrxml-js'
+} from 'lrxml'
 
 import { YattConfig, yattParams } from '../config'
 
@@ -456,9 +456,9 @@ function parse_arg_spec(ctx: BuilderContext, str: string, defaultType: string): 
 if (module.id === ".") {
   (async () => {
     let [...args] = process.argv.slice(2);
-    console.time('load lrxml-js');
-    const { parse_long_options } = await import("lrxml-js")
-    console.timeLog('load lrxml-js');
+    console.time('load lrxml');
+    const { parse_long_options } = await import("lrxml")
+    console.timeLog('load lrxml');
     const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
     let config = {
       body_argument_name: "body",

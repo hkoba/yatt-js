@@ -1,4 +1,4 @@
-import {AttItem} from 'lrxml-js'
+import {AttItem} from 'lrxml'
 import {Widget} from './part'
 
 export type VariableBase = {

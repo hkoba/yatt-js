@@ -1,4 +1,4 @@
-import { RawPart } from 'lrxml-js'
+import { RawPart } from 'lrxml'
 
 import { Variable } from './vartype'
 

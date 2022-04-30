@@ -1,4 +1,4 @@
-import { AttItem, hasQuotedStringValue, isBareLabeledAtt } from 'lrxml-js'
+import { AttItem, hasQuotedStringValue, isBareLabeledAtt } from 'lrxml'
 
 import { DeclarationProcessor, BuilderContext } from './context'
 

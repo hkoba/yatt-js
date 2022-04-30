@@ -2,7 +2,7 @@ import {
   ElementNode
   , AttItem, AttElement, AttValue, attValue, isBareLabeledAtt
   , hasQuotedStringValue, isIdentOnly
-} from 'lrxml-js'
+} from 'lrxml'
 
 import {CodeGenContext} from '../context'
 

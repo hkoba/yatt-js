@@ -1,6 +1,6 @@
 #!/usr/bin/env ts-node
 
-import {parse_template} from 'lrxml-js'
+import {parse_template} from 'lrxml'
 
 import {CodeGenContextClass, CGenSession} from '../context'
 import {build_template_declaration, TemplateDeclaration, Widget} from '../../declaration'
@@ -95,7 +95,7 @@ export function generate_namespace_from_template(
 
 if (module.id === '.') {
   (async () => {
-    const { parse_long_options } = await import('lrxml-js')
+    const { parse_long_options } = await import('lrxml')
     const { readFileSync } = await import('fs')
 
     let args = process.argv.slice(2)

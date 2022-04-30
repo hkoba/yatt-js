@@ -7,7 +7,7 @@ import {generate_module} from '../codegen0/module/generate'
 
 import {readFileSync} from 'fs'
 
-import { parse_long_options } from 'lrxml-js'
+import { parse_long_options } from 'lrxml'
 
 export function lint(fileList: string[], config: YattConfig) {
   if (config.rootDir == null) {

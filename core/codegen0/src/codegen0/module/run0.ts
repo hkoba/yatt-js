@@ -12,7 +12,7 @@ import {compile, makeProgram, reportDiagnostics} from '../../utils/compileTs'
 
 import {yatt} from '../../yatt'
 
-import { parse_long_options } from 'lrxml-js';
+import { parse_long_options } from 'lrxml';
 
 export function runFile(filename: string, config: YattConfig): string {
   const source = readFileSync(filename, {encoding: "utf-8"})

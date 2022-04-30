@@ -1,4 +1,4 @@
-import {Node, EntPathItem, EntTerm} from 'lrxml-js'
+import {Node, EntPathItem, EntTerm} from 'lrxml'
 import {CodeGenContext} from '../../context'
 import {Widget} from '../../../declaration'
 import {VarScope} from '../../varscope'

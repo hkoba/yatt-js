@@ -1,4 +1,4 @@
-import {ScanningContext} from 'lrxml-js'
+import {ScanningContext} from 'lrxml'
 
 import {
   TemplateDeclaration, BuilderSession, Widget
