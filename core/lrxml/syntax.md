@@ -1,27 +1,37 @@
 # NAME
 
-YATT::Lite::LRXML::Syntax - Loose but Recursive XML (LRXML) format.
+LRXML Syntax - Loose but Recursive XML (LRXML) format.
 
 # SYNOPSIS
 
-    require YATT::Lite::LRXML;
-    my $container = YATT::Lite::LRXML->load_from(string => <<'END');
-    <!yatt:args x y>
-    <h2>&yatt:x;</h2>
-    &yatt:y;
+```ts
+#!/usr/bin/env ts-node
+import {parse_multipart, parse_template, LrxmlConfig} from 'lrxml'
 
-    <!yatt:widget foo id x>
-    <div id="&yatt:id;">
-      &yatt:x;
-    </div>
-    END
+const source = `
+<!yatt:args x y>
+<h2>&yatt:x;</h2>
+&yatt:y;
+
+<!yatt:widget foo id x>
+<div id="&yatt:id;">
+  &yatt:x;
+</div>
+`
+const config: {filename?: string} & LrxmlConfig = {}
+
+let [partList, session] = parse_multipart(source, config)
+for (const part of partList) {
+  const ast = parse_template(session, part)
+  console.log(ast)
+}
+```
 
 # DESCRIPTION
 
 Loose but Recursive XML (**LRXML**), which I'm defining here,
-is an XML-like template format. LRXML is first used in
-my template engine [YATT](https://metacpan.org/pod/YATT) and then extended in
-my latest template engine [YATT::Lite](https://metacpan.org/pod/YATT%3A%3ALite).
+is an XML-like template format. LRXML is used in
+my template engine [YATT](https://metacpan.org/pod/YATT), [YATT::Lite](https://metacpan.org/pod/YATT%3A%3ALite) and [yatt-js](https://github.com/hkoba/yatt-js)
 
 LRXML format consists of **3 layers** of syntax definitions
 which are ["LRXML multipart container"](#lrxml-multipart-container)
