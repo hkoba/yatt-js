@@ -8,8 +8,7 @@ LRXML Syntax - Loose but Recursive XML (LRXML) format.
 #!/usr/bin/env ts-node
 import {parse_multipart, parse_template, LrxmlConfig} from 'lrxml'
 
-const source = `
-<!yatt:args x y>
+const source = `<!yatt:args x y>
 <h2>&yatt:x;</h2>
 &yatt:y;
 
@@ -18,13 +17,20 @@ const source = `
   &yatt:x;
 </div>
 `
-const config: {filename?: string} & LrxmlConfig = {}
+
+const config: {filename?: string} & LrxmlConfig = {
+  namespace: ['yatt']
+}
 
 let [partList, session] = parse_multipart(source, config)
 for (const part of partList) {
   console.log(part)
-  const ast = parse_template(session, part)
-  console.log(ast)
+  if (part.kind === 'widget' || part.kind === 'args') {
+    const ast = parse_template(session, part)
+    console.log(ast)
+  } else {
+    // ...
+  }
 }
 ```
 
