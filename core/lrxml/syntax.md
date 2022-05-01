@@ -22,6 +22,7 @@ const config: {filename?: string} & LrxmlConfig = {}
 
 let [partList, session] = parse_multipart(source, config)
 for (const part of partList) {
+  console.log(part)
   const ast = parse_template(session, part)
   console.log(ast)
 }
