@@ -4,6 +4,8 @@ import {
 
 import { AttToken, isAttToken, AttBare, AttSq, AttDq, AttNest, AttIdentPlus, TokenContent } from '../attlist/tokenize'
 
+import { AttStringItem, parse_attstring } from '../attstring/parse'
+
 import { EntNode } from '../entity/parse'
 
 type BaseTerm<T> = Range & {value: T, comment: string[]}
@@ -11,7 +13,8 @@ type BaseTerm<T> = Range & {value: T, comment: string[]}
 type QuotedStringTerm = {kind: AttSq | AttDq} & BaseTerm<string>;
 type BareStringTerm = {kind: AttBare} & BaseTerm<string>;
 type IdentplusTerm = {kind: AttIdentPlus, has_three_colon: boolean} & BaseTerm<string>;
-export type StringTerm = BareStringTerm | QuotedStringTerm | IdentplusTerm
+export type StringTerm = (BareStringTerm | QuotedStringTerm | IdentplusTerm) &
+  {children: AttStringItem[]}
 
 type NestedTerm = {kind: AttNest} & BaseTerm<AttItem[]>;
 
@@ -180,12 +183,15 @@ function term_string<U extends TokenT<string>>(
   ctx: ParserContext, lex: Generator<U,any,any>,
   token: {kind: "bare" | "sq" | "dq"} & TokenContent
 ): StringTerm {
-  let value = attKindIsQuotedString(token.kind) ?
-    ctx.range_text(token, 1, -1) : ctx.range_text(token);
+  const innerRange = attKindIsQuotedString(token.kind) ?
+    ctx.range_of(token, 1, -1) : ctx.range_of(token);
+  const value = ctx.range_text(innerRange)
+  const children = parse_attstring(ctx, innerRange)
   return {
     kind: token.kind, value,
     start: token.start, end: token.end,
-    comment: []
+    comment: [],
+    children
   }
 }
 

@@ -56,8 +56,8 @@ export class ScanningContext<S extends ParserSession> {
     }
   }
 
-  range_of<T extends Range>(data: T): Range {
-    return {start: data.start, end: data.end}
+  range_of<T extends Range>(data: T, startOffset: number = 0, endOffset: number = 0): Range {
+    return {start: data.start + startOffset, end: data.end + endOffset}
   }
 
   set_range<T extends Range>(range: T): void {

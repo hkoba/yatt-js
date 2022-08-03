@@ -119,6 +119,8 @@ export function* tokenize_attlist(ctx: ParserContext, entPrefixChar: EntPrefixCh
           yield {kind, text, start, end, innerRange}
         }
         else {
+          // XXX: ここで bare/sq/dq の時に attstring の tokenize を
+          // する手も有る。が、token を受け取る側の変更も大きいので回避
           yield {kind, text, start, end}
         }
       }
