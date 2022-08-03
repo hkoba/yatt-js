@@ -14,6 +14,8 @@ import {build_simple_variable} from '../../declaration'
 
 import {generate_body} from '../widget/body'
 
+import {generate_attstring} from '../widget/attstring'
+
 import * as Util from 'util'
 
 export function macro_foreach(
@@ -40,7 +42,12 @@ export function macro_foreach(
 
   let listExpr
   if (hasQuotedStringValue(list)) {
-    listExpr = `[${list.value}]`
+    console.dir(list, {depth: null, colors: true})
+    if (list.children.length === 1 && list.children[0].kind === "text") {
+      listExpr = `[${list.value}]`
+    } else {
+      listExpr = generate_attstring(ctx, scope, list.children)
+    }
   } else if (isIdentOnly(list)) {
     ctx.NIMPL(list)
   } else {

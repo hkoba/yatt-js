@@ -13,7 +13,7 @@ type BaseTerm<T> = Range & {value: T, comment: string[]}
 type QuotedStringTerm = {kind: AttSq | AttDq} & BaseTerm<string>;
 type BareStringTerm = {kind: AttBare} & BaseTerm<string>;
 type IdentplusTerm = {kind: AttIdentPlus, has_three_colon: boolean} & BaseTerm<string>;
-export type StringTerm = (BareStringTerm | QuotedStringTerm | IdentplusTerm) &
+export type StringTerm = (BareStringTerm | QuotedStringTerm) &
   {children: AttStringItem[]}
 
 type NestedTerm = {kind: AttNest} & BaseTerm<AttItem[]>;
