@@ -24,6 +24,7 @@ export function generate_attstring(ctx: CodeGenContext, scope: VarScope, nodeLis
 function as_expr(ctx: CodeGenContext, printable: Printable): string {
   switch (printable.kind) {
     case 'var': {
+      // XXX: lvalue aware casting
       switch (printable.variable.typeName) {
         case 'text':
           return printable.variable.varName

@@ -42,7 +42,7 @@ export function macro_foreach(
 
   let listExpr
   if (hasQuotedStringValue(list)) {
-    console.dir(list, {depth: null, colors: true})
+    // console.dir(list, {depth: null, colors: true})
     if (list.children.length === 1 && list.children[0].kind === "text") {
       listExpr = `[${list.value}]`
     } else {
