@@ -3,7 +3,9 @@ import {Widget} from '../../declaration'
 import {VarScope} from '../varscope'
 import {varTypeExpr} from './vartype'
 
-export function generate_argdecls(ctx: CodeGenContext, _scope: VarScope, widget: Widget): string {
+export function generate_argdecls(
+  ctx: CodeGenContext, _scope: VarScope, widget: Widget
+): string {
   const args = []
   const types = []
   for (const [name, varSpec] of widget.argMap.entries()) {

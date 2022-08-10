@@ -28,7 +28,10 @@ export function generate_module(
 ): {outputText: string, template: TemplateDeclaration, templateName: string[]}
 {
   const [template, builderSession] = build_template_declaration(source, config)
-  const templateName = templatePath(config.filename, builderSession.params.rootDir);
+  const templateName = templatePath(
+    config.filename,
+    builderSession.params.rootDir
+  );
   const entFns: {[k: string]: any} = config.entFnsFile ?
     list_entity_functions(config.entFnsFile) : {}
 
@@ -66,11 +69,7 @@ export function generate_module(
     }
   }
 
-  return {
-    templateName,
-    template,
-    outputText: program
-  }
+  return {templateName, template, outputText: program}
 }
 
 if (module.id === '.') {

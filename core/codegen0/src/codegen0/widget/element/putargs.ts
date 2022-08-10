@@ -64,7 +64,11 @@ export function generate_putargs(
       case "widget": {
         const argDecls = generate_argdecls(ctx, scope, BODY.widget);
         const bodyProgram = generate_body(ctx, scope, node.children);
-        actualArgs.set(BODY_NAME, `${BODY_NAME}: (CON: ${ctx.session.params.connectionTypeName}, ${argDecls}): void => {${bodyProgram}}`)
+        const conT = ctx.session.params.connectionTypeName
+        actualArgs.set(
+          BODY_NAME,
+          `${BODY_NAME}: (CON: ${conT}, ${argDecls}): void => {${bodyProgram}}`
+        )
         break;
       }
       case "html":
@@ -85,7 +89,8 @@ export function generate_putargs(
       ctx.token_error(argSpec, `No such variable: ${actualName}`)
     }
     if (formal.typeName !== actual.typeName) {
-      ctx.token_error(argSpec, `Variable type mismatch: ${formalName}\nExpected: ${formal.typeName} Got: ${actual.typeName}`)
+      ctx.token_error(argSpec, `Variable type mismatch: ${formalName}
+Expected: ${formal.typeName} Got: ${actual.typeName}`)
     }
     if (actualArgs.has(formalName)) {
       ctx.token_error(argSpec, `Duplicate argument: ${formalName}`)

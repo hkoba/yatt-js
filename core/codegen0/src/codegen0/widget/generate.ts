@@ -12,7 +12,10 @@ export function generate_widget(ctx: CodeGenContext, nodeList: Node[])
   let program = `export function render_${ctx.part.name} `;
 
   //XXX: this, CON
-  const scope = new VarScope(new Map, new VarScope(ctx.part.varMap, new VarScope(ctx.part.argMap)))
+  const scope = new VarScope(
+    new Map
+    , new VarScope(ctx.part.varMap, new VarScope(ctx.part.argMap))
+  )
 
   const argDecls = generate_argdecls(ctx, scope, ctx.part);
 

@@ -13,12 +13,14 @@ export type VarTypeMap = {
 }
 
 type SimpleVariableBuilder = {
-  kind: "simple", typeName: SimpleVar['typeName'], is_escaped: boolean, is_callable: boolean
+  kind: "simple", typeName: SimpleVar['typeName']
+  , is_escaped: boolean, is_callable: boolean
 }
 type CallableVariableBuilder = {
   kind: "callable",
   typeName: string, 
-  fun: (ctx: BuilderContext, att: AttItem, argNo: number, varName: string, attlist: AttItem[]) => Variable
+  fun: (ctx: BuilderContext, att: AttItem, argNo: number
+        , varName: string, attlist: AttItem[]) => Variable
 }
 type DelayedVariableBuilder = {
   kind: "delayed",
@@ -114,9 +116,11 @@ export function build_simple_variable(
   const is_body_argument = ctx.is_body_argument(varName);
 
   const rec = ctx.session.varTypeMap.simple.get(givenTypeName)
-  if (rec == null)
-    ctx.maybe_token_error(attItem, `Unknown type ${givenTypeName} for argument ${varName}`)
- 
+  if (rec == null) {
+    ctx.maybe_token_error(
+      attItem, `Unknown type ${givenTypeName} for argument ${varName}`
+    )
+  }
   const {typeName, is_escaped, is_callable} = rec
 
   return {
@@ -126,7 +130,10 @@ export function build_simple_variable(
   }
 }
 
-function build_widget_varialbe(ctx: BuilderContext, att: AttItem, argNo: number, varName: string, attlist: AttItem[]): WidgetVar {
+function build_widget_varialbe(
+  ctx: BuilderContext, att: AttItem, argNo: number
+  , varName: string, attlist: AttItem[]
+): WidgetVar {
   let widget: Widget = makeWidget(varName, false)
   add_args(ctx, widget, attlist) // XXX: ここで delegate は禁止よね
   return {
