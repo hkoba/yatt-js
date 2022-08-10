@@ -4,7 +4,8 @@ import {VarScope} from '../varscope'
 import {generate_entity} from './entity/generate'
 import {Printable} from './entity/types'
 
-export function generate_attstring(ctx: CodeGenContext, scope: VarScope, nodeList: AttStringItem[]): string {
+export function generate_attstring(ctx: CodeGenContext, scope: VarScope,
+                                   nodeList: AttStringItem[]): string {
   let program = ""
   for (const node of nodeList) {
     switch (node.kind) {

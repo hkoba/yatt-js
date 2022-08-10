@@ -29,7 +29,8 @@ type ScalarVar = {typeName: "scalar"} & VariableBase;
 type BooleanVar = {typeName: "boolean"} & VariableBase;
 type HtmlVar = {typeName: "html"} & VariableBase;
 type ExprVar = { typeName: "expr"} & VariableBase; // XXX: function, closure, cb
-export type SimpleVar = TextVar | ListVar | ScalarVar | BooleanVar | HtmlVar | ExprVar
+export type SimpleVar = TextVar | ListVar | ScalarVar | BooleanVar |
+  HtmlVar | ExprVar
 
 export type WidgetVar = {
   typeName: "widget", is_callable: true, widget: Widget
@@ -42,12 +43,16 @@ export type DelegateVar = {
 
 export type Variable = SimpleVar | WidgetVar | DelegateVar
 
-export type VarTypeSpec = { typeName: string, defaultSpec?: [DefaultFlag, string] }
+export type VarTypeSpec = {
+  typeName: string,
+  defaultSpec?: [DefaultFlag, string]
+}
 
 export function builtin_vartypemap(): VarTypeMap {
   let tm: VarTypeMap = {simple: new Map, nested: new Map};
   const simple = (typeName: SimpleVar['typeName'], is_escaped: boolean): {
-    kind: "simple", typeName: SimpleVar['typeName'], is_escaped: boolean, is_callable: false
+    kind: "simple", typeName: SimpleVar['typeName'],
+    is_escaped: boolean, is_callable: false
   } => ({kind: "simple", typeName, is_escaped, is_callable: false});
 
   tm.simple.set('text', simple("text", false));

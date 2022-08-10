@@ -8,7 +8,8 @@ import {generate_element} from './element/generate'
 import {generate_entity} from './entity/generate'
 import type {Printable} from './entity/types'
 
-export function generate_body(ctx: CodeGenContext, scope: VarScope, nodeList: Node[]): string {
+export function generate_body(ctx: CodeGenContext, scope: VarScope,
+                              nodeList: Node[]): string {
   let program = ""
   for (const node of nodeList) {
     switch (node.kind) {
