@@ -2,7 +2,6 @@ export {
   build_template_declaration,
   TemplateDeclaration, PartMapType, RouteMapType,
   builtin_builders
-  , build_simple_variable
 } from '../declaration/createPart'
 
 export {
@@ -11,6 +10,7 @@ export {
 
 export {
   VarTypeSpec, Variable, WidgetVar, DelegateVar, DefaultFlag
+  , build_simple_variable
 } from './vartype'
 
 export {

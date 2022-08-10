@@ -2,7 +2,7 @@
 
 import {
   parse_multipart, RawPart, AttItem,
-  isBareLabeledAtt, isIdentOnly,
+  isIdentOnly,
   hasLabel, hasQuotedStringValue
 } from 'lrxml'
 
@@ -19,9 +19,11 @@ import { TaskGraph } from './taskgraph'
 import { PartBase, PartKind, Part, Widget, makeWidget, Action, Entity } from './part'
 
 import {
-  VarTypeSpec, WidgetVar, DelegateVar, DefaultFlag,
-  SimpleVar, Variable
+  VarTypeSpec, DefaultFlag,
+  builtin_vartypemap
 } from './vartype'
+
+import {add_args} from './addArgs'
 
 import { BaseProcessor } from './base'
 
@@ -120,60 +122,6 @@ export function builtin_builders(): BuilderMap {
   return builders
 }
 
-export function builtin_vartypemap(): VarTypeMap {
-  let tm: VarTypeMap = {simple: new Map, nested: new Map};
-  const simple = (typeName: SimpleVar['typeName'], is_escaped: boolean): {
-    kind: "simple", typeName: SimpleVar['typeName'], is_escaped: boolean, is_callable: false
-  } => ({kind: "simple", typeName, is_escaped, is_callable: false});
-
-  tm.simple.set('text', simple("text", false));
-  tm.simple.set('html', simple("html", true));
-
-  tm.simple.set('scalar', simple("scalar", false));
-  tm.simple.set('value',  tm.simple.get('scalar')!)
-
-  tm.simple.set('list', simple("list", false));
-
-  tm.simple.set('expr', simple("expr", false));
-  tm.simple.set('code', tm.simple.get('expr')!);
-
-  tm.simple.set('boolean', simple("boolean", false));
-  tm.simple.set('bool',    tm.simple.get('boolean')!);
-
-  tm.nested.set('widget', {
-    kind: "callable", typeName: "widget", fun: build_widget_varialbe
-  })
-  tm.nested.set('code', tm.nested.get('widget')!)
-
-  tm.nested.set('delegate', {
-    kind: "delayed", typeName: 'delegate', fun: build_delegate_variable_adder
-  })
-
-  return tm
-}
-
-export function build_simple_variable(
-  ctx: BuilderContext, varName: string, spec: VarTypeSpec,
-  {attItem, argNo}: {attItem?: AttItem, argNo?: number}
-): SimpleVar
-{
-  let givenTypeName = spec.typeName;
-  let defaultSpec = spec.defaultSpec;
-  const is_body_argument = ctx.is_body_argument(varName);
-
-  const rec = ctx.session.varTypeMap.simple.get(givenTypeName)
-  if (rec == null)
-    ctx.maybe_token_error(attItem, `Unknown type ${givenTypeName} for argument ${varName}`)
- 
-  const {typeName, is_escaped, is_callable} = rec
-
-  return {
-    typeName: typeName as SimpleVar['typeName'], is_escaped, is_callable,
-    varName, defaultSpec, attItem, argNo,
-      from_route: false, is_body_argument,
-  }
-}
-
 export function build_template_declaration(
   source: string, config: {filename?: string, builders?: BuilderMap} & YattConfig
 ): [TemplateDeclaration, BuilderSession] {
@@ -265,173 +213,7 @@ function add_route(
   routeMap.set(route, {part});
 }
 
-function add_args(
-  ctx: BuilderContext, part: Part, attlist: AttItem[]
-): ArgAdder | undefined {
-
-  let gen = (function* () {
-    for (const v of attlist) {
-      yield v
-    }
-  })();
-
-  return add_args_cont(ctx, part, gen)
-}
-
-function add_args_cont(
-  ctx: BuilderContext, part: Part, gen: Generator<AttItem>
-): ArgAdder | undefined {
-
-  for (const att of gen) {
-    if (ctx.debug >= 2) {
-      console.log('add args from: ', att)
-    }
-    if (isBareLabeledAtt(att)) {
-      //: name = SOMETHING
-      let name = att.label.value
-      if (att.kind === "bare" || att.kind === "sq" || att.kind === "dq"
-          || att.kind === "identplus") {
-        //: name="type?default"
-        if (ctx.debug) {
-          console.log(`kind ${att.kind}: ${name} = ${att.value}`)
-        }
-        let spec = parse_arg_spec(ctx, att.value, "text")
-        let v = build_simple_variable(ctx, name, spec, {
-          attItem: att, argNo: part.argMap.size
-        })
-        part.argMap.set(name, v)
-      }
-      else if (att.kind === "nest") {
-        //: name=[code] name=[delegate]
-        if (att.value.length === 0) {
-          ctx.token_error(att, `Empty arg declaration`)
-        }
-        let attlist = ctx.copy_array(att.value)
-        //: attlist is [code x y z], [delegate x y z], [delegate:foo x y]
-        let fst = attlist.shift()!
-        //: fst is code, delegate (or "code", "delegate")
-        if (isIdentOnly(fst)
-            || !hasLabel(fst) && hasQuotedStringValue(fst)) {
-          let [givenTypeName, ...restName] = fst.value.split(/:/)
-
-          const rec = ctx.session.varTypeMap.nested.get(givenTypeName)
-          if (rec == null) {
-            ctx.token_error(fst, `Unknown type ${givenTypeName} for argument ${name}`)
-          }
-          if (rec.kind === "callable") {
-            //: name=[code]
-            let v = rec.fun(ctx, att, part.argMap.size, name, attlist);
-            part.argMap.set(name, v)
-          }
-          else if (rec.kind === "delayed") {
-            //: name=[delegate]
-            return rec.fun(
-              ctx, part, gen, att, part.argMap.size,
-              name, restName, attlist
-            )
-          }
-          else {
-            ctx.NEVER();
-          }
-        }
-        else {
-          ctx.token_error(fst, `Unknown arg declaration`)
-        }
-      }
-      else {
-        ctx.token_error(att, `Unknown arg declaration`)
-      }
-    }
-    else if (isIdentOnly(att)) {
-      //: nameOnly
-      let name = att.value
-      let v = build_simple_variable(ctx, name, {typeName: "text"}, {
-        attItem: att, argNo: part.argMap.size
-      })
-      part.argMap.set(name, v)
-    }
-    else if (att.kind === "entity") {
-      // XXX: entity (ArgMacro)
-      console.warn(`Ignoring argmacro`)
-    }
-    else {
-      ctx.token_error(att, `Unknown arg declaration`)
-    }
-  }
-
-  const BODY_NAME = ctx.body_argument_name()
-  if (!part.argMap.has(BODY_NAME)) {
-    const bodyVar: Variable = {
-      typeName: 'widget', is_escaped: true, is_callable: true,
-      varName: BODY_NAME, widget: makeWidget(`(${BODY_NAME})`, false),
-      from_route: false, is_body_argument: true
-    }
-    part.argMap.set(BODY_NAME, bodyVar)
-  }
-}
-
-function build_widget_varialbe(ctx: BuilderContext, att: AttItem, argNo: number, varName: string, attlist: AttItem[]): WidgetVar {
-  let widget: Widget = makeWidget(varName, false)
-  add_args(ctx, widget, attlist) // XXX: ここで delegate は禁止よね
-  return {
-    typeName: "widget", widget,
-    varName, attItem: att, argNo,
-    is_callable: true, from_route: false,
-    is_body_argument: ctx.is_body_argument(varName),
-    is_escaped: false
-  }
-}
-
-function build_delegate_variable_adder(
-  ctx: BuilderContext, part: Part, gen: Generator<AttItem>,
-  att: AttItem, argNo: number,
-  name: string, restName: string[], attlist: AttItem[]
-): ArgAdder {
-  return {
-    name: part.name, dep: restName.length ? restName.join(":") : name,
-    fun: (widget: Widget): ArgAdder | undefined => {
-      let v: DelegateVar = {
-        typeName: "delegate", varName: name,
-        widget,
-        delegateVars: new Map,
-        attItem: att, argNo,
-        is_callable: true, from_route: false,
-        is_body_argument: false,
-        is_escaped: false
-      }
-
-      part.varMap.set(name, v)
-
-      if (attlist.length) {
-        for (const att of attlist) {
-          if (! isIdentOnly(att)) {
-            ctx.NIMPL()
-          }
-          let name = att.value
-          if (! widget.argMap.has(name)) {
-            ctx.throw_error(`No such argument ${name} in delegated widget ${widget.name}`)
-          }
-          // XXX: deep copy, with original link?
-          part.argMap.set(name, widget.argMap.get(name)!)
-        }
-      } else {
-        for (const [name, value] of widget.argMap.entries()) {
-          if (part.argMap.has(name)) {
-            if (ctx.debug) {
-              // XXX: better diag
-              console.log(`skipping ${name} because it already exists`)
-            }
-            continue
-          }
-          part.argMap.set(name, value)
-        }
-      }
-      return add_args_cont(ctx, part, gen)
-    }
-  }
-}
-
-function createPart(ctx: BuilderContext, rawPart: RawPart): [Part, AttItem[]] | undefined {
+export function createPart(ctx: BuilderContext, rawPart: RawPart): [Part, AttItem[]] | undefined {
   const builder = ctx.session.builders.get(rawPart.kind)
   if (builder == null) {
     ctx.throw_error(`Unknown part kind: ${rawPart.kind}`)
@@ -440,7 +222,7 @@ function createPart(ctx: BuilderContext, rawPart: RawPart): [Part, AttItem[]] | 
   return builder.createPart(ctx, attlist)
 }
 
-function parse_arg_spec(ctx: BuilderContext, str: string, defaultType: string): VarTypeSpec {
+export function parse_arg_spec(ctx: BuilderContext, str: string, defaultType: string): VarTypeSpec {
   // XXX: typescript type extension
   let match = /([\/\|\?!])/.exec(str)
   if (match == null) {
