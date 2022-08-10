@@ -4,12 +4,26 @@ import { BuilderContext } from './context'
 
 import {Widget, Part, makeWidget} from './part'
 
-import {parse_arg_spec} from './createPart'
-
-import {Variable, build_simple_variable} from './vartype'
+import {
+  Variable, build_simple_variable
+  , VarTypeSpec, DefaultFlag
+} from './vartype'
 
 export type ArgAdder = {
   name: string, dep: string, fun: (widget: Widget) => ArgAdder | undefined
+}
+
+export function parse_arg_spec(ctx: BuilderContext, str: string, defaultType: string): VarTypeSpec {
+  // XXX: typescript type extension
+  let match = /([\/\|\?!])/.exec(str)
+  if (match == null) {
+    return { typeName: defaultType }
+  } else {
+    let typeName = match.index ? str.substring(0, match.index) : defaultType;
+    let dflag = match[0]
+    let defaultValue = str.substring(match.index + 1);
+    return { typeName, defaultSpec: [dflag as DefaultFlag, defaultValue] }
+  }
 }
 
 export function add_args(

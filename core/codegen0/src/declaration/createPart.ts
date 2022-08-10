@@ -17,11 +17,7 @@ import { TaskGraph } from './taskgraph'
 
 import { PartBase, PartKind, Part, Widget, makeWidget, Action, Entity } from './part'
 
-import {
-  VarTypeMap,
-  VarTypeSpec, DefaultFlag,
-  builtin_vartypemap
-} from './vartype'
+import {VarTypeMap, builtin_vartypemap} from './vartype'
 
 import {add_args, ArgAdder} from './addArgs'
 
@@ -220,19 +216,6 @@ export function createPart(ctx: BuilderContext, rawPart: RawPart): [Part, AttIte
   }
   let attlist = ctx.copy_array(rawPart.attlist)
   return builder.createPart(ctx, attlist)
-}
-
-export function parse_arg_spec(ctx: BuilderContext, str: string, defaultType: string): VarTypeSpec {
-  // XXX: typescript type extension
-  let match = /([\/\|\?!])/.exec(str)
-  if (match == null) {
-    return { typeName: defaultType }
-  } else {
-    let typeName = match.index ? str.substring(0, match.index) : defaultType;
-    let dflag = match[0]
-    let defaultValue = str.substring(match.index + 1);
-    return { typeName, defaultSpec: [dflag as DefaultFlag, defaultValue] }
-  }
 }
 
 if (module.id === ".") {
