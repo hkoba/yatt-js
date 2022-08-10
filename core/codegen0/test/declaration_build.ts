@@ -2,7 +2,7 @@
 
 import tap from 'tap'
 
-import { build_template_declaration } from '../src/declaration/build'
+import { build_template_declaration } from '../src/declaration/createPart'
 
 {
   const it = (src: string) => {

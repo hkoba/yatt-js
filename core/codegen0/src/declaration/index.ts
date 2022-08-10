@@ -3,7 +3,7 @@ export {
   TemplateDeclaration, PartMapType, RouteMapType,
   builtin_builders
   , build_simple_variable
-} from '../declaration/build'
+} from '../declaration/createPart'
 
 export {
   Part, Widget, makeWidget, Action
