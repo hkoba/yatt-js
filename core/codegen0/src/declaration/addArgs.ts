@@ -13,7 +13,9 @@ export type ArgAdder = {
   name: string, dep: string, fun: (widget: Widget) => ArgAdder | undefined
 }
 
-export function parse_arg_spec(ctx: BuilderContext, str: string, defaultType: string): VarTypeSpec {
+export function parse_arg_spec(
+  ctx: BuilderContext, str: string, defaultType: string
+): VarTypeSpec {
   // XXX: typescript type extension
   let match = /([\/\|\?!])/.exec(str)
   if (match == null) {
