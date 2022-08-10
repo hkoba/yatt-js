@@ -7,42 +7,15 @@ import {
 
 import {yattParams, YattParams, YattConfig} from '../config'
 
-import { Part, Widget } from './part'
+import { Part } from './part'
 
-import { Variable, SimpleVar } from './vartype'
+import { VarTypeMap } from './vartype'
 
 export type BuilderMap = Map<string, DeclarationProcessor>;
 
 export interface DeclarationProcessor {
   readonly kind: string;
   createPart(ctx: BuilderContext, attlist: AttItem[]): [Part, AttItem[]] | undefined
-}
-
-export type VarTypeMap = {
-  simple: Map<string, SimpleVariableBuilder>;
-  nested: Map<string, CallableVariableBuilder | DelayedVariableBuilder>;
-}
-
-type SimpleVariableBuilder = {
-  kind: "simple", typeName: SimpleVar['typeName'], is_escaped: boolean, is_callable: boolean
-}
-type CallableVariableBuilder = {
-  kind: "callable",
-  typeName: string, 
-  fun: (ctx: BuilderContext, att: AttItem, argNo: number, varName: string, attlist: AttItem[]) => Variable
-}
-type DelayedVariableBuilder = {
-  kind: "delayed",
-  typeName: string,
-  fun: (
-    ctx: BuilderContext, part: Part, gen: Generator<AttItem>,
-    att: AttItem, argNo: number,
-    name: string, restName: string[], attlist: AttItem[]
-  ) => ArgAdder
-}
-
-export type ArgAdder = {
-  name: string, dep: string, fun: (widget: Widget) => ArgAdder | undefined
 }
 
 export type BuilderSession = ParserSession & {

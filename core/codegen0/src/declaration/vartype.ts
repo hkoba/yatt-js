@@ -1,11 +1,34 @@
 import {AttItem} from 'lrxml'
-import {Widget, makeWidget} from './part'
+import {Part, Widget, makeWidget} from './part'
 
-import {BuilderContext, VarTypeMap} from './context'
+import {BuilderContext} from './context'
 
 import {build_delegate_variable_adder} from './delegate'
 
-import {add_args} from './addArgs'
+import {add_args, ArgAdder} from './addArgs'
+
+export type VarTypeMap = {
+  simple: Map<string, SimpleVariableBuilder>;
+  nested: Map<string, CallableVariableBuilder | DelayedVariableBuilder>;
+}
+
+type SimpleVariableBuilder = {
+  kind: "simple", typeName: SimpleVar['typeName'], is_escaped: boolean, is_callable: boolean
+}
+type CallableVariableBuilder = {
+  kind: "callable",
+  typeName: string, 
+  fun: (ctx: BuilderContext, att: AttItem, argNo: number, varName: string, attlist: AttItem[]) => Variable
+}
+type DelayedVariableBuilder = {
+  kind: "delayed",
+  typeName: string,
+  fun: (
+    ctx: BuilderContext, part: Part, gen: Generator<AttItem>,
+    att: AttItem, argNo: number,
+    name: string, restName: string[], attlist: AttItem[]
+  ) => ArgAdder
+}
 
 export type VariableBase = {
   typeName: string

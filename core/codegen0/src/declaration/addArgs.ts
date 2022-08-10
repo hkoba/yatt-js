@@ -1,12 +1,16 @@
 import {AttItem, isBareLabeledAtt, isIdentOnly, hasLabel, hasQuotedStringValue} from 'lrxml'
 
-import { BuilderContext, ArgAdder } from './context'
+import { BuilderContext } from './context'
 
-import {Part, makeWidget} from './part'
+import {Widget, Part, makeWidget} from './part'
 
 import {parse_arg_spec} from './createPart'
 
 import {Variable, build_simple_variable} from './vartype'
+
+export type ArgAdder = {
+  name: string, dep: string, fun: (widget: Widget) => ArgAdder | undefined
+}
 
 export function add_args(
   ctx: BuilderContext, part: Part, attlist: AttItem[]

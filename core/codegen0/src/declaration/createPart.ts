@@ -9,9 +9,8 @@ import {
 import { YattConfig, yattParams } from '../config'
 
 import {
-  BuilderMap, BuilderContext, BuilderContextClass, BuilderSession, DeclarationProcessor,
-  VarTypeMap,
-  ArgAdder
+  BuilderMap, BuilderContext, BuilderContextClass, BuilderSession,
+  DeclarationProcessor,
 } from './context'
 
 import { TaskGraph } from './taskgraph'
@@ -19,11 +18,12 @@ import { TaskGraph } from './taskgraph'
 import { PartBase, PartKind, Part, Widget, makeWidget, Action, Entity } from './part'
 
 import {
+  VarTypeMap,
   VarTypeSpec, DefaultFlag,
   builtin_vartypemap
 } from './vartype'
 
-import {add_args} from './addArgs'
+import {add_args, ArgAdder} from './addArgs'
 
 import { BaseProcessor } from './base'
 

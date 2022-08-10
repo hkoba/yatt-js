@@ -1,12 +1,12 @@
 import {AttItem, isIdentOnly} from 'lrxml'
 
-import {BuilderContext, ArgAdder} from './context'
+import {BuilderContext} from './context'
 
 import {Part, Widget} from './part'
 
 import {DelegateVar} from './vartype'
 
-import {add_args_cont} from './addArgs'
+import {add_args_cont, ArgAdder} from './addArgs'
 
 export function build_delegate_variable_adder(
   ctx: BuilderContext, part: Part, gen: Generator<AttItem>,
