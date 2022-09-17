@@ -79,7 +79,9 @@ export function generate_putargs(
   // XXX: node.footer
   return [...actualArgs.values()].join(', ');
 
-  function passThrough(argSpec: AttItem, formalName: string, actualName: string) {
+  function passThrough(
+    argSpec: AttItem, formalName: string, actualName: string
+  ) {
     if (! formalArgs.has(formalName)) {
       ctx.token_error(argSpec, `No such argument: ${formalName}`)
     }
