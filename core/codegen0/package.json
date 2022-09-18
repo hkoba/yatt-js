@@ -20,6 +20,7 @@
   "scripts": {
     "b": "tsc -p tsconfig.build.json",
     "build": "tsc -p tsconfig.build.json",
+    "watch": "tsc -w -p tsconfig.build.json",
     "test": "tap"
   },
   "repository": {

@@ -13,6 +13,7 @@
   "scripts": {
     "b": "tsc -p tsconfig.build.json",
     "build": "tsc -p tsconfig.build.json && rollup -c",
+    "watch": "tsc -w -p tsconfig.build.json",
     "test": "tap"
   },
   "author": "",

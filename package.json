@@ -7,6 +7,8 @@
     "core/codegen0"
   ],
   "scripts": {
+    "build": "npm run build --workspaces",
+    "watch": "npm run watch --workspaces",
     "test": "tap"
   },
   "tap": {
