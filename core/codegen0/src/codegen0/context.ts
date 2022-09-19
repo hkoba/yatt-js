@@ -39,3 +39,31 @@ export class CodeGenContextClass<S extends CGenSession>
       return entFnPrefix(this.session.params)
     }
 }
+
+import {CodeFragment} from './codefragment'
+
+// XXX: For future sourcemap support
+export function finalize_codefragment(
+  ctx: BuilderContextClass<CGenSession>,
+  fragments: CodeFragment[]
+): string {
+  let program = ""
+  for (const item of fragments) {
+    if (typeof(item) === "string") {
+      program += item
+    }
+    else if (item instanceof Array) {
+      program += finalize_codefragment(ctx, item)
+    }
+    else {
+      switch (item.kind) {
+        case "name":
+          program += item.text;
+          break;
+        default:
+          ctx.NEVER()
+      }
+    }
+  }
+  return program
+}
