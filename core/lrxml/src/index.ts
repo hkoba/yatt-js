@@ -12,7 +12,7 @@ export {parse_multipart, parse_multipart_context, Part as RawPart} from './multi
 
 export {
   tokenize,
-  parse_template, Node, AttElement,
+  parse_template, Node, BodyNode, AttElement,
   Comment, Text, ElementNode, PI, LCMsg,
   hasStringValue, hasQuotedStringValue, hasNestedLabel, hasLabel,
   isBareLabeledAtt, isIdentOnly

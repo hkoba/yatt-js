@@ -16,10 +16,12 @@ import {
 
 import { EntNode } from '../entity/parse'
 
+export type Node = BodyNode | AttItem
+
 type ElementBody = Range & {
   path: string[]
   attlist: (AttItem | AttElement)[]
-  children?: Node[]
+  children?: BodyNode[]
   footer?: AttElement[]
   // containedRange
 }
@@ -30,7 +32,7 @@ export type AttElement = {kind: "attelem"} & ElementBody;
 export type LCMsg   = Range & {kind: "lcmsg", namespace: string[]
                                , lcmsg: Text[][], bind: EntNode[]}
 
-export type Node = Text | Comment | PI | ElementNode | AttElement | EntNode | LCMsg
+export type BodyNode = Text | Comment | PI | ElementNode | AttElement | EntNode | LCMsg
 
 export function hasStringValue(att: AttItem | AttElement)
 : att is ({label?: Label} & StringTerm) {
@@ -61,10 +63,10 @@ export function isBareLabeledAtt(att: AttItem | AttElement): att is AttLabeledBy
   return hasLabel(att) && att.label.kind === 'identplus'
 }
 
-export function parse_template(session: ParserSession, part: Part): Node[] {
+export function parse_template(session: ParserSession, part: Part): BodyNode[] {
   let lex = tokenize(session, part.payload)
   let ctx = new ParserContext(session);
-  let nodeList: Node[] = [];
+  let nodeList: BodyNode[] = [];
   parse_tokens(ctx, part, lex, 0, nodeList);
   return nodeList;
 }
@@ -72,7 +74,7 @@ export function parse_template(session: ParserSession, part: Part): Node[] {
 function parse_tokens(
   ctx: ParserContext, part: Part, lex: Generator<Token>,
   depth: number,
-  sink: (Node | AttElement)[], close?: string, parent?: (ElementNode | AttElement)
+  sink: BodyNode[], close?: string, parent?: (ElementNode | AttElement)
 ): void {
 
   let cur;
