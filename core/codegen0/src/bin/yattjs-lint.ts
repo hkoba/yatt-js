@@ -2,7 +2,7 @@
 
 import {TokenError} from 'lrxml'
 import {YattConfig} from '../config'
-import * as yattPath from '../path'
+import {longestPrefixDir} from '../path'
 import {generate_namespace} from '../codegen0/namespace/generate'
 import {generate_module} from '../codegen0/module/generate'
 
@@ -16,7 +16,7 @@ function* pathParents(path: string): Generator<string> {
   do {
     yield p
     p = Path.parse(p).dir;
-  } while (p.length)
+  } while (p.length && p !== "/")
 }
 
 function isClasp(rootDir: string): boolean {
@@ -30,10 +30,11 @@ function isClasp(rootDir: string): boolean {
 }
 
 export function lint(fileList: string[], config: YattConfig) {
-  const rootDir = config.rootDir ?? yattPath.longestPrefixDir(fileList) ?? "./"
+  // console.log(`in lint`);
+  const rootDir = config.rootDir ?? longestPrefixDir(fileList) ?? "./"
+  // console.log(`rootDir=${rootDir}`)
   config.rootDir ??= rootDir;
-
-  // console.log(`rootDir=${rootDir}, isClasp=`, isClasp(rootDir))
+  // console.log(`isClasp=`, isClasp(rootDir))
 
   const generate = isClasp(rootDir) ? generate_namespace :
     generate_module;
