@@ -14,7 +14,7 @@ export function templatePath(filename: string, rootDir?: string): string[] {
 
   const suffix = pathUnderRootDir(filename, rootDir)
   if (suffix == null) {
-    throw new Error(`filename '${filename}' doesn't start with ${rootDir}`)
+    throw new Error(`filename '${filename}' doesn\'t start with ${rootDir}`)
   }
 
   const dir = path.dirname(suffix)
