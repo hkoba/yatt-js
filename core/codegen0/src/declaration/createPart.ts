@@ -30,7 +30,7 @@ export class WidgetBuilder implements DeclarationProcessor {
   ) {}
 
   createPart(ctx: BuilderContext, attlist: AttItem[]): [Widget, AttItem[]] {
-    let name, route
+    let name, nameNode, route
     if (! this.is_named) {
       // yatt:args
       // "/route"
@@ -51,8 +51,9 @@ export class WidgetBuilder implements DeclarationProcessor {
       }
       name = att[0]
       route = att[1]
+      nameNode = att[2]
     }
-    let widget = makeWidget(name, this.is_public)
+    let widget = makeWidget(name, this.is_public, nameNode)
     widget.route = route;
     return [widget, attlist];
   }

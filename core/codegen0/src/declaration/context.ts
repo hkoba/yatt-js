@@ -62,7 +62,7 @@ export class BuilderContextClass<S extends BuilderSession> extends ScanningConte
     return Object.assign([], ary)
   }
 
-  cut_name_and_route(attlist: AttItem[]): [string, string | undefined] | null {
+  cut_name_and_route(attlist: AttItem[]): [string, string | undefined, AttItem] | null {
     if (!attlist.length)
       return null
     let head = attlist.shift()
@@ -73,14 +73,14 @@ export class BuilderContextClass<S extends BuilderSession> extends ScanningConte
         this.NIMPL();
       }
       if (hasStringValue(head)) {
-        return [head.label.value, head.value]
+        return [head.label.value, head.value, head]
       }
       else {
         this.NIMPL()
       }
     }
     else if (isIdentOnly(head)) {
-      return [head.value, undefined]
+      return [head.value, undefined, head]
     }
     else {
       if (hasNestedLabel(head)) {
@@ -90,7 +90,7 @@ export class BuilderContextClass<S extends BuilderSession> extends ScanningConte
         this.NIMPL()
       }
       if (hasQuotedStringValue(head)) {
-        return ["", head.value]
+        return ["", head.value, head]
       }
       return null;
     }
