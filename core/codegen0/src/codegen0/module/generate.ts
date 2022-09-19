@@ -7,13 +7,16 @@ import {YattConfig, primaryNS} from '../../config'
 import {
   build_template_declaration
   , TemplateDeclaration
+  , BuilderContextClass
 } from '../../declaration'
 
 import {srcDir, templatePath} from '../../path'
 
-import {CodeGenContextClass} from '../context'
+import {CodeGenContextClass, finalize_codefragment} from '../context'
 
 import {generate_widget} from '../widget/generate'
+
+import {CodeFragment} from '../codefragment'
 
 import {CGenMacro} from '../macro'
 import {builtinMacros} from '../macro/'
@@ -42,13 +45,14 @@ export function generate_module(
     ...builderSession
   }
 
-  let program = `import {yatt} from '${srcDir}/yatt'\n`;
+  let program: CodeFragment[] = []
+  program.push(`import {yatt} from '${srcDir}/yatt'\n`);
   if (config.entFnsFile) {
     const nsName = primaryNS(builderSession.params);
-    program += `import * as \$${nsName} from '${config.entFnsFile}'\n`
-    program += `import type {Connection} from '${config.entFnsFile}'\n`
+    program.push(`import * as \$${nsName} from '${config.entFnsFile}'\n`)
+    program.push(`import type {Connection} from '${config.entFnsFile}'\n`)
   } else {
-    program += `type Connection = yatt.runtime.Connection\n`
+    program.push(`type Connection = yatt.runtime.Connection\n`)
   }
 
   for (const [kind, name] of template.partOrder) {
@@ -64,12 +68,17 @@ export function generate_module(
           continue;
         let ctx = new CodeGenContextClass(template, part, session);
         let ast = parse_template(session, part.raw_part)
-        program += generate_widget(ctx, ast)
+        program.push(generate_widget(ctx, ast))
       }
     }
   }
 
-  return {templateName, template, outputText: program}
+  let fileCtx = new BuilderContextClass(session)
+
+  return {
+    templateName, template,
+    outputText: finalize_codefragment(fileCtx, program)
+  }
 }
 
 if (module.id === '.') {

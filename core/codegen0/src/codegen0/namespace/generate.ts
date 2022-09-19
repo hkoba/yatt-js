@@ -2,8 +2,11 @@
 
 import {parse_template} from 'lrxml'
 
-import {CodeGenContextClass, CGenSession} from '../context'
-import {build_template_declaration, TemplateDeclaration, Widget} from '../../declaration'
+import {CodeGenContextClass, CGenSession, finalize_codefragment} from '../context'
+import {
+  build_template_declaration, TemplateDeclaration
+  , BuilderContextClass
+} from '../../declaration'
 import {generate_widget} from '../widget/generate'
 import {YattConfig, entFnPrefix} from '../../config'
 
@@ -11,6 +14,8 @@ import {srcDir, templatePath} from '../../path'
 
 import {CGenMacro} from '../macro'
 import {builtinMacros} from '../macro/'
+
+import {CodeFragment} from '../codefragment'
 
 import {list_entity_functions} from './list_entity_functions'
 
@@ -60,14 +65,14 @@ export function generate_namespace_from_template(
   template: TemplateDeclaration, session: CGenSession
 ): {outputText: string, session: CGenSession}
 {
-  let program = ''
+  let program: CodeFragment[] = []
 
   if (session.params.exportNamespace) {
-    program += `import {yatt} from '${srcDir}/yatt'\n`;
-    program += `export `;
+    program.push(`import {yatt} from '${srcDir}/yatt'\n`);
+    program.push(`export `);
   }
 
-  program += `namespace ${session.templateName.join('.')} {\n`
+  program.push("namespace ${session.templateName.join('.')} {\n")
 
   // XXX: todo: build file-scope entity functions first
 
@@ -84,13 +89,16 @@ export function generate_namespace_from_template(
           continue;
         let ctx = new CodeGenContextClass(template, part, session, {hasThis: true});
         let ast = parse_template(session, part.raw_part)
-        program += generate_widget(ctx, ast)
+        program.push(generate_widget(ctx, ast))
       }
     }
   }
 
-  program += '}\n'
-  return {outputText: program, session};
+  program.push('}\n')
+
+  let fileCtx = new BuilderContextClass(session)
+
+  return {outputText: finalize_codefragment(fileCtx, program), session};
 }
 
 if (module.id === '.') {
