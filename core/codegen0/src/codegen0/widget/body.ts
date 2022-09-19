@@ -1,6 +1,5 @@
 import {Node} from 'lrxml'
 import {CodeGenContext} from '../context'
-import {Widget} from '../../declaration'
 import {VarScope} from '../varscope'
 import {escapeAsStringLiteral} from '../escape'
 

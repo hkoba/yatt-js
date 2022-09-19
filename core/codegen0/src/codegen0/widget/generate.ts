@@ -1,15 +1,20 @@
-import {Node} from 'lrxml'
+import {Node, BodyNode} from 'lrxml'
 import {CodeGenContext} from '../context'
-import {Widget} from '../../declaration'
 import {VarScope} from '../varscope'
 
 import {generate_argdecls} from './argdecls'
 import {generate_body} from './body'
 
-export function generate_widget(ctx: CodeGenContext, nodeList: Node[])
-// : string
+import {CodeFragment} from '../codefragment'
+
+export function generate_widget(ctx: CodeGenContext, nodeList: BodyNode[])
+ : CodeFragment
 {
-  let program = `export function render_${ctx.part.name} `;
+  let program: CodeFragment = [
+    `export function render_`,
+    {kind: 'name', text: ctx.part.name, source: ctx.part.nameNode},
+    ` `
+  ];
 
   //XXX: this, CON
   const scope = new VarScope(
@@ -29,11 +34,15 @@ export function generate_widget(ctx: CodeGenContext, nodeList: Node[])
 
   // XXX: default value
   // XXX: tmpl name
-  program += `(${implicitArgs.join(', ')}, ${argDecls}) {${bodyPreamble}\n`;
+  program.push(
+    "(" + implicitArgs.join(', ') + "}, ",
+    argDecls,
+    ") {" + bodyPreamble + "}\n",
+  )
 
-  program += generate_body(ctx, scope, nodeList);
+  program.push(generate_body(ctx, scope, nodeList));
 
-  program += `}\n`;
+  program.push("}\n");
 
   return program;
 }
