@@ -35,9 +35,9 @@ export function generate_widget(ctx: CodeGenContext, nodeList: BodyNode[])
   // XXX: default value
   // XXX: tmpl name
   program.push(
-    "(" + implicitArgs.join(', ') + "}, ",
+    "(" + implicitArgs.join(', ') + ", ",
     argDecls,
-    ") {" + bodyPreamble + "}\n",
+    ") {" + bodyPreamble + "\n",
   )
 
   program.push(generate_body(ctx, scope, nodeList));

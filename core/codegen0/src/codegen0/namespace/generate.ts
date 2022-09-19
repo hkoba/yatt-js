@@ -72,7 +72,7 @@ export function generate_namespace_from_template(
     program.push(`export `);
   }
 
-  program.push("namespace ${session.templateName.join('.')} {\n")
+  program.push("namespace ", session.templateName.join('.'), " {\n")
 
   // XXX: todo: build file-scope entity functions first
 
