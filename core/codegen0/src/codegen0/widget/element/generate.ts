@@ -4,9 +4,11 @@ import {Widget, Variable} from '../../../declaration'
 import {VarScope} from '../../varscope'
 import {generate_putargs} from './putargs'
 
+import {CodeFragment, joinAsArray} from '../../codefragment'
+
 export function generate_element(
   ctx: CodeGenContext, scope: VarScope, node: Node & {kind: 'element'}
-) // : string
+): CodeFragment
 {
   // XXX: macro_if, foreach, ...
   // XXX: find_callable_var
@@ -39,7 +41,7 @@ export function generate_element(
     callExpr = (ctx.hasThis ? '$this.' : '') + `render_${wname}`;
   }
   else {
-    ctx.token_error(node, `Not yet implemented call`)
+    ctx.token_error(node, `Not yet implemented call via widget path`)
   }
 
   if (calleeWidget == null) {
@@ -51,7 +53,15 @@ export function generate_element(
 
   const argsExpr = generate_putargs(ctx, scope, node, calleeWidget);
 
-  return ` ${callExpr}(${implicitArgs.join(', ')}, {${argsExpr}});`
+  return [
+    " ",
+    callExpr,
+    "(",
+    joinAsArray(', ', implicitArgs),
+    ", {",
+    argsExpr,
+    "});"
+  ]
 }
 
 function find_callable_var(scope: VarScope, varName: string): Variable | undefined {

@@ -4,18 +4,21 @@ import {
 import {CodeGenContext} from '../../context'
 import {Widget} from '../../../declaration'
 import {VarScope} from '../../varscope'
-import {escapeAsStringLiteral} from '../../escape'
 import {generate_argdecls} from '../argdecls'
 import {generate_body} from '../body'
+
+import {CodeFragment, joinAsArray} from '../../codefragment'
+
+import {generate_as_cast_to} from '../../template_context/cast'
 
 export function generate_putargs(
   ctx: CodeGenContext, scope: VarScope, node: Node & {kind: 'element'}
   , calleeWidget: Widget
   // , delegateVars
-) :string
+): CodeFragment
 {
   const formalArgs = calleeWidget.argMap;
-  const actualArgs = new Map
+  const actualArgs: Map<string, CodeFragment> = new Map
   for (const argSpec of node.attlist) {
     if (isBareLabeledAtt(argSpec) && argSpec.kind === "identplus") {
       // XXX: typecheck!
@@ -37,11 +40,11 @@ export function generate_putargs(
       if (actualArgs.has(formalName)) {
         ctx.token_error(argSpec, `Duplicate argument: ${formalName}`)
       }
-      if (formal.typeName !== 'text')
-        ctx.NIMPL(formal);
-
-      const s = escapeAsStringLiteral(argSpec.value)
-      actualArgs.set(formalName, `${formalName}: ${s}`)
+      actualArgs.set(formalName, [
+        {kind: 'name', code: formalName, source: argSpec.label},
+        ": ",
+        generate_as_cast_to(ctx, scope, formal, argSpec)
+      ])
     }
     else if (argSpec.kind === "attelem") {
       // <:yatt:name>...</:yatt:name>
@@ -67,7 +70,16 @@ export function generate_putargs(
         const conT = ctx.session.params.connectionTypeName
         actualArgs.set(
           BODY_NAME,
-          `${BODY_NAME}: (CON: ${conT}, ${argDecls}): void => {${bodyProgram}}`
+          [
+            {kind: 'name', code: BODY_NAME},
+            ": (",
+            {kind: 'name', code: 'CON'},
+            `: ${conT}, `,
+            argDecls,
+            "): void => {",
+            bodyProgram,
+            "}"
+          ]
         )
         break;
       }
@@ -77,7 +89,7 @@ export function generate_putargs(
     }
   }
   // XXX: node.footer
-  return [...actualArgs.values()].join(', ');
+  return joinAsArray(', ', Array.from(actualArgs.values()))
 
   function passThrough(
     argSpec: AttItem, formalName: string, actualName: string

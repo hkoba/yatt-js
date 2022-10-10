@@ -14,16 +14,16 @@ import {build_simple_variable} from '../../declaration'
 
 import {generate_body} from '../widget/body'
 
-import {generate_attstring} from '../widget/attstring'
+import {generate_as_cast_to_list} from '../template_context/list'
 
-import * as Util from 'util'
+import {CodeFragment} from '../codefragment'
 
 export function macro_foreach(
   ctx: CodeGenContext, scope: VarScope,
   node: ElementNode,
   option?: {fragment?: boolean}
 )
-: {output: string, fragment?: any}
+: {output: CodeFragment, fragment?: any}
 {
   // console.dir(node, {depth: null, color: true})
   const primary = collect_arg_spec(node.attlist, ['my', 'list'])
@@ -32,6 +32,7 @@ export function macro_foreach(
   const {my, list} = primary.ok;
   const varName = my && my.kind === "identplus" ?
     my.value : "_";
+  // XXX: my:type=varName, my=[varName="type"]?
   const loopVar = build_simple_variable(ctx, varName, {typeName: "text"}, {})
   const localScope = new VarScope(new Map, scope)
   localScope.set(varName, loopVar)
@@ -40,30 +41,24 @@ export function macro_foreach(
   if (list == null)
     ctx.token_error(node, `no list= is given`)
 
-  let listExpr
-  if (hasQuotedStringValue(list)) {
-    // console.dir(list, {depth: null, colors: true})
-    if (list.children.length === 1 && list.children[0].kind === "text") {
-      listExpr = `[${list.value}]`
-    } else {
-      listExpr = generate_attstring(ctx, scope, list.children)
-    }
-  } else if (isIdentOnly(list)) {
-    ctx.NIMPL(list)
-  } else {
-    ctx.NIMPL(list)
-  }
+  let listExpr = generate_as_cast_to_list(ctx, scope, list)
 
   if (node.children == null)
     ctx.token_error(node, `BUG?: foreach body is empty!`)
 
   const body = generate_body(ctx, localScope, node.children)
 
-  const format = `for (const %s of %s) {%s}`
+  const output: CodeFragment[] = []
+  output.push(
+    "for (const ",
+    {kind: 'name', code: varName, source: my},
+    " of ", listExpr, ") {",
+    body,
+    "}")
   let fragment
   if (option && option.fragment)
-    fragment = {format, loopVar, listExpr, body}
-  return {output: Util.format(format, varName, listExpr, body), fragment}
+    fragment = {loopVar, listExpr, body}
+  return {output, fragment}
 }
 
 function collect_arg_spec<T extends {[k: string]: AttValue}>(
