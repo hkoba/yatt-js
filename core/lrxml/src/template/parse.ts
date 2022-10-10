@@ -9,6 +9,7 @@ import { Part } from '../multipart/parse'
 
 import {
   parse_attlist, AttItem,
+  Term,
   Label, StringTerm,
   attKindIsQuotedString,
   AttIdentOnly, AttLabeled, AttLabeledNested, AttLabeledByIdent
@@ -17,6 +18,7 @@ import {
 import { EntNode } from '../entity/parse'
 
 export type Node = BodyNode | AttItem
+export {Term}
 
 type ElementBody = Range & {
   path: string[]

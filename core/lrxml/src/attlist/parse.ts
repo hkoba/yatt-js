@@ -21,7 +21,7 @@ type NestedTerm = {kind: AttNest} & BaseTerm<AttItem[]>;
 
 type EntTerm = (EntNode & {comment: string[]})
 
-type Term = IdentplusTerm | StringTerm | NestedTerm | EntTerm
+export type Term = IdentplusTerm | StringTerm | NestedTerm | EntTerm
 
 export type Label = IdentplusTerm | NestedTerm
 
