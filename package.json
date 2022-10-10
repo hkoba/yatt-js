@@ -4,7 +4,8 @@
   "description": "Yet Another Template Transpiler to TypeScript",
   "workspaces": [
     "core/lrxml",
-    "core/codegen0"
+    "core/codegen0",
+    "util/xhf"
   ],
   "scripts": {
     "build": "npm run build --workspaces",
