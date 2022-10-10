@@ -5,29 +5,51 @@ import {escapeAsStringLiteral} from '../escape'
 
 import {generate_element} from './element/generate'
 import {generate_entity} from './entity/generate'
-import type {Printable} from './entity/types'
+
+import {CodeFragment} from '../codefragment'
+
+import {as_print} from '../template_context/print'
 
 export function generate_body(ctx: CodeGenContext, scope: VarScope,
-                              nodeList: Node[]): string {
-  let program = ""
+                              nodeList: Node[]): CodeFragment {
+  const program: CodeFragment = []
   for (const node of nodeList) {
     switch (node.kind) {
       case "comment":
+        break;
       case "attelem":
-      case "pi":
-      case "lcmsg": break;
+      case "lcmsg":
+        ctx.NIMPL(node);
+      case "pi": {
+        const inner = ctx.range_text(node.innerRange)
+        let match
+        if (!(match = inner.match(/^=(==)?/))) {
+          program.push({kind: 'other', code: inner + ";", source: node})
+        } else {
+          const need_runtime_escaping = match[0].length == 1;
+          program.push(as_print(ctx, {
+            kind: 'argument',
+            items: inner.substring(match[0].length),
+            need_runtime_escaping
+          }))
+        }
+        break;
+      }
       case "text": {
-        let s = escapeAsStringLiteral(ctx.range_text(node))
-        program += ` CON.append(${s});`;
+        program.push(as_print(ctx, {
+          kind: 'argument', 
+          items: escapeAsStringLiteral(ctx.range_text(node)),
+        }))
+
         if (node.lineEndLength)
-          program += "\n";
+          program.push("\n");
         break;
       }
       case "element":
-        program += generate_element(ctx, scope, node);
+        program.push(generate_element(ctx, scope, node));
         break;
       case "entity":
-        program += ' ' + as_print(ctx, generate_entity(ctx, scope, node)) + ';';
+        program.push(' ', as_print(ctx, generate_entity(ctx, scope, node, {need_runtime_escaping: true})), ';');
         break;
       default:
         ctx.NEVER();
@@ -35,25 +57,4 @@ export function generate_body(ctx: CodeGenContext, scope: VarScope,
   }
 
   return program;
-}
-
-function as_print(ctx: CodeGenContext, printable: Printable): string {
-  switch (printable.kind) {
-    case 'var': {
-      switch (printable.variable.typeName) {
-        case 'text':
-          return `CON.appendUntrusted(${printable.variable.varName})`
-        case 'html':
-          return `CON.append(${printable.variable.varName})`
-        default:
-          ctx.NIMPL(printable.variable)
-      }
-      break;
-    }
-    case 'expr': {
-      return `CON.append(${printable.text})`
-    }
-    default:
-      ctx.NIMPL(printable)
-  }
 }

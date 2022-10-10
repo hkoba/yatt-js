@@ -12,7 +12,7 @@ export function generate_widget(ctx: CodeGenContext, nodeList: BodyNode[])
 {
   let program: CodeFragment = [
     `export function render_`,
-    {kind: 'name', text: ctx.part.name, source: ctx.part.nameNode},
+    {kind: 'name', code: ctx.part.name, source: ctx.part.nameNode},
     ` `
   ];
 
