@@ -6,12 +6,12 @@ import {YattConfig} from '../src/config'
 
 import {runSource} from '../src/codegen0/namespace/run0'
 
-(async () => {
-  const it = async (filename: string, src: string, config?: YattConfig) =>
-    await runSource(src, {filename, connectionTypeName: 'yatt.runtime.Connection'});
+{
+  const it = (filename: string, src: string, _config?: YattConfig) =>
+    runSource(src, {filename, connectionTypeName: 'yatt.runtime.Connection'});
 
-  tap.test(`basic`, async t => {
-    t.same(await it('test', `<yatt:foo x=3 y=8>hoehoe</yatt:foo>
+  tap.test(`basic`, t => {
+    t.same(it('test', `<yatt:foo x=3 y=8>hoehoe</yatt:foo>
 aaa
 <!yatt:widget foo x y>
 <h2>&yatt:x;</h2>
@@ -20,6 +20,7 @@ aaa
 <div>hoehoe</div>
 8aaa
 `)
+    t.end()
   })
 
-})()
+}
