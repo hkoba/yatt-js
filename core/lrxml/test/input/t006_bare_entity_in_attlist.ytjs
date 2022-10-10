@@ -1,4 +1,7 @@
-<!yatt:args foo %yatt:bar; baz>
-<yatt:if &yatt:foo;>
+<!yatt:args foo baz>
+<yatt:bar &yatt:foo;>
   has foo
-</yatt:if>
+</yatt:bar>
+
+<!yatt:widget bar arg>
+<h2>&yatt:arg;</h2>
