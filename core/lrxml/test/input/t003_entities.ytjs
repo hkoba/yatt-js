@@ -9,11 +9,6 @@
   hoehoe
 </yatt:baz>
 
-
-<?yatt
- puts hoehoe
- ?>
-
 &yatt:z;
 
 <!yatt:page bar a b>
@@ -21,9 +16,6 @@
 
 <yatt:baz x=a>
   <h2>&yatt:a;</h2>
-  <yatt:qux>
-    hoehoe
-  </yatt:qux>
 </yatt:baz>
 
 <!yatt:widget baz x="?xxx" y="?yyy" z>
@@ -31,11 +23,4 @@
 x=&yatt:x;
 <yatt:BODY/>
 y=&yatt:y;
-
-<!yatt:widget qux x>
-<h2>qux &yatt:x;</h2>
-
-<yatt:001yatt_decls:bar a="3" b="8"/>
-
-GEHEHE
 
