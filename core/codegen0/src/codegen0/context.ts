@@ -58,7 +58,7 @@ export function finalize_codefragment(
     else {
       switch (item.kind) {
         case "name":
-          program += item.text;
+          program += item.code;
           break;
         default:
           ctx.NEVER()

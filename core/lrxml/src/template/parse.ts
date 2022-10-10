@@ -18,6 +18,7 @@ import {
 import { EntNode } from '../entity/parse'
 
 export type Node = BodyNode | AttItem
+export type AnonNode = {kind: string} & Range
 export {Term}
 
 type ElementBody = Range & {
