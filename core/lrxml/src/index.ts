@@ -30,4 +30,9 @@ export {
 export {EntNode, EntTerm, EntPath, EntPathItem} from './entity/parse'
 
 export { parse_long_options } from './utils/long-options'
-export {lineNumber, extract_line, extract_prefix_spec} from './utils/count_lines'
+export {
+  lineNumber,
+  count_newlines,
+  extract_line,
+  extract_prefix_spec
+} from './utils/count_lines'
