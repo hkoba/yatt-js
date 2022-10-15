@@ -29,9 +29,10 @@ const NAMELESS: {[k: string]: boolean} = {']': true, '}': true, '-': true}
 
 type Match = {name: string, sigil: Sigil | '#', tabsp?: string, eol?: string}
 
-export function* tokenizer(str: string): Generator<XHF_Token> {
+export function* tokenizer(str: string): Generator<XHF_Token[]> {
   let lineno = 1
   for (const para of paragraph(str)) {
+    const tokens: XHF_Token[] = []
     for (const item of para[0].split(/(?<=\n)(?=[^\ \t])/)) {
       // console.log(lineno, item)
       if (item === "" || /^\#/.test(item)) {
@@ -67,11 +68,14 @@ export function* tokenizer(str: string): Generator<XHF_Token> {
         value = value.trim()
       }
 
-      yield {name, value, sigil: mg.sigil, lineno}
+      tokens.push({lineno, name, sigil: mg.sigil, value})
 
       lineno += count_newlines(item)
     }
 
+    if (tokens.length) {
+      yield tokens
+    }
     lineno += para[1]
   }
 }
