@@ -27,12 +27,7 @@ export function* tokenizer(str: string) {
 
       yield [mg.name, mg.sigil, value]
     }
-  }
-}
 
-export function* paragraph(str: string) {
-  for (const item of str.split(/\n{2,}/)) {
-    yield item
   }
 }
 
