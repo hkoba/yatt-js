@@ -4,11 +4,13 @@ import {paragraph} from './paragraph'
 
 import {count_newlines} from 'lrxml'
 
+export type Sigil = ':' | '-' | '=' | '[' | ']' | '{' | '}'
+
 export type XHF_Token = {
-  name: string | null
-  sigil: string
-  value: string
   lineno: number
+  name: string | null
+  sigil: Sigil
+  value: string
 }
 
 const cc_name   =    "[0-9A-Za-z_\\.\\-/~!]";
@@ -25,7 +27,7 @@ const re_item = new RegExp(
 const CLO: {[k: string]: string}       = {']': '[',  '}': '{'}
 const NAMELESS: {[k: string]: boolean} = {']': true, '}': true, '-': true}
 
-type Match = {name: string, sigil: string, tabsp?: string, eol?: string}
+type Match = {name: string, sigil: Sigil | '#', tabsp?: string, eol?: string}
 
 export function* tokenizer(str: string): Generator<XHF_Token> {
   let lineno = 1
@@ -48,9 +50,9 @@ export function* tokenizer(str: string): Generator<XHF_Token> {
         throw new Error(`Invalid XHF token('${mg.sigil}' should not be prefixed by name ${mg.name})`)
       }
 
-      // if (mg.sigil === '#') {
-      //   lineno++; continue
-      // }
+      if (mg.sigil === '#') {
+        lineno += count_newlines(item); continue
+      }
 
       const name = CLO[mg.sigil] ? null : mg.name
 
