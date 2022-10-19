@@ -3,7 +3,7 @@
 export type Paragraph = [string, number]
 
 export function* paragraph(str: string): Generator<Paragraph> {
-  const re = /\n{2,}/g
+  const re = /(?<=\n)\n+/g
   let match, pos = 0
   while (match = re.exec(str)) {
     yield [str.substring(pos, match.index), match[0].length]
