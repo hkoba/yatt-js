@@ -130,11 +130,25 @@ function parse_expression(token: XHF_Token) {
 if (module.id === ".") {
   (async () => {
     const fs = await import('fs')
+    const {promisify} = await import('util')
 
-    for (const fileName of process.argv.slice(2)) {
+    const write = promisify(process.stdout.write.bind(process.stdout))
+
+    const args = process.argv.slice(2)
+
+    const asJsonl = args.length >= 1 && args[0] === "-J" && args.shift() ?
+      true : false
+
+    const colors = process.stdout.isTTY
+
+    for (const fileName of args) {
       const str = fs.readFileSync(fileName, {encoding: 'utf-8'})
       for (const item of parseAsObjectList(str)) {
-        console.dir(item, {colors: true, depth: null})
+        if (asJsonl) {
+          await write(JSON.stringify(item) + "\n")
+        } else {
+          console.dir(item, {colors, depth: null})
+        }
       }
     }
   })()
