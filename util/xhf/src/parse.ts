@@ -10,7 +10,7 @@ export function* parseAsArrayList(str: string) {
 
 export function* parseAsObjectList(str: string) {
   for (const block of parser(str)) {
-    yield Object.fromEntries(makeEntries(block))
+    yield block.length >= 2 ? Object.fromEntries(makeEntries(block)) : block[0]
   }
 }
 
