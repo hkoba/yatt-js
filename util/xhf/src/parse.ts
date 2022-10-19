@@ -48,6 +48,7 @@ export function* parser(str: string) {
 }
 
 function parse_by_sigil(token: XHF_Token, lexer: Generator<XHF_Token>) {
+  // console.dir(token, {colors: true, depth: null})
   switch (token.sigil) {
     case '[':
       return parse_array(lexer)
@@ -58,7 +59,7 @@ function parse_by_sigil(token: XHF_Token, lexer: Generator<XHF_Token>) {
     case ':': case '-':
       return token.value
     default:
-      throw new Error(`Invalid xhf token ${token}`)
+      throw new Error(`Invalid xhf token: name: ${token.name} sigil:${token.sigil} value:${token.value}`)
   }
 }
 
