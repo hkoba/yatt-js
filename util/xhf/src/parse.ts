@@ -121,10 +121,10 @@ function parse_expression(token: XHF_Token) {
   if (! match) {
     throw new Error(`Not yet implemented XHF token: ${token}`)
   }
-  if (! EXPR_KEYWORD.has(match[0])) {
-    throw new Error(`Invalid XHF keyword: '= #${match[0]}'`)
+  if (! EXPR_KEYWORD.has(match[1])) {
+    throw new Error(`Invalid XHF keyword: '= #${match[1]}'`)
   }
-  return EXPR_KEYWORD.get(match[0])
+  return EXPR_KEYWORD.get(match[1])
 }
 
 if (module.id === ".") {
