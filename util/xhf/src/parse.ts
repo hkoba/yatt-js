@@ -104,7 +104,7 @@ function parse_object(lexer: Generator<XHF_Token>) {
       entries.push([token.value, value])
     }
     else {
-      entries.push([token.name, token.value])
+      entries.push([token.name, parse_by_sigil(token, lexer)])
     }
   }
 
