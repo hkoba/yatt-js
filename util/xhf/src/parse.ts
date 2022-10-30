@@ -56,7 +56,7 @@ function parse_by_sigil(token: XHF_Token, lexer: Generator<XHF_Token>) {
       return parse_object(lexer)
     case '=':
       return parse_expression(token)
-    case ':': case '-':
+    case ':': case '-': case ',':
       return token.value
     default:
       throw new Error(`Invalid xhf token: name: ${token.name} sigil:${token.sigil} value:${token.value}`)

@@ -4,7 +4,7 @@ import {paragraph} from './paragraph'
 
 import {count_newlines} from 'lrxml'
 
-export type Sigil = ':' | '-' | '=' | '[' | ']' | '{' | '}'
+export type Sigil = ':' | '-' | ',' | '=' | '[' | ']' | '{' | '}'
 
 export type XHF_Token = {
   lineno: number
