@@ -89,7 +89,7 @@ export function makeProgram(input: string, transpileOptions: ts.TranspileOptions
 }
 
 export function reportDiagnostics(script: string, diagnostics: [string, ts.Diagnostic][]): void {
-  // console.dir(outputMap, {color: true, depth: 4});
+  // console.dir(outputMap, {colors: true, depth: 4});
   const dummyModName = 'module'
   for (const [kind, diag] of diagnostics) {
     if (diag.file && diag.file.fileName === `${dummyModName}.ts`
@@ -103,7 +103,7 @@ export function reportDiagnostics(script: string, diagnostics: [string, ts.Diagn
       console.log(tokenLine)
     }
     else {
-      console.dir(diagnostics, {color: true, depth: 3})
+      console.dir(diagnostics, {colors: true, depth: 3})
     }
   }
 }

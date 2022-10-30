@@ -41,7 +41,7 @@ import {parse_multipart, parse_template, Node, Text} from '../src/'
                      , text(source, node.children ?? [])
                      , footer])
       }
-      // console.dir(result, {color: true, depth: null})
+      // console.dir(result, {colors: true, depth: null})
       return result;
     })
   };

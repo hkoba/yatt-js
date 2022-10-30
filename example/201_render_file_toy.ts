@@ -172,7 +172,7 @@ function from_element(
     callExpr = `$this.render_${wname}`;
   }
   else {
-    console.dir(node.path, {color: true, depth: null})
+    console.dir(node.path, {colors: true, depth: null})
     ctx.NIMPL()
   }
 
@@ -230,7 +230,7 @@ function gen_putargs(
     else {
       // 'foo' "bar"
       // entity, nest
-      console.dir(argSpec, {color: true, depth: null});
+      console.dir(argSpec, {colors: true, depth: null});
       ctx.NIMPL()
     }
   }
@@ -365,7 +365,7 @@ aaa
   })
 
   if (diagnostics && diagnostics.length > 0) {
-    // console.dir(outputMap, {color: true, depth: 4});
+    // console.dir(outputMap, {colors: true, depth: 4});
     const dummyModName = 'module'
     for (const [kind, diag] of diagnostics) {
       if (diag.file && diag.file.fileName === `${dummyModName}.ts`
@@ -379,7 +379,7 @@ aaa
         console.log(tokenLine)
       }
       else {
-        console.dir(diagnostics, {color: true, depth: 3})
+        console.dir(diagnostics, {colors: true, depth: 3})
       }
     }
     process.exit(1);

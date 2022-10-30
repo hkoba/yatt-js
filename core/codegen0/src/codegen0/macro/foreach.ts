@@ -25,7 +25,7 @@ export function macro_foreach(
 )
 : {output: CodeFragment, fragment?: any}
 {
-  // console.dir(node, {depth: null, color: true})
+  // console.dir(node, {depth: null, colors: true})
   const primary = collect_arg_spec(node.attlist, ['my', 'list'])
   if (isError(primary))
     ctx.token_error(primary.value, primary.err)

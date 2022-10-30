@@ -53,7 +53,7 @@ export function generate_putargs(
     else {
       // 'foo' "bar"
       // entity, nest
-      console.dir(argSpec, {color: true, depth: null});
+      console.dir(argSpec, {colors: true, depth: null});
       ctx.NIMPL()
     }
   }

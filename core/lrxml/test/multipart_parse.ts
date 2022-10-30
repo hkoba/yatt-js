@@ -26,9 +26,9 @@ import {parse_multipart, AttItem, hasLabel, isIdentOnly} from '../src/'
 
   const it = (src: string) => {
     const [partList, session] = parse_multipart(src, {});
-    // console.dir(partList, {depth: null, color: true})
+    // console.dir(partList, {depth: null, colors: true})
     return partList.map((part) => {
-      // console.dir(part.attlist, {depth: null, color: true});
+      // console.dir(part.attlist, {depth: null, colors: true});
       return {kind: part.kind, attlist: part.attlist.map(unnest)}
     })
   };
