@@ -82,3 +82,106 @@ y: 2
     {x: 1, y: 2}
 ]
 )
+
+testArrayList(
+`foo: 1
+bar{
+x: 2.1
+y: 2.2
+}
+baz: 3
+
+{
+foo: 1
+bar: 2
+}
+
+`, [
+  ["foo", 1,
+   "bar", {x: 2.1, y: 2.2},
+   "baz", 3],
+  [{foo: 1, bar: 2}],
+]
+)
+
+testArrayList(
+`YATT_CONFIG[
+special_entities[
+- HTML
+]
+]
+
+stash{
+user{
+login: foo
+}
+}
+
+`, [
+  ["YATT_CONFIG", ["special_entities", ['HTML']]],
+  ["stash", {user: {login: 'foo'}}],
+]
+)
+
+
+testArrayList(
+`{
+foo: 1
+bar: 2
+- ba z
+= #null
+}
+{
+- 
+= #null
+}
+[
+= #null
+- baz
+- bang
+]
+
+
+{
+- foo bar
+- baz
+qux: quux
+}
+
+`, [
+  [{foo: 1, bar: 2, "ba z": null},
+   {"": null},
+   [null, 'baz', 'bang']],
+  [{"foo bar": "baz", qux: "quux"}]
+]
+)
+
+
+testObjectList(
+`foo: 1
+bar[
+- 2.1
+, 2.2
+- 2.3
+]
+baz: 3
+
+foo: 1
+bar[
+- 2.1
+{
+hoe:
+ 2.1.1
+moe:   2.1.2
+}
+- 2.3
+]
+baz: 3
+
+`, [
+  {foo: 1, bar: [2.1, 2.2, 2.3], baz: 3},
+  {foo: 1,
+   bar: [2.1, {hoe: "2.1.1\n", moe: "2.1.2"}, 2.3],
+   baz: 3}
+]
+)
