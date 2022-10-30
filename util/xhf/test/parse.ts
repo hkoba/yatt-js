@@ -185,3 +185,28 @@ baz: 3
    baz: 3}
 ]
 )
+
+testObjectList(
+`#foo
+#bar
+foo: 1
+bar: 
+ 2
+# baz (needs space)
+baz:
+ 3
+
+`, [
+  {foo: 1, bar: 2, baz: "3\n"},
+]
+)
+
+testArrayList(
+`chklst[]: 1
+chklst[]: 2
+chklst[]: 5
+
+`, [
+  ['chklst[]', 1, 'chklst[]', 2, 'chklst[]', 5]
+]
+)
