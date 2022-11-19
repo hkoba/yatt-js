@@ -6,18 +6,25 @@ import {
   hasLabel, hasQuotedStringValue
 } from 'lrxml'
 
-import { YattConfig, yattParams } from '../config'
+import { yattParams } from '../config'
 
 import {
+  YattBuildConfig,
   BuilderMap, BuilderContext, BuilderContextClass, BuilderSession,
-  DeclarationProcessor,
+  DeclarationProcessor
 } from './context'
 
 import { TaskGraph } from './taskgraph'
 
-import { PartBase, PartKind, Part, Widget, makeWidget, Action, Entity } from './part'
+import {
+  TemplateDeclaration
+  , PartMapType
+  , RouteMapType
+} from './types'
 
-import {VarTypeMap, builtin_vartypemap} from './vartype'
+import { PartKind, Part, Widget, makeWidget, Action, Entity } from './part'
+
+import {builtin_vartypemap} from './vartype'
 
 import {add_args, ArgAdder} from './addArgs'
 
@@ -90,22 +97,6 @@ export class EntityBuilder implements DeclarationProcessor {
   }
 }
 
-export type TemplateDeclaration = {
-  path: string
-  partOrder: [PartKind, string][]; // kind, name
-  partMap: PartMapType;
-  routeMap: RouteMapType;
-}
-
-export interface PartMapType {
-  widget:  Map<string, Widget>;
-  action:  Map<string, Action>;
-  entity:  Map<string, Entity>;
-  [k: string]: Map<string, PartBase>;
-}
-
-export type RouteMapType = Map<string, {part: Part}>;
-
 export function builtin_builders(): BuilderMap {
   let builders = new Map
   builders.set('args', new WidgetBuilder(false, true))
@@ -119,15 +110,18 @@ export function builtin_builders(): BuilderMap {
   return builders
 }
 
-export function build_template_declaration(
-  source: string, config: {filename?: string, builders?: BuilderMap} & YattConfig
-): [TemplateDeclaration, BuilderSession] {
-  // XXX: default private or public
+export function declarationBuilderSession(
+  source: string,
+  config: YattBuildConfig
+): [BuilderSession, RawPart[]] {
+
+  const rootDir = config.rootDir ?? ".";
   let {
     builders = builtin_builders(),
     varTypeMap = builtin_vartypemap(),
+    declCacheSet = {[rootDir]: new Map},
     ...rest_config
-  }: {builders?: BuilderMap, varTypeMap?: VarTypeMap, filename?: string} & YattConfig = config
+  } = config
 
   const buildParams = yattParams(rest_config);
 
@@ -137,9 +131,30 @@ export function build_template_declaration(
 
   const builder_session: BuilderSession = {
     builders, varTypeMap, source, filename, patterns,
+    declCacheSet,
+    visited: new Map,
     params: buildParams
-  };
+  }
 
+  return [builder_session, rawPartList]
+}
+
+export function build_template_declaration(
+  source: string,
+  config: YattBuildConfig
+): [TemplateDeclaration, BuilderSession] {
+
+  const [builder_session, rawPartList] = declarationBuilderSession(source, config)
+
+  const decl = populateTemplateDeclaration(
+    config.filename ?? "",
+    builder_session, rawPartList
+  )
+
+  return [decl, builder_session]
+}
+
+export function populateTemplateDeclaration(path: string, builder_session: BuilderSession, rawPartList: RawPart[]): TemplateDeclaration {
   const ctx = new BuilderContextClass(builder_session)
 
   // For delegate type and ArgMacro
@@ -150,7 +165,7 @@ export function build_template_declaration(
 
   for (const rawPart of rawPartList) {
     ctx.set_range(rawPart)
-    if (! builders.has(rawPart.kind)) {
+    if (! builder_session.builders.has(rawPart.kind)) {
       ctx.token_error(rawPart, `Unsupported part kind: ${rawPart.kind}`);
     }
     const pn = createPart(ctx, rawPart)
@@ -200,11 +215,11 @@ export function build_template_declaration(
     // XXX: find from vfs
   })
 
-  return [{path: config.filename ?? "", partMap, routeMap, partOrder}, builder_session]
+  return {path, partMap, routeMap, partOrder}
 }
 
 function add_route(
-  ctx: BuilderContext, routeMap: RouteMapType, route: string, part: Part
+  _ctx: BuilderContext, routeMap: RouteMapType, route: string, part: Part
 ): void {
   // XXX: path-ro-regexp and add args to part
   routeMap.set(route, {part});

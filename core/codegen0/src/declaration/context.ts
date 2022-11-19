@@ -5,11 +5,20 @@ import {
   isIdentOnly
 } from 'lrxml'
 
-import {yattParams, YattParams, YattConfig} from '../config'
+import {YattParams, YattConfig} from '../config'
 
 import { Part } from './part'
 
 import { VarTypeMap } from './vartype'
+
+import { TemplateDeclaration } from './types'
+
+export type YattBuildConfig = YattConfig & {
+  filename?: string,
+  builders?: BuilderMap
+  declCacheSet?: DeclarationCacheSet
+  varTypeMap?: VarTypeMap
+}
 
 export type BuilderMap = Map<string, DeclarationProcessor>;
 
@@ -22,7 +31,13 @@ export type BuilderSession = ParserSession & {
   builders: BuilderMap
   params: YattParams
   varTypeMap: VarTypeMap
+  declCacheSet: DeclarationCacheSet
+  visited: Map<string, boolean>
 }
+
+export type DeclarationCacheSet = {[k: string]: DeclTree}
+
+export type DeclTree = Map<string, {modTime: number, tree: TemplateDeclaration}>
 
 export type BuilderContext = BuilderContextClass<BuilderSession>
 
@@ -95,24 +110,4 @@ export class BuilderContextClass<S extends BuilderSession> extends ScanningConte
       return null;
     }
   }
-}
-
-export function builderContext(
-  {builders, varTypeMap, source, filename, config}:
-  {
-    builders: BuilderMap,
-    varTypeMap: VarTypeMap,
-    source: string,
-    config: YattConfig,
-    filename?: string
-  }
-): BuilderContext {
-
-  const session: BuilderSession = {
-    builders, varTypeMap,
-    source, filename, params: yattParams(config),
-    patterns: {}
-  }
-
-  return new BuilderContextClass<BuilderSession>(session)
 }

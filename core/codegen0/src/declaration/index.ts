@@ -1,8 +1,8 @@
 export {
   build_template_declaration,
-  TemplateDeclaration, PartMapType, RouteMapType,
+  declarationBuilderSession,
   builtin_builders
-} from '../declaration/createPart'
+} from './createPart'
 
 export {
   Part, Widget, makeWidget, Action
@@ -14,6 +14,12 @@ export {
 } from './vartype'
 
 export {
+  YattBuildConfig,
   BuilderContext, BuilderContextClass, BuilderSession,
   BuilderMap, DeclarationProcessor
-} from '../declaration/context'
+} from './context'
+
+export {
+  TemplateDeclaration
+  , PartMapType, RouteMapType
+} from './types'
