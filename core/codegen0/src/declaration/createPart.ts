@@ -124,6 +124,9 @@ export function declarationBuilderSession(
   } = config
 
   const buildParams = yattParams(rest_config);
+  for (const dir of buildParams.libDirs) {
+    declCacheSet[dir] = new Map
+  }
 
   const [rawPartList, parser_session] = parse_multipart(source, rest_config)
 

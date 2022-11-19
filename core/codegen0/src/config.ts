@@ -2,6 +2,7 @@ import {LrxmlParams, lrxmlParams} from 'lrxml'
 
 export type YattParams = LrxmlParams & {
   outDir?: string;
+  libDirs: string[]
   templateNamespace?: string;
   exportNamespace?: boolean;
   entFnsFile?: string,
@@ -10,7 +11,7 @@ export type YattParams = LrxmlParams & {
   body_argument_name: string;
   debug: {parser?: number, declaration?: number}
 }
-export type YattConfig = Partial<YattParams>;
+export type YattConfig = Partial<Omit<YattParams, 'libDirs'>> & {libDirs?: string | string[]};
 
 export function primaryNS(params: YattParams): string {
   return params.namespace[0]
@@ -26,6 +27,7 @@ export function yattParams(
   const lrxmlDefault = lrxmlParams(config)
   let {
     outDir,
+    libDirs = [],
     templateNamespace,
     exportNamespace,
     entFnsFile,
@@ -37,6 +39,7 @@ export function yattParams(
   return {
     ...lrxmlDefault,
     outDir,
+    libDirs: typeof(libDirs) === "string" ? [libDirs] : libDirs,
     templateNamespace,
     exportNamespace,
     entFnsFile,
