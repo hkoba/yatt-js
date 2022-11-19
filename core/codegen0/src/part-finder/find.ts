@@ -19,65 +19,90 @@ export function find_widget(
 ): Widget | undefined
 {
 
-  const [[rootDir, primaryMap], ...restCache] = Object.entries(session.declCacheSet)
-  const partName = partPath[partPath.length-1]
+  for (const {realPath, virtPath, name, cache} of candidatesForLookup(session, fromDir, partPath)) {
+    refresh(session, cache, virtPath, realPath)
+    if (cache.has(virtPath)) {
+      const decls = cache.get(virtPath)!.tree
 
-  // partPath = ['foo', 'bar']
-  // 1. foo.ytjs:<!yatt:widget bar>
-  // 2. foo/bar.ytjs:<!yatt:args>
-
-  // 1. foo.ytjs:<!yatt:widget bar>
-  {
-    let virtPath = [fromDir, ...partPath.slice(0, partPath.length-1)].
-      join(Path.sep);
-
-    refresh(session, primaryMap, virtPath,
-            resolveRealPath(session, rootDir, virtPath))
-
-    if (primaryMap.has(virtPath)) {
-      const decls = primaryMap.get(virtPath)!.tree
-
-      if (decls.partMap.widget.has(partName)) {
-        return decls.partMap.widget.get(partName)!
+      if (decls.partMap.widget.has(name)) {
+        return decls.partMap.widget.get(name)!
       }
+    }
+  }
+}
+
+// partPath = ['foo', 'bar']
+// 1. foo.ytjs:<!yatt:widget bar>
+// 2. foo/bar.ytjs:<!yatt:args>
+
+// 1. foo.ytjs:<!yatt:widget bar>
+function* candidatesForLookup(
+  session: BuilderSession, fromDir: string, partPath: string[]
+): Generator<{realPath: string, virtPath: string, name: string, cache: DeclTree}> {
+
+  const ext = session.params.ext_public
+
+  const [[rootDir, primaryMap], ...restCache] = Object.entries(session.declCacheSet)
+
+  {
+    const absFromDir = Path.resolve(fromDir)
+    const inFile = partInFile(absFromDir, partPath, ext, rootDir)
+    const inSubdir = partInSubdir(absFromDir, partPath, ext, rootDir)
+    if (session.params.lookup_subdirectory_first) {
+      yield {...inSubdir, cache: primaryMap}
+      yield {...inFile, cache: primaryMap}
+    } else {
+      yield {...inFile, cache: primaryMap}
+      yield {...inSubdir, cache: primaryMap}
     }
   }
 
   for (const [dir, cache] of restCache) {
-    let virtPath = [dir, ...partPath.slice(0, partPath.length-1)].
-      join(Path.sep);
-
-    refresh(session, cache, virtPath,
-            resolveRealPath(session, dir, virtPath))
-
-    if (cache.has(virtPath)) {
-      const decls = cache.get(virtPath)!.tree
-
-      if (decls.partMap.widget.has(partName)) {
-        return decls.partMap.widget.get(partName)!
-      }
+    const absDir = Path.resolve(dir)
+    const inFile = partInFile(absDir, partPath, ext)
+    const inSubdir = partInSubdir(absDir, partPath, ext)
+    if (session.params.lookup_subdirectory_first) {
+      yield {...inSubdir, cache}
+      yield {...inFile, cache}
+    } else {
+      yield {...inFile, cache}
+      yield {...inSubdir, cache}
     }
   }
-
-  // 2. foo/bar.ytjs:<!yatt:args>
-
-
 }
 
-function resolveRealPath(session: BuilderSession, rootDir: string, virtPath: string): string {
-  return Path.resolve(rootDir, virtPath) +
-      session.params.ext_public
+function partInFile(fromDir: string, partPath: string[], ext: string, rootDir?: string): {realPath: string, virtPath: string, name: string} {
+  console.log(`InFile rootDir=${rootDir}, fromDir=${fromDir}`)
+
+  const virtPath = [fromDir, ...partPath.slice(0, partPath.length-1)].
+    join(Path.sep);
+  const realPath = Path.resolve(rootDir ?? fromDir, virtPath) + ext
+  return {realPath, virtPath, name: partPath[partPath.length-1]}
 }
+
+function partInSubdir(fromDir: string, partPath: string[], ext: string, rootDir?: string): {realPath: string, virtPath: string, name: string} {
+  console.log(`InSubdir rootDir=${rootDir}, fromDir=${fromDir}`)
+  const virtPath = [fromDir, ...partPath].
+    join(Path.sep)
+  const realPath = Path.resolve(rootDir ?? fromDir, virtPath) + ext
+  return {realPath, virtPath, name: ''}
+}
+
 
 // XXX: Remove Fs, Path dependencies
 function refresh(
   session: BuilderSession, cache: DeclTree,
   virtPath: string, realPath: string
 ) {
+  if (session.params.debug.declaration) {
+    console.log(`refreshing ${virtPath}`)
+  }
   if (session.visited.get(realPath)) {
+    console.log(` => has visited: ${virtPath}`)
     return
   }
   if (cache.has(virtPath)) {
+    console.log(` => has cache: ${virtPath}`)
     const entry = cache.get(virtPath)!
     const stat = Fs.statSync(realPath)
     if (stat == null) {
@@ -87,6 +112,7 @@ function refresh(
       return
     }
   } else if (! Fs.existsSync(realPath)) {
+    console.log(` => No realfile: ${realPath}`)
     return
   }
 
@@ -96,6 +122,9 @@ function refresh(
     declCacheSet: session.declCacheSet,
   }
 
+  if (session.params.debug.declaration) {
+    console.log(`Parsing ${realPath}`)
+  }
   const source = Fs.readFileSync(realPath, {encoding: 'utf-8'})
   const modTime = Fs.statSync(realPath, {throwIfNoEntry: false})!.mtimeMs
   const [template, _session] = build_template_declaration(source, config)
@@ -114,7 +143,12 @@ if (module.id === ".") {
     const {parse_long_options} = await import("lrxml")
     const {declarationBuilderSession} = await import("../declaration/createPart")
 
-    let config: YattConfig = {}
+    const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
+    let config: YattConfig & {lookup_only?: string} = {
+      debug: {
+        declaration: debugLevel
+      }
+    }
     parse_long_options(args, {target: config})
 
     const [filename, elemPathStr] = args;
@@ -123,16 +157,27 @@ if (module.id === ".") {
 
     const [session] = declarationBuilderSession(source, config)
 
-    const widget = find_widget(
-      session,
-      Path.dirname(filename),
-      elemPathStr.split(/:/)
-    )
+    const fromDir = Path.dirname(filename)
+    const elemPath = elemPathStr.split(/:/)
 
-    if (widget == null) {
-      console.error(`Can\'t find widget ${elemPathStr} from file ${filename}`)
+    if (config.lookup_only) {
+      for (const {realPath, name} of candidatesForLookup(
+        session, fromDir, elemPath
+      )) {
+        console.log(`Try ${name} in ${realPath}`)
+      }
     } else {
-      console.log(`Found widget: `, widget)
+      const widget = find_widget(
+        session,
+        fromDir,
+        elemPath
+      )
+
+      if (widget == null) {
+        console.error(`Can\'t find widget ${elemPathStr} from file ${filename}`)
+      } else {
+        console.log(`Found widget: `, widget)
+      }
     }
 
   })()

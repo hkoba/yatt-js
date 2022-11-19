@@ -1,0 +1,8 @@
+<!yatt:args x y>
+<h2>&yatt:x;</h2>
+
+&yatt:y;
+
+<!yatt:widget bar a b>
+これは foo の bar
+

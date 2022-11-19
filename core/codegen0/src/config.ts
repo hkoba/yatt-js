@@ -3,6 +3,7 @@ import {LrxmlParams, lrxmlParams} from 'lrxml'
 export type YattParams = LrxmlParams & {
   outDir?: string;
   libDirs: string[]
+  lookup_subdirectory_first: boolean
   templateNamespace?: string;
   exportNamespace?: boolean;
   entFnsFile?: string,
@@ -28,6 +29,7 @@ export function yattParams(
   let {
     outDir,
     libDirs = [],
+    lookup_subdirectory_first = false,
     templateNamespace,
     exportNamespace,
     entFnsFile,
@@ -40,6 +42,7 @@ export function yattParams(
     ...lrxmlDefault,
     outDir,
     libDirs: typeof(libDirs) === "string" ? [libDirs] : libDirs,
+    lookup_subdirectory_first,
     templateNamespace,
     exportNamespace,
     entFnsFile,
