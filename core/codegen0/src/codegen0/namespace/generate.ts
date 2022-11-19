@@ -19,6 +19,7 @@ import {CodeFragment} from '../codefragment'
 
 import {list_entity_functions} from './list_entity_functions'
 
+// XXX: Remove node path dependencies
 import * as Path from 'path'
 import {statSync} from 'fs'
 

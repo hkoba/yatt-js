@@ -7,6 +7,7 @@ import {longestPrefixDir, outFileName} from '../path'
 import {generate_namespace} from './namespace/generate'
 import {generate_module} from './module/generate'
 
+// XXX: Remove node path dependencies
 import {readFileSync, writeFileSync} from 'fs'
 
 export function build(fileList: string[], config: YattConfig) {

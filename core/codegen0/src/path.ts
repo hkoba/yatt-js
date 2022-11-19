@@ -1,5 +1,6 @@
 #!/usr/bin/env ts-node
 
+// XXX: Remove node path dependencies
 import path from 'path'
 import {strictEqual} from 'assert'
 
@@ -79,7 +80,7 @@ export function outFileName(filename: string, newExt: string, config: YattConfig
       throw new Error(`rootDir should not be empty when outDir is specified`);
     const subName = pathUnderRootDir(filename, config.rootDir)
     if (subName == null)
-      throw new Error(`Can't determine outFileName for ${filename} under rootDir ${config.rootDir}`);
+      throw new Error(`Can\'t determine outFileName for ${filename} under rootDir ${config.rootDir}`);
     const rootName = path.join(path.dirname(subName), path.basename(subName, ext))
     return path.join(config.outDir, rootName + newExt)
   } else {

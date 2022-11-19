@@ -1,5 +1,6 @@
 #!/usr/bin/env ts-node
 
+// XXX: Remove node path dependencies
 import {readFileSync} from 'fs'
 
 type NamespaceMG = { body?: string }

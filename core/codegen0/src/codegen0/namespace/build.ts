@@ -6,11 +6,10 @@ import {YattConfig} from '../../config'
 
 import {generate_namespace} from './generate'
 
+// XXX: Remove node path dependencies
 import {readFileSync, writeFileSync} from 'fs'
 
-import {dirname} from 'path'
-
-import {longestPrefixDir, outFileName, srcDir} from '../../path'
+import {longestPrefixDir, srcDir} from '../../path'
 
 export function compose_namespace(fileList: string[], config: YattConfig): string {
   let program = ""

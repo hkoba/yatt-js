@@ -1,5 +1,6 @@
 #!/usr/bin/env ts-node
 
+// XXX: Remove node path dependencies
 import {readFileSync, existsSync} from 'fs'
 
 // import {YattConfig} from '../../config'
