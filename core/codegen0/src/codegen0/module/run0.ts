@@ -39,7 +39,7 @@ export function runSource(source: string, config: YattConfig & {filename: string
 
   const fn = mod.exports['render_'];
   if (fn == null) {
-    throw new Error(`Can't find render_ in ${config.filename}`);
+    throw new Error(`Can\'t find render_ in ${config.filename}`);
   }
 
   let CON = {
