@@ -1,4 +1,4 @@
-import {LrxmlParams} from 'lrxml'
+import {LrxmlParams, lrxmlParams} from 'lrxml'
 
 export type YattParams = LrxmlParams & {
   outDir?: string;
@@ -21,36 +21,27 @@ export function entFnPrefix(params: YattParams): string {
 }
 
 export function yattParams(
-  config: YattConfig & {doc_root?: string}
+  config: YattConfig
 ): YattParams {
+  const lrxmlDefault = lrxmlParams(config)
   let {
-    namespace = ["yatt"],
-    doc_root,
-    rootDir,
     outDir,
     templateNamespace,
     exportNamespace,
     entFnsFile,
     connectionTypeName = 'Connection',
     noEmit = false,
-    default_part = "page",
-    compat_end_of_comment = false,
     body_argument_name = "BODY",
-    debug = {}
   } = config;
 
   return {
-    namespace,
-    rootDir: rootDir ?? doc_root,
+    ...lrxmlDefault,
     outDir,
     templateNamespace,
     exportNamespace,
     entFnsFile,
     connectionTypeName,
     noEmit,
-    default_part,
-    compat_end_of_comment,
-    body_argument_name,
-    debug
+    body_argument_name
   }
 }
