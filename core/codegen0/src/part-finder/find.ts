@@ -14,6 +14,12 @@ import {
 } from '../declaration'
 import { DeclTree } from '../declaration/context'
 
+//
+// DEBUG=1 src/part-finder/find.ts --libDirs=test/input/ex1/ytmpl  test/input/ex1/public/subgroup1/foo.ytjs foo:bar
+//
+// --lookup_subdirectory_first
+// --lookup_only
+//
 export function find_widget(
   session: BuilderSession, fromDir: string, partPath: string[]
 ): Widget | undefined
