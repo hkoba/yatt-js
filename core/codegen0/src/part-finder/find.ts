@@ -11,6 +11,7 @@ import {
   BuilderSession,
   YattBuildConfig,
   build_template_declaration,
+  TemplateDeclaration,
 } from '../declaration'
 import { DeclTree } from '../declaration/context'
 
@@ -22,7 +23,7 @@ import { DeclTree } from '../declaration/context'
 //
 export function find_widget(
   session: BuilderSession, fromDir: string, partPath: string[]
-): Widget | undefined
+): {widget: Widget, template: TemplateDeclaration} | undefined
 {
 
   for (const {realPath, virtPath, name, cache} of candidatesForLookup(session, fromDir, partPath)) {
@@ -31,7 +32,7 @@ export function find_widget(
       const decls = cache.get(virtPath)!.tree
 
       if (decls.partMap.widget.has(name)) {
-        return decls.partMap.widget.get(name)!
+        return {widget: decls.partMap.widget.get(name)!, template: decls}
       }
     }
   }
@@ -78,7 +79,7 @@ function* candidatesForLookup(
 }
 
 function partInFile(fromDir: string, partPath: string[], ext: string, rootDir?: string): {realPath: string, virtPath: string, name: string} {
-  console.log(`InFile rootDir=${rootDir}, fromDir=${fromDir}`)
+  // console.log(`InFile rootDir=${rootDir}, fromDir=${fromDir}`)
 
   const virtPath = [fromDir, ...partPath.slice(0, partPath.length-1)].
     join(Path.sep);
@@ -87,7 +88,7 @@ function partInFile(fromDir: string, partPath: string[], ext: string, rootDir?: 
 }
 
 function partInSubdir(fromDir: string, partPath: string[], ext: string, rootDir?: string): {realPath: string, virtPath: string, name: string} {
-  console.log(`InSubdir rootDir=${rootDir}, fromDir=${fromDir}`)
+  // console.log(`InSubdir rootDir=${rootDir}, fromDir=${fromDir}`)
   const virtPath = [fromDir, ...partPath].
     join(Path.sep)
   const realPath = Path.resolve(rootDir ?? fromDir, virtPath) + ext

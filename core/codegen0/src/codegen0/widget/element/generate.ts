@@ -44,6 +44,11 @@ export function generate_element(
   }
   else {
     const res = find_widget(ctx.session, ctx.template.folder, [wname, ...rest])
+    if (res == null) {
+      ctx.token_error(node, `No such widget ${node.path.join(':')}`)
+    }
+    calleeWidget = res.widget
+    const path = res.template.path
   }
 
   if (calleeWidget == null) {
