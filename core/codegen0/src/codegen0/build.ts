@@ -9,6 +9,7 @@ import {generate_module} from './module/generate'
 
 // XXX: Remove node path dependencies
 import {readFileSync, writeFileSync} from 'fs'
+import * as Path from 'path'
 
 export function build(fileList: string[], config: YattConfig) {
   if (config.rootDir == null) {
@@ -21,9 +22,10 @@ export function build(fileList: string[], config: YattConfig) {
   // XXX: if generating namespace, output should go into single index.ts
   for (const filename of fileList) {
     const outFn = outFileName(filename, '.ts', config)
-    console.log(`Generating ${outFn} from ${filename}`)
-    const source = readFileSync(filename, {encoding: 'utf-8'})
-    const output = generate(filename, source, config)
+    const absFn = Path.resolve(filename)
+    console.log(`Generating ${outFn} from ${absFn}`)
+    const source = readFileSync(absFn, {encoding: 'utf-8'})
+    const output = generate(absFn, source, config)
     if (! config.noEmit) {
       writeFileSync(outFn, output.outputText)
     }

@@ -45,11 +45,11 @@ export function runSource(source: string, config: YattConfig & {filename?: strin
 
   const ns: {[k: string]: any} = mod.exports[rootNS][fileNS];
   if (ns == null) {
-    throw new Error(`Can't find namespace ${rootNS}.${fileNS}`);
+    throw new Error(`Can\'t find namespace ${rootNS}.${fileNS}`);
   }
   const fn = ns['render_']
   if (fn == null) {
-    throw new Error(`Can't find render_ in ${rootNS}.${fileNS}`);
+    throw new Error(`Can\'t find render_ in ${rootNS}.${fileNS}`);
   }
 
   let CON = {

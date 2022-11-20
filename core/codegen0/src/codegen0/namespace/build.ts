@@ -8,14 +8,16 @@ import {generate_namespace} from './generate'
 
 // XXX: Remove node path dependencies
 import {readFileSync, writeFileSync} from 'fs'
+import * as Path from 'path'
 
 import {longestPrefixDir, srcDir} from '../../path'
 
 export function compose_namespace(fileList: string[], config: YattConfig): string {
   let program = ""
   for (const filename of fileList) {
-    const source = readFileSync(filename, {encoding: 'utf-8'})
-    const output = generate_namespace(filename, source, config)
+    const absFn = Path.resolve(filename)
+    const source = readFileSync(absFn, {encoding: 'utf-8'})
+    const output = generate_namespace(absFn, source, config)
     program += output.outputText
   }
   return program

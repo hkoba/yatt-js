@@ -42,6 +42,7 @@ export function generate_module(
     templateName,
     macro: Object.assign({}, builtinMacros, config.macro ?? {}),
     entFns,
+    importDict: {},
     ...builderSession
   }
 
@@ -54,6 +55,8 @@ export function generate_module(
   } else {
     program.push(`type Connection = yatt.runtime.Connection\n`)
   }
+
+  const importListPos = program.length
 
   for (const [kind, name] of template.partOrder) {
     const partMap = template.partMap[kind]
@@ -85,6 +88,7 @@ if (module.id === '.') {
   (async () => {
     const { parse_long_options } = await import('lrxml')
     const { readFileSync } = await import('fs')
+    const Path = await import('path')
 
     let args = process.argv.slice(2)
     const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
@@ -93,7 +97,7 @@ if (module.id === '.') {
 
     for (const filename of args) {
       let source = readFileSync(filename, {encoding: "utf-8"})
-      const output = generate_module(filename, source, config)
+      const output = generate_module(Path.resolve(filename), source, config)
       process.stdout.write(output.outputText + '\n');
     }
   })()

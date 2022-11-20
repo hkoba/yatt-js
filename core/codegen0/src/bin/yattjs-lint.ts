@@ -31,7 +31,7 @@ function isClasp(rootDir: string): boolean {
 
 export function lint(fileList: string[], config: YattConfig) {
   // console.log(`in lint`);
-  const rootDir = config.rootDir ?? longestPrefixDir(fileList) ?? "./"
+  const rootDir = Path.resolve(config.rootDir ?? longestPrefixDir(fileList) ?? "./") + "/"
   // console.log(`rootDir=${rootDir}`)
   config.rootDir ??= rootDir;
   // console.log(`isClasp=`, isClasp(rootDir))
@@ -40,9 +40,10 @@ export function lint(fileList: string[], config: YattConfig) {
     generate_module;
 
   for (const filename of fileList) {
-    const source = readFileSync(filename, {encoding: 'utf-8'})
+    const absFn = Path.resolve(filename)
+    const source = readFileSync(absFn, {encoding: 'utf-8'})
     try {
-      generate(filename, source, config)
+      generate(absFn, source, config)
     } catch (e) {
       if (e instanceof TokenError) {
         console.error(e.message)
