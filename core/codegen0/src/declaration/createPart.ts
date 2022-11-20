@@ -224,7 +224,8 @@ export function populateTemplateDeclaration(path: string, builder_session: Build
     // XXX: find from vfs
   })
 
-  return {path, partMap, routeMap, partOrder}
+  const folder = ctx.dirname(path)
+  return {path, folder, partMap, routeMap, partOrder}
 }
 
 function add_route(

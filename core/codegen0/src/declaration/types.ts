@@ -2,6 +2,7 @@ import { PartBase, PartKind, Part, Widget, Action, Entity } from './part'
 
 export type TemplateDeclaration = {
   path: string
+  folder: string
   partOrder: [PartKind, string][]; // kind, name
   partMap: PartMapType;
   routeMap: RouteMapType;

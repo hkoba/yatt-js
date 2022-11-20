@@ -109,4 +109,8 @@ export class BuilderContextClass<S extends BuilderSession> extends ScanningConte
       return null;
     }
   }
+
+  dirname(path: string): string {
+    return path.replace(/[^\/]+$/, '')
+  }
 }

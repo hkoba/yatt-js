@@ -6,6 +6,8 @@ import {generate_putargs} from './putargs'
 
 import {CodeFragment, joinAsArray} from '../../codefragment'
 
+import {find_widget} from '../../../part-finder'
+
 export function generate_element(
   ctx: CodeGenContext, scope: VarScope, node: Node & {kind: 'element'}
 ): CodeFragment
@@ -41,7 +43,7 @@ export function generate_element(
     callExpr = (ctx.hasThis ? '$this.' : '') + `render_${wname}`;
   }
   else {
-    ctx.token_error(node, `Not yet implemented call via widget path`)
+    const res = find_widget(ctx.session, ctx.template.folder, [wname, ...rest])
   }
 
   if (calleeWidget == null) {
