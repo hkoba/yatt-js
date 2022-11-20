@@ -49,6 +49,12 @@ export function generate_element(
     }
     calleeWidget = res.widget
     const path = res.template.path
+    // console.log(`template path for widget ${node.path.join(':')}: ${path}`)
+
+    // XXX: ctx.session.params.templateNamespace
+    const modName = ctx.addImport(path)
+    callExpr = (ctx.hasThis ? '$this.' : '') + modName + `.render_${calleeWidget.name}`;
+
   }
 
   if (calleeWidget == null) {

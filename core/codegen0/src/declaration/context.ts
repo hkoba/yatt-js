@@ -113,4 +113,8 @@ export class BuilderContextClass<S extends BuilderSession> extends ScanningConte
   dirname(path: string): string {
     return path.replace(/[^\/]+$/, '')
   }
+
+  baseModName(path: string): string {
+    return path.replace(/(^.*\/)?/, '').replace(/\.\w+$/, '')
+  }
 }

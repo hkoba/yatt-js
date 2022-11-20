@@ -1,5 +1,3 @@
-import {ScanningContext} from 'lrxml'
-
 import {
   TemplateDeclaration, BuilderSession, Widget
   , BuilderContextClass
@@ -9,10 +7,13 @@ import {MacroDict} from './macro'
 
 import {primaryNS, entFnPrefix} from '../config'
 
+import {commonPrefix} from '../utils/commonPrefix'
+
 export type CGenSession  = BuilderSession & {
   templateName: string[]
   macro: MacroDict
   entFns: {[k: string]: any}
+  importDict?: {[k: string]: string}
 }
 
 export type CodeGenContext = CodeGenContextClass<CGenSession>
@@ -37,6 +38,21 @@ export class CodeGenContextClass<S extends CGenSession>
 
     entFnPrefix(): string {
       return entFnPrefix(this.session.params)
+    }
+
+    addImport(pathName: string) {
+      if (this.session.importDict == null) {
+        this.throw_error(`BUG! call of addImport for ${pathName}`)
+      }
+      if (this.session.importDict[pathName] == null) {
+        const thatDir = this.dirname(pathName)
+        const thisDir = this.dirname(this.session.filename ?? '')
+        if (thisDir !== thatDir) {
+          this.NIMPL(`thisDir ${thisDir} != thatDir ${thatDir}`)
+        }
+        this.session.importDict[pathName] = this.baseModName(pathName)
+      }
+      return this.session.importDict[pathName]
     }
 }
 
