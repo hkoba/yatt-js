@@ -76,6 +76,13 @@ export function generate_module(
     }
   }
 
+  const importModules = Object.values(session.importDict)
+  if (importModules.length) {
+    program.splice(importListPos, 0, ...importModules.map(
+      (m) => `import * as ${m} from './${m}'\n`
+    ))
+  }
+
   let fileCtx = new BuilderContextClass(session)
 
   return {
