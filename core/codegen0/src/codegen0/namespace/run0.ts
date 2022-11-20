@@ -19,11 +19,13 @@ export function runFile(filename: string, config: YattConfig): string {
   return runSource(source, {filename, ...config})
 }
 
-export function runSource(source: string, config: YattConfig & {filename: string}) {
+export function runSource(source: string, config: YattConfig & {filename?: string}) {
 
   config.exportNamespace = true;
 
-  const output = generate_namespace(source, config)
+  const filename = config.filename ?? ''
+
+  const output = generate_namespace(filename, source, config)
 
   let {program: _program, outputMap, diagnostics} = makeProgram(output.outputText)
 
@@ -34,7 +36,7 @@ export function runSource(source: string, config: YattConfig & {filename: string
     // console.log(outputMap)
   }
 
-  const mod = compile([...outputMap.values()].join('\n'), config.filename)
+  const mod = compile([...outputMap.values()].join('\n'), filename)
 
   if (output.templateName.length != 2) {
     throw new Error(`Invalid output template name: ${output.templateName.join('.')}`)

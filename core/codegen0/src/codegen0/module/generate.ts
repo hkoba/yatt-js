@@ -24,15 +24,15 @@ import {builtinMacros} from '../macro/'
 import {list_entity_functions} from './list_entity_functions'
 
 export function generate_module(
+  filename: string,
   source: string, config: YattConfig & {
-    filename: string,
     macro?: Partial<CGenMacro>,
   }
 ): {outputText: string, template: TemplateDeclaration, templateName: string[]}
 {
-  const [template, builderSession] = build_template_declaration(source, config)
+  const [template, builderSession] = build_template_declaration(filename, source, config)
   const templateName = templatePath(
-    config.filename,
+    filename,
     builderSession.params.rootDir
   );
   const entFns: {[k: string]: any} = config.entFnsFile ?
@@ -93,7 +93,7 @@ if (module.id === '.') {
 
     for (const filename of args) {
       let source = readFileSync(filename, {encoding: "utf-8"})
-      const output = generate_module(source, {filename, ...config})
+      const output = generate_module(filename, source, config)
       process.stdout.write(output.outputText + '\n');
     }
   })()

@@ -26,22 +26,23 @@ import {statSync} from 'fs'
 export const DEFAULT_NAMESPACE = '$tmpl'
 
 export function generate_namespace(
+  filename: string,
   source: string, config: YattConfig & {
-    filename: string,
     macro?: Partial<CGenMacro>,
   }
 ): {outputText: string, templateName: string[], session: CGenSession}
 {
 
   const [template, session] = build_template_declaration(
+    filename,
     source,
     config
   )
 
   const templateName = [session.params.templateNamespace ?? DEFAULT_NAMESPACE,
-                        ...templatePath(config.filename, config.rootDir)];
+                        ...templatePath(filename, config.rootDir)];
 
-  const rootDir = Path.dirname(Path.dirname(Path.resolve(config.filename)))
+  const rootDir = Path.dirname(Path.dirname(Path.resolve(filename)))
   const entFnFile = `${rootDir}/root/entity-fn.ts`
 
   const entFns = statSync(entFnFile, {throwIfNoEntry: false}) ?
@@ -118,7 +119,7 @@ if (module.id === '.') {
 
     for (const filename of args) {
       let source = readFileSync(filename, {encoding: "utf-8"})
-      const output = generate_namespace(source, {filename, ...config})
+      const output = generate_namespace(filename, source, config)
       process.stdout.write(output.outputText + '\n');
     }
   })()

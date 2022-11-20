@@ -42,7 +42,7 @@ export function lint(fileList: string[], config: YattConfig) {
   for (const filename of fileList) {
     const source = readFileSync(filename, {encoding: 'utf-8'})
     try {
-      generate(source, {filename, ...config})
+      generate(filename, source, config)
     } catch (e) {
       if (e instanceof TokenError) {
         console.error(e.message)

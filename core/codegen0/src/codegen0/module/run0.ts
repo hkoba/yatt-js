@@ -23,7 +23,7 @@ export function runSource(source: string, config: YattConfig & {filename: string
 
   config.exportNamespace = true;
 
-  const output = generate_module(source, config)
+  const output = generate_module(config.filename, source, config)
 
   let {program: _program, outputMap, diagnostics} = makeProgram(output.outputText)
 

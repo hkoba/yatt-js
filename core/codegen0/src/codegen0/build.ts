@@ -23,7 +23,7 @@ export function build(fileList: string[], config: YattConfig) {
     const outFn = outFileName(filename, '.ts', config)
     console.log(`Generating ${outFn} from ${filename}`)
     const source = readFileSync(filename, {encoding: 'utf-8'})
-    const output = generate(source, {filename, ...config})
+    const output = generate(filename, source, config)
     if (! config.noEmit) {
       writeFileSync(outFn, output.outputText)
     }

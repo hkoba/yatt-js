@@ -14,7 +14,6 @@ import { VarTypeMap } from './vartype'
 import { TemplateDeclaration } from './types'
 
 export type YattBuildConfig = YattConfig & {
-  filename?: string,
   builders?: BuilderMap
   declCacheSet?: DeclarationCacheSet
   varTypeMap?: VarTypeMap

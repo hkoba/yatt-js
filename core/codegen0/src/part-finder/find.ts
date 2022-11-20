@@ -133,7 +133,7 @@ function refresh(
   }
   const source = Fs.readFileSync(realPath, {encoding: 'utf-8'})
   const modTime = Fs.statSync(realPath, {throwIfNoEntry: false})!.mtimeMs
-  const [template, _session] = build_template_declaration(source, config)
+  const [template, _session] = build_template_declaration(realPath, source, config)
   cache.set(virtPath, {modTime, tree: template})
   session.visited.set(realPath, true)
 }
@@ -161,7 +161,7 @@ if (module.id === ".") {
 
     const source = Fs.readFileSync(filename, {encoding: "utf-8"})
 
-    const [session] = declarationBuilderSession(source, config)
+    const [session] = declarationBuilderSession(filename, source, config)
 
     const fromDir = Path.dirname(filename)
     const elemPath = elemPathStr.split(/:/)

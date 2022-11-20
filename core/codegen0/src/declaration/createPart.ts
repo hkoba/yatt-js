@@ -111,6 +111,7 @@ export function builtin_builders(): BuilderMap {
 }
 
 export function declarationBuilderSession(
+  filename: string,
   source: string,
   config: YattBuildConfig
 ): [BuilderSession, RawPart[]] {
@@ -128,9 +129,11 @@ export function declarationBuilderSession(
     declCacheSet[dir] = new Map
   }
 
-  const [rawPartList, parser_session] = parse_multipart(source, rest_config)
+  const [rawPartList, parser_session] = parse_multipart(
+    source, {...rest_config, filename}
+  )
 
-  const {filename, patterns} = parser_session;
+  const {patterns} = parser_session;
 
   const builder_session: BuilderSession = {
     builders, varTypeMap, source, filename, patterns,
@@ -143,14 +146,17 @@ export function declarationBuilderSession(
 }
 
 export function build_template_declaration(
+  filename: string,
   source: string,
   config: YattBuildConfig
 ): [TemplateDeclaration, BuilderSession] {
 
-  const [builder_session, rawPartList] = declarationBuilderSession(source, config)
+  const [builder_session, rawPartList] = declarationBuilderSession(filename, source, config)
+
+  // console.log(`template config:`, config)
 
   const decl = populateTemplateDeclaration(
-    config.filename ?? "",
+    filename,
     builder_session, rawPartList
   )
 
@@ -255,8 +261,9 @@ if (module.id === ".") {
     console.time('run');
     for (const fn of args) {
       const [template, _session] = build_template_declaration(
+        fn,
         readFileSync(fn, { encoding: "utf-8" }),
-        {filename: fn, ...config}
+        config
       )
 
       const {partMap} = template;

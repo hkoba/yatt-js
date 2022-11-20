@@ -15,7 +15,7 @@ export function compose_namespace(fileList: string[], config: YattConfig): strin
   let program = ""
   for (const filename of fileList) {
     const source = readFileSync(filename, {encoding: 'utf-8'})
-    const output = generate_namespace(source, {filename, ...config})
+    const output = generate_namespace(filename, source, config)
     program += output.outputText
   }
   return program
