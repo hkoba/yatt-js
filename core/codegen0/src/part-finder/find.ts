@@ -51,29 +51,28 @@ function* candidatesForLookup(
 
   const [[rootDir, primaryMap], ...restCache] = Object.entries(session.declCacheSet)
 
+  const genList = session.params.lookup_subdirectory_first ?
+    [partInSubdir, partInFile] :
+    [partInFile, partInSubdir];
+
   {
     const absFromDir = Path.resolve(fromDir)
-    const inFile = partInFile(absFromDir, partPath, ext, rootDir)
-    const inSubdir = partInSubdir(absFromDir, partPath, ext, rootDir)
-    if (session.params.lookup_subdirectory_first) {
-      yield {...inSubdir, cache: primaryMap}
-      yield {...inFile, cache: primaryMap}
-    } else {
-      yield {...inFile, cache: primaryMap}
-      yield {...inSubdir, cache: primaryMap}
+
+    for (const gen of genList) {
+      yield {
+        ...gen(absFromDir, partPath, ext, rootDir),
+        cache: primaryMap
+      }
     }
   }
 
   for (const [dir, cache] of restCache) {
     const absDir = Path.resolve(dir)
-    const inFile = partInFile(absDir, partPath, ext)
-    const inSubdir = partInSubdir(absDir, partPath, ext)
-    if (session.params.lookup_subdirectory_first) {
-      yield {...inSubdir, cache}
-      yield {...inFile, cache}
-    } else {
-      yield {...inFile, cache}
-      yield {...inSubdir, cache}
+    for (const gen of genList) {
+      yield {
+        ...gen(absDir, partPath, ext),
+        cache
+      }
     }
   }
 }
@@ -101,15 +100,20 @@ function refresh(
   session: BuilderSession, cache: DeclTree,
   virtPath: string, realPath: string
 ) {
-  if (session.params.debug.declaration) {
+  const debug = session.params.debug.declaration
+  if (debug) {
     console.log(`refreshing ${virtPath}`)
   }
   if (session.visited.get(realPath)) {
-    console.log(` => has visited: ${virtPath}`)
+    if (debug) {
+      console.log(` => has visited: ${virtPath}`)
+    }
     return
   }
   if (cache.has(virtPath)) {
-    console.log(` => has cache: ${virtPath}`)
+    if (debug) {
+      console.log(` => has cache: ${virtPath}`)
+    }
     const entry = cache.get(virtPath)!
     const stat = Fs.statSync(realPath)
     if (stat == null) {
@@ -119,7 +123,9 @@ function refresh(
       return
     }
   } else if (! Fs.existsSync(realPath)) {
-    console.log(` => No realfile: ${realPath}`)
+    if (debug) {
+      console.log(` => No realfile: ${realPath}`)
+    }
     return
   }
 
@@ -129,7 +135,7 @@ function refresh(
     declCacheSet: session.declCacheSet,
   }
 
-  if (session.params.debug.declaration) {
+  if (debug) {
     console.log(`Parsing ${realPath}`)
   }
   const source = Fs.readFileSync(realPath, {encoding: 'utf-8'})
