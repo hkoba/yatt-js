@@ -36,7 +36,9 @@ export function generate_entpath<T extends Part>(
         if (fn == null) {
           ctx.token_error(head, `No such variable: ${head.name}`);
         }
-        result.push(ctx.entFnPrefix(), ".", {kind: 'name', code: head.name, source: head}, ".apply(CON, [])");
+        result.push(`${ctx.entFnPrefix()}.`,
+                    {kind: 'name', code: head.name, source: head},
+                    ".apply(CON, [])");
       }
       break;
     }
@@ -45,13 +47,12 @@ export function generate_entpath<T extends Part>(
       const variable = scope.lookup(head.name)
       if (variable != null) {
         const args = generate_entlist(ctx, scope, head.elements, {})
-        result.push({kind: 'name', code: head.name, source: head}, "(", args, "})")
+        result.push({kind: 'name', code: head.name, source: head}, "(", args, ")")
       } else {
         const fn = ctx.session.entFns[head.name]
         if (fn == null) {
           ctx.token_error(head, `No such variable: ${head.name}`);
         }
-        // 
         const args = generate_entlist(ctx, scope, head.elements, {})
         result.push(`${ctx.entFnPrefix()}.`,
                     {kind: 'name', code: head.name, source: head},
@@ -65,7 +66,7 @@ export function generate_entpath<T extends Part>(
 
   return {
     kind: "argument", need_runtime_escaping,
-    items: joinAsArray('.', result)
+    items: result
   }
 }
 
