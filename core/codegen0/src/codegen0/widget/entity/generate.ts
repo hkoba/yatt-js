@@ -1,23 +1,22 @@
 import {Node, EntPathItem, EntTerm} from 'lrxml'
-import {CodeGenContext} from '../../context'
+import {CodeGenContext, Part} from '../../context'
 import {VarScope} from '../../varscope'
 import {escapeAsStringLiteral} from '../../escape'
 
 import {CodeFragment, joinAsArray} from '../../codefragment'
 import type {Argument} from '../../template_context/'
 
-export function generate_entity(
-  ctx: CodeGenContext, scope: VarScope, node: Node & {kind: 'entity'},
+export function generate_entity<T extends Part>(
+  ctx: CodeGenContext<T>, scope: VarScope, node: Node & {kind: 'entity'},
   options?: {need_runtime_escaping?: boolean}
 ): Argument {
   return generate_entpath(ctx, scope, node.path, options ?? {})
 }
 
-export function generate_entpath(
-  ctx: CodeGenContext, scope: VarScope, path: EntPathItem[],
+export function generate_entpath<T extends Part>(
+  ctx: CodeGenContext<T>, scope: VarScope, path: EntPathItem[],
   {need_runtime_escaping}: {need_runtime_escaping?: boolean}
 ): Argument {
-
   const [head, ...rest] = path
 
   if (rest.length) {
@@ -70,8 +69,8 @@ export function generate_entpath(
   }
 }
 
-export function generate_entlist(
-  ctx: CodeGenContext, scope: VarScope, nodeList: EntTerm[],
+export function generate_entlist<T extends Part>(
+  ctx: CodeGenContext<T>, scope: VarScope, nodeList: EntTerm[],
   options: {need_runtime_escaping?: boolean}
 ): CodeFragment {
   const exprList: CodeFragment[] = nodeList.map(term => {

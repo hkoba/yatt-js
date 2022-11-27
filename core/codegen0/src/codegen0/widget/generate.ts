@@ -1,5 +1,5 @@
-import {Node, BodyNode} from 'lrxml'
-import {CodeGenContext} from '../context'
+import {BodyNode} from 'lrxml'
+import {WidgetGenContext} from '../context'
 import {VarScope} from '../varscope'
 
 import {generate_argdecls} from './argdecls'
@@ -7,7 +7,7 @@ import {generate_body} from './body'
 
 import {CodeFragment} from '../codefragment'
 
-export function generate_widget(ctx: CodeGenContext, nodeList: BodyNode[])
+export function generate_widget(ctx: WidgetGenContext, nodeList: BodyNode[])
  : CodeFragment
 {
   let program: CodeFragment = [

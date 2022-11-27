@@ -1,6 +1,6 @@
 import { Node } from 'lrxml'
-import {CodeGenContext} from '../../context'
-import {Widget, Variable} from '../../../declaration'
+import {WidgetGenContext, Widget} from '../../context'
+import {Variable, TemplateDeclaration} from '../../../declaration'
 import {VarScope} from '../../varscope'
 import {generate_putargs} from './putargs'
 
@@ -9,7 +9,7 @@ import {CodeFragment, joinAsArray} from '../../codefragment'
 import {find_widget} from '../../../part-finder'
 
 export function generate_element(
-  ctx: CodeGenContext, scope: VarScope, node: Node & {kind: 'element'}
+  ctx: WidgetGenContext, scope: VarScope, node: Node & {kind: 'element'}
 ): CodeFragment
 {
   // XXX: macro_if, foreach, ...
@@ -80,7 +80,7 @@ function find_callable_var(scope: VarScope, varName: string): Variable | undefin
 }
 
 function generate_function_prefix(
-  ctx: CodeGenContext, template: TemplateDeclaration
+  ctx: WidgetGenContext, template: TemplateDeclaration
 ): string {
   const prefix = []
   if (ctx.session.params.templateNamespace) {

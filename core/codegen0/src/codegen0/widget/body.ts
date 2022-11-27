@@ -1,5 +1,5 @@
 import {Node} from 'lrxml'
-import {CodeGenContext} from '../context'
+import {WidgetGenContext} from '../context'
 import {VarScope} from '../varscope'
 import {escapeAsStringLiteral} from '../escape'
 
@@ -10,7 +10,7 @@ import {CodeFragment} from '../codefragment'
 
 import {as_print} from '../template_context/print'
 
-export function generate_body(ctx: CodeGenContext, scope: VarScope,
+export function generate_body(ctx: WidgetGenContext, scope: VarScope,
                               nodeList: Node[]): CodeFragment {
   const program: CodeFragment = []
   for (const node of nodeList) {

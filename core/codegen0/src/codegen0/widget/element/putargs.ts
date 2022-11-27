@@ -1,8 +1,7 @@
 import {
   Node, AttItem, isIdentOnly, isBareLabeledAtt, hasStringValue
 } from 'lrxml'
-import {CodeGenContext} from '../../context'
-import {Widget} from '../../../declaration'
+import {WidgetGenContext, Widget} from '../../context'
 import {VarScope} from '../../varscope'
 import {generate_argdecls} from '../argdecls'
 import {generate_body} from '../body'
@@ -12,7 +11,7 @@ import {CodeFragment, joinAsArray} from '../../codefragment'
 import {generate_as_cast_to} from '../../template_context/cast'
 
 export function generate_putargs(
-  ctx: CodeGenContext, scope: VarScope, node: Node & {kind: 'element'}
+  ctx: WidgetGenContext, scope: VarScope, node: Node & {kind: 'element'}
   , calleeWidget: Widget
   // , delegateVars
 ): CodeFragment

@@ -6,8 +6,12 @@ import {CodeGenContextClass, CGenSession, finalize_codefragment} from '../contex
 import {
   build_template_declaration, TemplateDeclaration
   , BuilderContextClass
+  // , Widget, Entity
 } from '../../declaration'
 import {generate_widget} from '../widget/generate'
+
+import {generate_entity} from '../entity/generate'
+
 import {YattConfig, entFnPrefix} from '../../config'
 
 import {srcDir, templatePath} from '../../path'

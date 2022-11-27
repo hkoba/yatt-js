@@ -1,8 +1,8 @@
-import {CodeGenContext} from '../context'
+import {CodeGenContext, Part} from '../context'
 
 import {CodeFragment, Argument, Statement} from './index'
 
-export function as_print(ctx: CodeGenContext, frag: Argument | Statement): CodeFragment {
+export function as_print<T extends Part>(ctx: CodeGenContext<T>, frag: Argument | Statement): CodeFragment {
   switch (frag.kind) {
     case 'argument': {
       if (frag.need_runtime_escaping) {

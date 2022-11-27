@@ -5,7 +5,7 @@ export {
 } from './createPart'
 
 export {
-  Part, Widget, makeWidget, Action
+  Part, Widget, makeWidget, Action, Entity
 } from './part'
 
 export {

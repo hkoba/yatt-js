@@ -19,7 +19,7 @@ import {generate_as_cast_to_list} from '../template_context/list'
 import {CodeFragment} from '../codefragment'
 
 export function macro_foreach(
-  ctx: CodeGenContext, scope: VarScope,
+  ctx: WidgetGenContext, scope: VarScope,
   node: ElementNode,
   option?: {fragment?: boolean}
 )

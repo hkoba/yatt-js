@@ -2,15 +2,15 @@ import {
   Term, hasQuotedStringValue, isIdentOnly
 } from 'lrxml'
 
-import {CodeGenContext} from '../context'
+import {CodeGenContext, Part} from '../context'
 import {VarScope} from '../varscope'
 
 import {CodeFragment} from '../codefragment'
 
 import {generate_entity} from '../widget/entity/generate'
 
-export function generate_as_cast_to_list(
-  ctx: CodeGenContext, scope: VarScope, term: Term
+export function generate_as_cast_to_list<T extends Part>(
+  ctx: CodeGenContext<T>, scope: VarScope, term: Term
 ): CodeFragment {
   const program: CodeFragment = []
 

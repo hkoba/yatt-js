@@ -1,6 +1,6 @@
 import {Term} from 'lrxml'
 
-import {CodeGenContext} from '../context'
+import {CodeGenContext, Part} from '../context'
 import {VarScope} from '../varscope'
 
 import {CodeFragment} from '../codefragment'
@@ -10,8 +10,8 @@ import {Variable} from '../../declaration/vartype'
 import {generate_as_cast_to_text} from './text'
 import {generate_as_cast_to_list} from './list'
 
-export function generate_as_cast_to(
-  ctx: CodeGenContext, scope: VarScope, variable: Variable, term: Term
+export function generate_as_cast_to<T extends Part>(
+  ctx: CodeGenContext<T>, scope: VarScope, variable: Variable, term: Term
 ): CodeFragment {
 
   switch (variable.typeName) {

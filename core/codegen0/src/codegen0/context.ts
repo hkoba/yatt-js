@@ -1,7 +1,9 @@
 import {
-  TemplateDeclaration, BuilderSession, Widget
+  TemplateDeclaration, BuilderSession, Part, Widget, Entity
   , BuilderContextClass
 } from '../declaration/'
+
+export {Part, Widget, Entity} from '../declaration/'
 
 import {MacroDict} from './macro'
 
@@ -16,15 +18,18 @@ export type CGenSession  = BuilderSession & {
   importDict?: {[k: string]: string}
 }
 
-export type CodeGenContext = CodeGenContextClass<CGenSession>
+export type WidgetGenContext = CodeGenContext<Widget>
+export type EntityGenContext = CodeGenContext<Entity>
 
-export class CodeGenContextClass<S extends CGenSession>
+export type CodeGenContext<T extends Part> = CodeGenContextClass<T>
+
+export class CodeGenContextClass<PartT extends Part, S extends CGenSession = CGenSession>
   extends BuilderContextClass<S> {
 
     public hasThis: boolean;
 
     constructor(
-      public template: TemplateDeclaration, public part: Widget,
+      public template: TemplateDeclaration, public part: PartT,
       session: S,
       params?: {hasThis?: boolean}
     ) {
