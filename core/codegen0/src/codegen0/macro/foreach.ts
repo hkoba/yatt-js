@@ -4,7 +4,7 @@ import {
   , hasQuotedStringValue, isIdentOnly
 } from 'lrxml'
 
-import {CodeGenContext} from '../context'
+import {WidgetGenContext} from '../context'
 
 import {VarScope} from '../varscope'
 
