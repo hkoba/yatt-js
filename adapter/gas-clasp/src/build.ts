@@ -19,7 +19,7 @@ if (module.id === ".") {
 
     let args = process.argv.slice(2)
     const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
-    const rootDir = 'templates/'
+    const rootDir = Path.resolve('templates') + Path.sep
     let config: cgen.YattConfig = {
       outDir: './root',
       rootDir,
