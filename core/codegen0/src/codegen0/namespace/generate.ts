@@ -39,7 +39,9 @@ export function generate_namespace(
     config
   )
 
-  const templateName = [session.params.templateNamespace ?? DEFAULT_NAMESPACE,
+  session.params.templateNamespace ??= DEFAULT_NAMESPACE
+
+  const templateName = [session.params.templateNamespace,
                         ...templatePath(filename, config.rootDir)];
 
   const rootDir = Path.dirname(Path.dirname(Path.resolve(filename)))
