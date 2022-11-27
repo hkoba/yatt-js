@@ -48,12 +48,8 @@ export function generate_element(
       ctx.token_error(node, `No such widget ${node.path.join(':')}`)
     }
     calleeWidget = res.widget
-    const path = res.template.path
-    // console.log(`template path for widget ${node.path.join(':')}: ${path}`)
-
-    // XXX: ctx.session.params.templateNamespace
-    const modName = ctx.addImport(path)
-    callExpr = (ctx.hasThis ? '$this.' : '') + modName + `.render_${calleeWidget.name}`;
+    const callPrefix = generate_function_prefix(ctx, res.template)
+    callExpr = callPrefix + `render_${calleeWidget.name}`;
 
   }
 
@@ -81,4 +77,25 @@ function find_callable_var(scope: VarScope, varName: string): Variable | undefin
   const vr = scope.lookup(varName)
   if (vr != null && vr.is_callable)
     return vr;
+}
+
+function generate_function_prefix(
+  ctx: CodeGenContext, template: TemplateDeclaration
+): string {
+  const prefix = []
+  if (ctx.session.params.templateNamespace) {
+    // XXX: 嘘実装
+    prefix.push(ctx.session.params.templateNamespace,
+                ctx.baseModName(template.path))
+  } else {
+    if (ctx.hasThis) {
+      prefix.push('$this')
+    }
+    prefix.push(ctx.addImport(template.path))
+  }
+  if (! prefix.length) {
+    return ''
+  } else {
+    return prefix.join('.') + '.'
+  }
 }
