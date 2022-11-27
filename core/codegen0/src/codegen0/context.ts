@@ -73,11 +73,11 @@ export function finalize_codefragment(
     }
     else {
       switch (item.kind) {
-        case "name":
+        case "name": case "other":
           program += item.code;
           break;
         default:
-          ctx.NEVER()
+          ctx.NEVER(item)
       }
     }
   }

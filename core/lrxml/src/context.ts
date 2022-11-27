@@ -131,8 +131,13 @@ export class ScanningContext<S extends ParserSession> {
                          , longMessage + '\n' + tokenLine)
   }
 
-  NEVER(): never {
-    this.throw_error("BUG! why reached here!")
+  NEVER(item?: any): never {
+    if (item !== undefined) {
+      const json = JSON.stringify(item)
+      this.throw_error(`BUG! why reached here: ${json}`)
+    } else {
+      this.throw_error("BUG! why reached here!")
+    }
   }
 
   NIMPL(item?: any): never {
