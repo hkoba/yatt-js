@@ -22,11 +22,17 @@ import { DeclTree } from '../declaration/context'
 // --lookup_only
 //
 export function find_widget(
-  session: BuilderSession, fromDir: string, partPath: string[]
+  session: BuilderSession, template: TemplateDeclaration, partPath: string[]
 ): {widget: Widget, template: TemplateDeclaration} | undefined
 {
+  const [head, ...rest] = partPath
+  if (rest.length === 0 && template.partMap.widget.has(head)) {
+    const widget = template.partMap.widget.get(head)!
+    return {widget, template}
+  }
 
-  for (const {realPath, virtPath, name, cache} of candidatesForLookup(session, fromDir, partPath)) {
+  for (const {realPath, virtPath, name, cache}
+       of candidatesForLookup(session, template.folder, partPath)) {
     refresh(session, cache, virtPath, realPath)
     if (cache.has(virtPath)) {
       const decls = cache.get(virtPath)!.tree
@@ -154,7 +160,7 @@ if (module.id === ".") {
     // const Path = await import("path")
 
     const {parse_long_options} = await import("lrxml")
-    const {declarationBuilderSession} = await import("../declaration/createPart")
+    const {build_template_declaration} = await import("../declaration/")
 
     const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
     let config: YattConfig & {lookup_only?: string} = {
@@ -168,7 +174,7 @@ if (module.id === ".") {
 
     const source = Fs.readFileSync(filename, {encoding: "utf-8"})
 
-    const [session] = declarationBuilderSession(filename, source, config)
+    const [template, session] = build_template_declaration(filename, source, config)
 
     const fromDir = Path.dirname(filename)
     const elemPath = elemPathStr.split(/:/)
@@ -179,10 +185,11 @@ if (module.id === ".") {
       )) {
         console.log(`Try ${name} in ${realPath}`)
       }
-    } else {
+    }
+    else {
       const widget = find_widget(
         session,
-        fromDir,
+        template,
         elemPath
       )
 

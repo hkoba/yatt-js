@@ -38,12 +38,8 @@ export function generate_element(
         ctx.NIMPL();
     }
   }
-  else if (rest.length === 0 && ctx.template.partMap.widget.has(wname)) {
-    calleeWidget = ctx.template.partMap.widget.get(wname)!
-    callExpr = (ctx.hasThis ? '$this.' : '') + `render_${wname}`;
-  }
   else {
-    const res = find_widget(ctx.session, ctx.template.folder, [wname, ...rest])
+    const res = find_widget(ctx.session, ctx.template, [wname, ...rest])
     if (res == null) {
       ctx.token_error(node, `No such widget ${node.path.join(':')}`)
     }
