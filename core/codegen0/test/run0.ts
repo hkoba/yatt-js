@@ -11,7 +11,7 @@ import {runSource} from '../src/codegen0/namespace/run0'
     runSource(src, {filename, connectionTypeName: 'yatt.runtime.Connection'});
 
   tap.test(`basic`, t => {
-    t.same(it('test', `<yatt:foo x=3 y=8>hoehoe</yatt:foo>
+    t.same(it('widget', `<yatt:foo x=3 y=8>hoehoe</yatt:foo>
 aaa
 <!yatt:widget foo x y>
 <h2>&yatt:x;</h2>
@@ -20,6 +20,14 @@ aaa
 <div>hoehoe</div>
 8aaa
 `)
+
+    if (0) {
+      t.same(it(`entity`, `&yatt:sum(3,8);
+        <!yatt:entity sum x y>
+        return (x ?? 0) + (y ?? 0);
+                `), `11`)
+    }
+
     t.end()
   })
 

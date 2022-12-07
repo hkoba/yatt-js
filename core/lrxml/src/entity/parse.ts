@@ -60,6 +60,11 @@ export type EntPathItem = {kind: "var" | "prop", name: string} & Range |
 
 export type EntNode = {kind: "entity", path: EntPath} & Range
 
+export function isVarOrCall(item: EntPathItem)
+: item is {kind: "var" | "call"} & EntPathItem {
+  return item.kind === "var" || item.kind === "call"
+}
+
 export function isEntNode(token: {kind: string} & Range)
 : token is EntNode {
   return token.kind === "entity"

@@ -6,13 +6,14 @@ import {CodeGenContextClass, CGenSession, finalize_codefragment} from '../contex
 import {
   build_template_declaration, TemplateDeclaration
   , BuilderContextClass
+  , YattBuildConfig
   // , Widget, Entity
 } from '../../declaration'
 import {generate_widget} from '../widget/generate'
 
 import {generate_entity} from '../entity/generate'
 
-import {YattConfig, entFnPrefix} from '../../config'
+import {entFnPrefix} from '../../config'
 
 import {srcDir, templatePath} from '../../path'
 
@@ -31,16 +32,24 @@ export const DEFAULT_NAMESPACE = '$tmpl'
 
 export function generate_namespace(
   filename: string,
-  source: string, config: YattConfig & {
+  source: string, config: YattBuildConfig & {
     macro?: Partial<CGenMacro>,
   }
 ): {outputText: string, templateName: string[], session: CGenSession}
 {
 
+  const rootDir = Path.dirname(Path.dirname(Path.resolve(filename)))
+  const entFnFile = `${rootDir}/root/entity-fn.ts`
+
+  const entFns = statSync(entFnFile, {throwIfNoEntry: false}) ?
+    list_entity_functions(
+      entFnFile, '$yatt' // XXX: entFnPrefix(session.params)
+    ) : {}
+
   const [template, session] = build_template_declaration(
     filename,
     source,
-    config
+    {...config, entFns}
   )
 
   session.params.templateNamespace ??= DEFAULT_NAMESPACE
@@ -48,21 +57,12 @@ export function generate_namespace(
   const templateName = [session.params.templateNamespace,
                         ...templatePath(filename, config.rootDir)];
 
-  const rootDir = Path.dirname(Path.dirname(Path.resolve(filename)))
-  const entFnFile = `${rootDir}/root/entity-fn.ts`
-
-  const entFns = statSync(entFnFile, {throwIfNoEntry: false}) ?
-    list_entity_functions(
-      entFnFile, entFnPrefix(session.params)
-    ) : {}
-
   // XXX: should return templateName too.
   return {
     templateName,
     ...generate_namespace_from_template(template, {
       templateName,
       macro: Object.assign({}, builtinMacros, config.macro ?? {}),
-      entFns,
       ...session
     })
     // sourceMapText
@@ -91,7 +91,12 @@ export function generate_namespace_from_template(
       throw new Error(`BUG: Unknown part ${kind} ${name}`)
 
     switch (part.kind) {
-      case "entity": case "action": break;
+      case "action": break;
+      case "entity": {
+        let ctx = new CodeGenContextClass(template, part, session);
+        program.push(generate_entity(ctx))
+        break
+      }
       case "widget": {
         if (part.raw_part == null)
           continue;
@@ -116,7 +121,7 @@ if (module.id === '.') {
 
     let args = process.argv.slice(2)
     const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
-    let config: YattConfig = {
+    let config: YattBuildConfig = {
       body_argument_name: "body",
       debug: { declaration: debugLevel },
       // ext: 'ytjs',

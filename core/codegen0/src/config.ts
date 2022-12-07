@@ -10,7 +10,11 @@ export type YattParams = LrxmlParams & {
   connectionTypeName: string,
   noEmit: boolean;
   body_argument_name: string;
-  debug: {parser?: number, declaration?: number}
+  debug: {
+    parser?: number,
+    declaration?: number,
+    codegen?: number
+  }
 }
 export type YattConfig = Partial<Omit<YattParams, 'libDirs'>> & {libDirs?: string | string[]};
 

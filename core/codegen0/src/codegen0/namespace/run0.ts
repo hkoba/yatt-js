@@ -27,6 +27,10 @@ export function runSource(source: string, config: YattConfig & {filename?: strin
 
   const output = generate_namespace(filename, source, config)
 
+  if (config.debug?.codegen) {
+    console.log(output.outputText)
+  }
+
   let {program: _program, outputMap, diagnostics} = makeProgram(output.outputText)
 
   if (diagnostics && diagnostics.length > 0) {

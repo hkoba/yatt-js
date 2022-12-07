@@ -30,18 +30,23 @@ export function generate_module(
   }
 ): {outputText: string, template: TemplateDeclaration, templateName: string[]}
 {
-  const [template, builderSession] = build_template_declaration(filename, source, config)
+  const entFns: {[k: string]: any} = config.entFnsFile ?
+    list_entity_functions(config.entFnsFile) : {}
+
+  const [template, builderSession] = build_template_declaration(
+    filename, source, {
+      entFns,
+      ...config
+    }
+  )
   const templateName = templatePath(
     filename,
     builderSession.params.rootDir
   );
-  const entFns: {[k: string]: any} = config.entFnsFile ?
-    list_entity_functions(config.entFnsFile) : {}
 
   const session = {
     templateName,
     macro: Object.assign({}, builtinMacros, config.macro ?? {}),
-    entFns,
     importDict: {},
     ...builderSession
   }

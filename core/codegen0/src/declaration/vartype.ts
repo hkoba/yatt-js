@@ -18,7 +18,7 @@ type SimpleVariableBuilder = {
 }
 type CallableVariableBuilder = {
   kind: "callable",
-  typeName: string, 
+  typeName: string,
   fun: (ctx: BuilderContext, att: AttItem, argNo: number
         , varName: string, attlist: AttItem[]) => Variable
 }

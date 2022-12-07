@@ -8,6 +8,7 @@ import {YattConfig} from '../config'
 
 import {
   Widget,
+  Entity,
   BuilderSession,
   YattBuildConfig,
   build_template_declaration,
@@ -41,6 +42,20 @@ export function find_widget(
         return {widget: decls.partMap.widget.get(name)!, template: decls}
       }
     }
+  }
+}
+
+export function find_entity(
+  session: BuilderSession, template: TemplateDeclaration, name: string
+): {entity: Entity, template: TemplateDeclaration} | string | undefined {
+  if (template.partMap.entity.has(name)) {
+    const entity = template.partMap.entity.get(name)!
+    return {entity, template}
+  }
+
+  const fn = session.entFns[name]
+  if (fn != null) {
+    return name
   }
 }
 
@@ -163,7 +178,7 @@ if (module.id === ".") {
     const {build_template_declaration} = await import("../declaration/")
 
     const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
-    let config: YattConfig & {lookup_only?: string} = {
+    let config: YattConfig & {lookup_only?: string, entity?: boolean} = {
       debug: {
         declaration: debugLevel
       }
@@ -184,6 +199,19 @@ if (module.id === ".") {
         session, fromDir, elemPath
       )) {
         console.log(`Try ${name} in ${realPath}`)
+      }
+    }
+    else if (config.entity) {
+      const entity = find_entity(
+        session,
+        template,
+        elemPath[0]
+      )
+
+      if (entity == null) {
+        console.error(`Can\'t find entity ${elemPathStr} from file ${filename}`)
+      } else {
+        console.log(`Found entity: `, entity)
       }
     }
     else {

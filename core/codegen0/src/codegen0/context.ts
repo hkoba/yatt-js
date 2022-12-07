@@ -9,12 +9,9 @@ import {MacroDict} from './macro'
 
 import {primaryNS, entFnPrefix} from '../config'
 
-import {commonPrefix} from '../utils/commonPrefix'
-
 export type CGenSession  = BuilderSession & {
   templateName: string[]
   macro: MacroDict
-  entFns: {[k: string]: any}
   importDict?: {[k: string]: string}
 }
 

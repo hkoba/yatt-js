@@ -17,6 +17,7 @@ export type YattBuildConfig = YattConfig & {
   builders?: BuilderMap
   declCacheSet?: DeclarationCacheSet
   varTypeMap?: VarTypeMap
+  entFns?: {[k: string]: any}
 }
 
 export type BuilderMap = Map<string, DeclarationProcessor>;
@@ -32,6 +33,7 @@ export type BuilderSession = ParserSession & {
   varTypeMap: VarTypeMap
   declCacheSet: DeclarationCacheSet
   visited: Map<string, boolean>
+  entFns: {[k: string]: any}
 }
 
 export type DeclarationCacheSet = {[k: string]: DeclTree}

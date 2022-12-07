@@ -27,7 +27,7 @@ export {
   parse_attstring
 } from './attstring/parse'
 
-export {EntNode, EntTerm, EntPath, EntPathItem} from './entity/parse'
+export {EntNode, EntTerm, EntPath, EntPathItem, isVarOrCall} from './entity/parse'
 
 export { parse_long_options } from './utils/long-options'
 export {

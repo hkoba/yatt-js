@@ -1,10 +1,12 @@
-import {Node, EntPathItem, EntTerm} from 'lrxml'
+import {Node, EntPathItem, EntTerm, isVarOrCall} from 'lrxml'
 import {CodeGenContext, Part} from '../../context'
 import {VarScope} from '../../varscope'
 import {escapeAsStringLiteral} from '../../escape'
 
 import {CodeFragment, joinAsArray} from '../../codefragment'
 import type {Argument} from '../../template_context/'
+
+import {find_entity} from '../../../part-finder'
 
 export function generate_entity<T extends Part>(
   ctx: CodeGenContext<T>, scope: VarScope, node: Node & {kind: 'entity'},
@@ -19,49 +21,41 @@ export function generate_entpath<T extends Part>(
 ): Argument {
   const [head, ...rest] = path
 
+  const result: CodeFragment[] = []
+
+  if (isVarOrCall(head)) {
+    const variable = scope.lookup(head.name)
+    if (variable != null) {
+      if (head.kind === "call" && !variable.is_callable) {
+        ctx.token_error(head, `Variable is not a callable: ${head.name}`);
+      }
+      if (variable.typeName === "html") {
+        need_runtime_escaping = false;
+      }
+      result.push({kind: 'name', code: variable.varName, source: head})
+    } else {
+      const entitySpec = find_entity(ctx.session, ctx.template, head.name)
+      if (entitySpec == null) {
+        console.log(`entFns: `, ctx.session.entFns)
+        ctx.token_error(head, `No such entity: ${head.name}`);
+      }
+
+      result.push(`${ctx.entFnPrefix()}.`,
+                  {kind: 'name', code: head.name, source: head})
+
+      const args = head.kind === "call"
+        ? generate_entlist(ctx, scope, head.elements, {})
+        : [];
+
+      result.push(`.apply(CON, [`, args, `])`);
+    }
+  }
+  else {
+    ctx.NIMPL(head)
+  }
+
   if (rest.length) {
     ctx.NIMPL(rest[0])
-  }
-  const result: CodeFragment[] = []
-  switch (head.kind) {
-    case 'var': {
-      const variable = scope.lookup(head.name)
-      if (variable != null) {
-        // typeName
-        result.push({kind: 'name', code: variable.varName, source: head})
-        if (variable.typeName === "html")
-          need_runtime_escaping = false;
-      } else {
-        const fn = ctx.session.entFns[head.name]
-        if (fn == null) {
-          ctx.token_error(head, `No such variable: ${head.name}`);
-        }
-        result.push(`${ctx.entFnPrefix()}.`,
-                    {kind: 'name', code: head.name, source: head},
-                    ".apply(CON, [])");
-      }
-      break;
-    }
-    case 'call': {
-      // XXX: entmacro
-      const variable = scope.lookup(head.name)
-      if (variable != null) {
-        const args = generate_entlist(ctx, scope, head.elements, {})
-        result.push({kind: 'name', code: head.name, source: head}, "(", args, ")")
-      } else {
-        const fn = ctx.session.entFns[head.name]
-        if (fn == null) {
-          ctx.token_error(head, `No such variable: ${head.name}`);
-        }
-        const args = generate_entlist(ctx, scope, head.elements, {})
-        result.push(`${ctx.entFnPrefix()}.`,
-                    {kind: 'name', code: head.name, source: head},
-                    `.apply(CON, [`, args, `])`);
-      }
-      break;
-    }
-    default:
-      ctx.NIMPL(head)
   }
 
   return {

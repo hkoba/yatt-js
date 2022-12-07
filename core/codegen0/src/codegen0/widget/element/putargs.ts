@@ -61,30 +61,32 @@ export function generate_putargs(
     const BODY_NAME = ctx.session.params.body_argument_name; // XXX: ctx
     if (actualArgs.has(BODY_NAME))
       ctx.token_error(node, `${BODY_NAME} argument is already specified`);
-    const BODY = formalArgs.get(BODY_NAME)!;
-    switch (BODY.typeName) {
-      case "widget": {
-        const argDecls = generate_argdecls(ctx, scope, BODY.widget);
-        const bodyProgram = generate_body(ctx, scope, node.children);
-        const conT = ctx.session.params.connectionTypeName
-        actualArgs.set(
-          BODY_NAME,
-          [
-            {kind: 'name', code: BODY_NAME},
-            ": (",
-            {kind: 'name', code: 'CON'},
-            `: ${conT}, `,
-            argDecls,
-            "): void => {",
-            bodyProgram,
-            "}"
-          ]
-        )
-        break;
+    const BODY = formalArgs.get(BODY_NAME);
+    if (BODY != null) {
+      switch (BODY.typeName) {
+        case "widget": {
+          const argDecls = generate_argdecls(ctx, scope, BODY.widget);
+          const bodyProgram = generate_body(ctx, scope, node.children);
+          const conT = ctx.session.params.connectionTypeName
+          actualArgs.set(
+            BODY_NAME,
+            [
+              {kind: 'name', code: BODY_NAME},
+              ": (",
+              {kind: 'name', code: 'CON'},
+              `: ${conT}, `,
+              argDecls,
+              "): void => {",
+              bodyProgram,
+              "}"
+            ]
+          )
+          break;
+        }
+        case "html":
+        default:
+          ctx.NIMPL();
       }
-      case "html":
-      default:
-        ctx.NIMPL();
     }
   }
   // XXX: node.footer

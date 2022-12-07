@@ -121,6 +121,7 @@ export function declarationBuilderSession(
     builders = builtin_builders(),
     varTypeMap = builtin_vartypemap(),
     declCacheSet = {[rootDir]: new Map},
+    entFns = {},
     ...rest_config
   } = config
 
@@ -138,6 +139,7 @@ export function declarationBuilderSession(
   const builder_session: BuilderSession = {
     builders, varTypeMap, source, filename, patterns,
     declCacheSet,
+    entFns,
     visited: new Map,
     params: buildParams
   }
@@ -253,7 +255,8 @@ if (module.id === ".") {
     const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
     let config = {
       body_argument_name: "body",
-      debug: { declaration: debugLevel }
+      debug: { declaration: debugLevel },
+      entFns: {}
     }
     parse_long_options(args, {target: config})
 
