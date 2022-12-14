@@ -12,10 +12,10 @@ import {
   build_template_declaration, TemplateDeclaration,
   BuilderSession, Part, Widget,
   Variable
-} from '../src/declaration/'
+} from '../core/codegen0/src/declaration/'
 
-import {yatt} from '../src/yatt'
-import {VarScope} from '../src/codegen0/varscope'
+import {yatt} from '../core/codegen0/src/yatt'
+import {VarScope} from '../core/codegen0/src/codegen0/varscope'
 
 type CGenSession  = BuilderSession & {
 }
@@ -305,7 +305,7 @@ function escapeAsStringLiteral(text: string): string {
 }
 
 import ts = require('typescript')
-import {compile, makeProgram} from '../src/utils/compileTs'
+import {compile, makeProgram} from '../core/codegen0/src/utils/compileTs'
 
 (async () => {
   let args = process.argv.slice(2)
@@ -313,7 +313,6 @@ import {compile, makeProgram} from '../src/utils/compileTs'
   const { readFileSync } = await import('fs')
   const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
   let config = {
-    body_argument_name: "body",
     debug: { declaration: debugLevel },
     // ext: 'ytjs',
   }
@@ -335,8 +334,9 @@ aaa
 
   console.time(`parse template declaration`)
   const [template, session] = build_template_declaration(
+    filename,
     source,
-    {filename, ...config}
+    config
   )
   console.timeEnd(`parse template declaration`)
 
