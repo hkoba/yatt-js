@@ -79,6 +79,9 @@ function generate_function_prefix(
   ctx: WidgetGenContext, template: TemplateDeclaration
 ): string {
   const prefix = []
+  if (ctx.template === template) {
+    return ctx.hasThis ? '$this.' : ''
+  }
   if (ctx.session.params.templateNamespace) {
     // XXX: 嘘実装
     prefix.push(ctx.session.params.templateNamespace,

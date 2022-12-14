@@ -40,8 +40,16 @@ export function generate_entpath<T extends Part>(
         ctx.token_error(head, `No such entity: ${head.name}`);
       }
 
-      result.push(`${ctx.entFnPrefix()}.`,
-                  {kind: 'name', code: head.name, source: head})
+      if (typeof entitySpec !== "string"
+        && entitySpec.template === ctx.template) {
+        if (ctx.hasThis) {
+          result.push('$this.')
+        }
+      } else {
+        result.push(`${ctx.entFnPrefix()}.`)
+      }
+
+      result.push({kind: 'name', code: head.name, source: head})
 
       const args = head.kind === "call"
         ? generate_entlist(ctx, scope, head.elements, {})
