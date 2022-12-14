@@ -16,6 +16,8 @@ import {CodeGenContextClass, finalize_codefragment} from '../context'
 
 import {generate_widget} from '../widget/generate'
 
+import {generate_entity} from '../entity/generate'
+
 import {CodeFragment} from '../codefragment'
 
 import {CGenMacro} from '../macro'
@@ -70,7 +72,12 @@ export function generate_module(
       throw new Error(`BUG: Unknown part ${kind} ${name}`)
 
     switch (part.kind) {
-      case "entity": case "action": break;
+      case "action": break;
+      case "entity": {
+        let ctx = new CodeGenContextClass(template, part, session);
+        program.push(generate_entity(ctx))
+        break
+      }
       case "widget": {
         if (part.raw_part == null)
           continue;
