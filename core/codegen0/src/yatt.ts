@@ -17,9 +17,17 @@ export namespace yatt.runtime {
     // "-->": "--&gt;", // XXX: For <script>. Not used now.
   }
 
-  // XXX: extend this to complex runtime types
-  export function escape(str: string): string {
+  export function escape(arg: string | number | Object): string {
+    if (typeof arg === "number") {
+      return arg.toString()
+    }
+    const str = typeof arg === "string" ? arg : JSON.stringify(arg);
+
+    if (str.replace == null) {
+      throw new Error(`Unknown argument to escape: ${arg}`)
+    }
+
     return str.replace(/[<>&\"\']/g, (chr: string) =>
-                       escapeMap[chr as keyof typeof escapeMap]);
+      escapeMap[chr as keyof typeof escapeMap]);
   }
 }
