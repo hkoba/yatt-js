@@ -31,7 +31,7 @@ export function runSource(source: string, config: YattConfig & {filename: string
     reportDiagnostics(output.outputText, diagnostics);
     process.exit(1)
   } else {
-    console.log(outputMap)
+    // console.log(outputMap)
   }
 
   const mod = compile([...outputMap.values()].join('\n'), config.filename)
