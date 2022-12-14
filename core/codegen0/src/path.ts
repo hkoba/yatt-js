@@ -81,11 +81,16 @@ export function outFileName(filename: string, newExt: string, config: YattConfig
     const subName = pathUnderRootDir(filename, config.rootDir)
     if (subName == null)
       throw new Error(`Can\'t determine outFileName for ${filename} under rootDir ${config.rootDir}`);
+    // XXX: rewrite with rootname()
     const rootName = path.join(path.dirname(subName), path.basename(subName, ext))
     return path.join(config.outDir, rootName + newExt)
   } else {
     return path.join(path.dirname(filename), path.basename(filename, ext) + newExt)
   }
+}
+
+export function rootname(fn: string): string {
+  return fn.substring(0, fn.length - path.extname(fn).length)
 }
 
 if (module.id === ".") {
