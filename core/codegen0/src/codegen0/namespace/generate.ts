@@ -122,7 +122,6 @@ if (module.id === '.') {
     let args = process.argv.slice(2)
     const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
     let config: YattBuildConfig = {
-      body_argument_name: "body",
       debug: { declaration: debugLevel },
       // ext: 'ytjs',
     }

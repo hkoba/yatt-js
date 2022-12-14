@@ -254,7 +254,6 @@ if (module.id === ".") {
     console.timeLog('load lrxml');
     const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
     let config = {
-      body_argument_name: "body",
       debug: { declaration: debugLevel },
       entFns: {}
     }
