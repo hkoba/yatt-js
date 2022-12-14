@@ -270,10 +270,10 @@ if (module.id === ".") {
       )
 
       const {partMap} = template;
-      for (const [name, widget] of partMap.widget) {
-        const args = [...widget.argMap.keys()].join(", ");
-        const proto = `function render_${name}(${args})`
-        console.log(proto);
+      for (const [name, map] of Object.entries(partMap)) {
+        console.log(`=== ${name} ===`)
+        console.dir(map, {colors: true, depth: null})
+        console.log('\n')
       }
     }
     console.timeLog('run');
