@@ -2,31 +2,41 @@
 
 import tap from 'tap'
 
-import {YattConfig} from '../src/config'
+import {runFile as runFileNS} from '../src/codegen0/namespace/run0'
 
-import {runSource} from '../src/codegen0/namespace/run0'
+import {runFile as runFileMod} from '../src/codegen0/module/run0'
+
+import {rootname} from '../src/path'
 
 {
-  const it = (filename: string, src: string, _config?: YattConfig) =>
-    runSource(src, {filename, connectionTypeName: 'yatt.runtime.Connection'});
+  const dir = rootname(__filename) + '.d/'
 
-  tap.test(`basic`, t => {
-    t.same(it('widget', `<yatt:foo x=3 y=8>hoehoe</yatt:foo>
-aaa
-<!yatt:widget foo x y>
-<h2>&yatt:x;</h2>
-<div><yatt:BODY/></div>
-&yatt:y;`), `<h2>3</h2>
+  tap.test(`namespace`, t => {
+    const testFile = (filename: string, expect: string) =>
+      t.same(runFileNS(dir + filename, {connectionTypeName: 'yatt.runtime.Connection'}), expect, filename);
+    
+    testFile("widget.ytjs", `<h2>3</h2>
 <div>hoehoe</div>
-8aaa
+8
+aaa
 `)
 
-    if (0) {
-      t.same(it(`entity`, `&yatt:sum(3,8);
-        <!yatt:entity sum x y>
-        return (x ?? 0) + (y ?? 0);
-                `), `11`)
-    }
+    testFile("entity.ytjs", `11\n`)
+
+    t.end()
+  })
+
+  tap.test(`module`, t => {
+    const testFile = (filename: string, expect: string) =>
+      t.same(runFileMod(dir + filename, {connectionTypeName: 'yatt.runtime.Connection'}), expect, filename);
+    
+    testFile("widget.ytjs", `<h2>3</h2>
+<div>hoehoe</div>
+8
+aaa
+`)
+
+    testFile("entity.ytjs", `11\n`)
 
     t.end()
   })

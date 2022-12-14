@@ -1,0 +1,6 @@
+<yatt:foo x=3 y=8>hoehoe</yatt:foo>
+aaa
+<!yatt:widget foo x y>
+<h2>&yatt:x;</h2>
+<div><yatt:BODY/></div>
+&yatt:y;
