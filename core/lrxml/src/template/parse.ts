@@ -21,6 +21,11 @@ export type Node = BodyNode | AttItem
 export type AnonNode = {kind: string} & Range
 export {Term}
 
+// export function anonNode<T extends Node>(node: T): AnonNode {
+//   const {kind, start, end} = node
+//   return {kind, start, end}
+// }
+
 type ElementBody = Range & {
   path: string[]
   attlist: (AttItem | AttElement)[]
