@@ -3,7 +3,7 @@
 ## Overall
 
 - [ ] Rethink about config options  
-(Current options are chosen to help porting codes from yatt_lite)
+(Currently, many options originated from yatt\_lite have the same names as their originals to reduce errors of code porting)
 
 ## Core Codegen Layer
 
@@ -19,13 +19,15 @@
 
 ## For Generic Web App Support
 
-- [ ] Sigil mappings for pages and actions
-
-- [ ] Inline route for yatt:page decls
-
-- [ ] Throw/Catch special response
-
 - [ ] Platform neutral yatt runtime?
 
-- [ ] Platform neutral directory organization for pages, widgets and components?
+   - [ ] `app.render()`, `app.do()`??
+
+     - [ ] Throw/Catch special response
+
+     - [ ] Sigil mappings for pages and actions
+
+     - [ ] Inline route for yatt:page decls
+
+- [ ] Platform neutral directory organization for entities, pages, widgets and components?
 
