@@ -13,7 +13,9 @@ import {generate_widget} from '../widget/generate'
 
 import {generate_entity} from '../entity/generate'
 
-import {entFnPrefix} from '../../config'
+import {generate_action} from '../action/generate'
+
+// import {entFnPrefix} from '../../config'
 
 import {srcDir, templatePath} from '../../path'
 
@@ -91,7 +93,11 @@ export function generate_namespace_from_template(
       throw new Error(`BUG: Unknown part ${kind} ${name}`)
 
     switch (part.kind) {
-      case "action": break;
+      case "action": {
+        let ctx = new CodeGenContextClass(template, part, session);
+        program.push(generate_action(ctx))
+        break
+      }
       case "entity": {
         let ctx = new CodeGenContextClass(template, part, session);
         program.push(generate_entity(ctx))
