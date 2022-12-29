@@ -22,7 +22,7 @@ async function build(config: cgen.YattConfig) {
   for (const fn of glob.sync('**/*.ytjs', {root: rootDir, cwd: rootDir})) {
     const filename = Path.join(rootDir, fn)
     const source = fs.readFileSync(filename, {encoding: 'utf-8'})
-    const output = cgen.generate_module(source, {filename, entFnsFile})
+    const output = cgen.generate_module(filename, source, {entFnsFile})
     if (output == null)
       throw new Error(`yatt transpile error found in: ${filename}`)
     pagesMap.set('/' + output.templateName, output.template)
