@@ -213,10 +213,15 @@ export class ParserContext extends ScanningContext<ParserSession> {
     return match
   }
 
+  count_newlines(start: number, end: number) {
+    return count_newlines(this.session.source.substring(start, end))
+  }
+
   advance(matchOrNum: RegExpExecArray | number) {
     const num = typeof matchOrNum === "number" ?
       matchOrNum :
       matchOrNum[0].length
+    this.line += this.count_newlines(this.index, this.index + num)
     this.index += num
   }
 
@@ -235,22 +240,31 @@ export class ParserContext extends ScanningContext<ParserSession> {
     return {start, end}
   }
 
-  tab(from: GlobalMatch, to?: RegExpExecArray, morestr?: string): Range {
+  tab(from: GlobalMatch, to?: RegExpExecArray, morestr?: string): RangeLine {
     const matched = to ? this.matched_range(from, to, morestr) :
       {start: from.match.index, end: from.lastIndex + (morestr ? morestr.length : 0)}
+    const end = matched.end
+    const line = this.line
+    this.line += this.count_newlines(this.index, end)
     this.index = matched.end
-    return matched
+    return {line, ...matched}
   }
 
-  tab_match(match: RegExpExecArray, matchIndex: number = 0): Range {
+  tab_match(match: RegExpExecArray, matchIndex: number = 0): RangeLine {
     const start = this.index
-    this.index = match.index + match[matchIndex].length
-    return {start, end: this.index}
+    const end = match.index + match[matchIndex].length
+    const line = this.line
+    this.line += this.count_newlines(start, end)
+    this.index = end
+    return {line, start, end}
   }
 
-  tab_range(range: Range): Range {
-    this.index = range.end
-    return range
+  tab_range(range: Range): RangeLine {
+    const end = range.end
+    const line = this.line;
+    this.line += this.count_newlines(this.index, end)
+    this.index = end
+    return {line, ...range}
   }
 
   prefix_of(globalMatch: GlobalMatch): Range | null {
