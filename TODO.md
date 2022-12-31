@@ -23,11 +23,10 @@
 
    - [ ] `app.render()`, `app.do()`??
 
-     - [ ] Throw/Catch special response
+      - [ ] Throw/Catch special response
 
-     - [ ] Sigil mappings for pages and actions
+      - [ ] Sigil mappings for pages and actions
 
-     - [ ] Inline route for yatt:page decls
+      - [ ] Inline route for yatt:page decls
 
 - [ ] Platform neutral directory organization for entities, pages, widgets and components?
-
