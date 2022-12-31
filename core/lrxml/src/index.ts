@@ -3,7 +3,7 @@ export {lrxmlParams, LrxmlParams, LrxmlConfig} from './config'
 export {
   parserContext, parserSession, Range, ParserContext, ParserSession, ScanningContext,
   range_text,
-  Token, TokenT, TokenError
+  AnyToken, TokenT, TokenError
 } from './context'
 
 export {tokenize_multipart, tokenize_multipart_context} from './multipart/tokenize'
