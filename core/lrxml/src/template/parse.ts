@@ -1,7 +1,7 @@
 #!/usr/bin/env ts-node
 
 import {LrxmlConfig} from '../config'
-import { Range, ParserContext, ParserSession } from '../context'
+import { RangeLine, Range, ParserContext, ParserSession } from '../context'
 
 import { tokenize, Token, Text, Comment, PI } from './tokenize'
 
@@ -18,7 +18,7 @@ import {
 import { EntNode } from '../entity/parse'
 
 export type Node = BodyNode | AttItem
-export type AnonNode = {kind: string} & Range
+export type AnonNode = {kind: string} & RangeLine
 export {Term}
 
 // export function anonNode<T extends Node>(node: T): AnonNode {
@@ -26,7 +26,7 @@ export {Term}
 //   return {kind, start, end}
 // }
 
-type ElementBody = Range & {
+type ElementBody = RangeLine & {
   path: string[]
   attlist: (AttItem | AttElement)[]
   children?: BodyNode[]
@@ -37,7 +37,7 @@ type ElementBody = Range & {
 export type ElementNode = {kind: "element"} & ElementBody;
 export type AttElement = {kind: "attelem"} & ElementBody;
 
-export type LCMsg   = Range & {kind: "lcmsg", namespace: string[]
+export type LCMsg   = RangeLine & {kind: "lcmsg", namespace: string[]
                                , lcmsg: Text[][], bind: EntNode[]}
 
 export type BodyNode = Text | Comment | PI | ElementNode | AttElement | EntNode | LCMsg
@@ -104,7 +104,8 @@ function parse_tokens(
       }
       case "lcmsg_open": {
         const {lcmsg, bind, end} = parse_lcmsg(ctx, lex)
-        sink.push({kind: "lcmsg", namespace: tok.namespace, lcmsg, bind, start: tok.start, end: end.end})
+        sink.push({kind: "lcmsg", namespace: tok.namespace, lcmsg, bind,
+                   ...ctx.token_range(tok, end)})
         break;
       }
       case "tag_open": {
@@ -127,7 +128,7 @@ function parse_tokens(
         let elem: ElementNode | AttElement = {
           kind: tok.is_option ? "attelem" : "element",
           path: tok.name.split(/:/), attlist,
-          start: tok.start, end: tok.end
+          ...ctx.token_range(tok)
         }
 
         if (elem.kind === "element") {

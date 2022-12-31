@@ -2,7 +2,7 @@
 
 import {LrxmlConfig} from '../config'
 import {
-  Range, ParserContext, ParserSession
+  AnyToken, Range, ParserContext, ParserSession
 } from '../context'
 
 import { Payload } from '../multipart/parse'
@@ -36,28 +36,30 @@ type BodyMatch = {
   pi?: string
 } & EntPrefixMatch
 
-export type Text = Range & {kind: "text", lineEndLength: number}
-export type Comment = Range & {kind: "comment", innerRange?: Range}
-export type PI = Range & {kind: "pi", innerRange: Range}
+export type Text = AnyToken & {kind: "text", lineEndLength: number}
+export type Comment = AnyToken & {kind: "comment", innerRange?: Range}
+export type PI = AnyToken & {kind: "pi", innerRange: Range}
 
-type TagOpen  = Range & {kind: "tag_open", name: string,
+type TagOpen  = AnyToken & {kind: "tag_open", name: string,
                          is_close: boolean, is_option: boolean}
-export type TagClose = Range & {
+export type TagClose = AnyToken & {
   kind: "tag_close", is_empty_element: boolean,
   lineEndLength: number
 }
 
 // Entity
-type EntOpen = Range & {kind: "entpath_open", name: string}
+type EntOpen = AnyToken & {kind: "entpath_open", name: string}
 
 export type Token = Text | Comment | PI |
   TagOpen | AttToken | TagClose | EntOpen | EntNode | LCMsg
 
-function* splitline(text: string, offset: number): Generator<Token> {
-  for (const line of text.split(/(?<=\n)/)) {
+function* splitline(ctx: ParserContext, prefix: Range): Generator<Token> {
+  let offset = prefix.start
+  for (const line of ctx.range_text(prefix).split(/(?<=\n)/)) {
     let end = offset + line.length;
-    yield { kind: "text", start: offset, end, lineEndLength: lineEndLength(line) }
+    yield { kind: "text", start: offset, end, line: ctx.line, lineEndLength: lineEndLength(line) }
     offset = end;
+    ctx.line++
   }
 }
 
@@ -89,7 +91,7 @@ export function* tokenize(session: ParserSession, payloadList: Payload[]): Gener
       while ((globalMatch = ctx.global_match(re))) {
         const prefix = ctx.prefix_of(globalMatch)
         if (prefix != null) {
-          yield* splitline(ctx.range_text(prefix), prefix.start)
+          yield* splitline(ctx, prefix)
         }
         
         let bm = globalMatch.match.groups as BodyMatch
@@ -105,7 +107,7 @@ export function* tokenize(session: ParserSession, payloadList: Payload[]): Gener
 
             if (bm.msgopn) {
               yield {kind: "lcmsg_open", namespace: bm.entity.split(/:/)
-                     , start: range.start, end: end.index}
+                     , ...ctx.token_range(range, end.index)}
             }
             else {
               const kind = bm.msgsep ? "lcmsg_sep"
@@ -114,7 +116,7 @@ export function* tokenize(session: ParserSession, payloadList: Payload[]): Gener
                 throw ctx.throw_error("BUG: unknown condition");
               }
 
-              yield { kind, start: range.start, end: end.index }
+              yield { kind, ...ctx.token_range(range, end.index)}
             }
 
           } else {
@@ -157,7 +159,7 @@ export function* tokenize(session: ParserSession, payloadList: Payload[]): Gener
           }
           const endRange = ctx.tab_match(end)
           const innerRange = {start: endRange.start, end: endRange.end-2}
-          yield {kind: "pi", innerRange, start: range.start, end: endRange.end}
+          yield {kind: "pi", innerRange, ...ctx.token_range(range, endRange)}
         }
         else {
           ctx.NEVER()
@@ -166,7 +168,7 @@ export function* tokenize(session: ParserSession, payloadList: Payload[]): Gener
       
       const rest = ctx.rest_range()
       if (rest != null) {
-        yield* splitline(ctx.range_text(rest), rest.start)
+        yield* splitline(ctx, rest)
       }
 
     } else {

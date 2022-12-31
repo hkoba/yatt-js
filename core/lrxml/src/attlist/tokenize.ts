@@ -1,4 +1,4 @@
-import { Range, ParserContext } from '../context'
+import { AnyToken, Range, ParserContext } from '../context'
 import { re_join } from '../utils/regexp'
 
 import { re_entity_open, EntPrefixChar, parse_entpath, EntNode } from '../entity/parse'
@@ -32,7 +32,7 @@ export type AttOther = AttComment | AttSq | AttDq | AttNest |
   AttNestClo | AttBare | AttEqual
 export type AttKind =  AttOther | AttIdentPlus
 
-export type TokenContent = {text: string, innerRange?: Range} & Range
+export type TokenContent = {text: string, innerRange?: Range} & AnyToken
 
 type AttTokenOf<T> = {kind: T} & TokenContent
 
@@ -104,6 +104,7 @@ export function* tokenize_attlist(ctx: ParserContext, entPrefixChar: EntPrefixCh
       yield {
         kind: "identplus", has_three_colon: !!mg.three_colon,
         text: mg.ident,
+        line: ctx.line,
         start: match.index,
         end: re.lastIndex
       }
@@ -116,12 +117,12 @@ export function* tokenize_attlist(ctx: ParserContext, entPrefixChar: EntPrefixCh
         const end = re.lastIndex
         if (kind === "comment") {
           const innerRange = {start: start+2, end: end-2}
-          yield {kind, text, start, end, innerRange}
+          yield {kind, text, line: ctx.line, start, end, innerRange}
         }
         else {
           // XXX: ここで bare/sq/dq の時に attstring の tokenize を
           // する手も有る。が、token を受け取る側の変更も大きいので回避
-          yield {kind, text, start, end}
+          yield {kind, text, line: ctx.line, start, end}
         }
       }
     }

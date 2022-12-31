@@ -1,6 +1,6 @@
 #!/usr/bin/env ts-node
 
-import { Range, ParserContext, parserContext, ParserSession } from '../context'
+import { AnyToken, Range, ParserContext, parserContext } from '../context'
 
 import { re_join } from '../utils/regexp'
 
@@ -31,8 +31,8 @@ export type EntPrefixMatch = {
   msgclo?: string
 }
 
-export type LCMsg = Range & {kind: "lcmsg_sep" | "lcmsg_close"} |
-  Range & {kind: "lcmsg_open", namespace: string[]}
+export type LCMsg = AnyToken & {kind: "lcmsg_sep" | "lcmsg_close"} |
+  AnyToken & {kind: "lcmsg_open", namespace: string[]}
 
 const open_head: {[k: string]: "call" | "array" | "hash"} =
   {"(": "call",   "[": "array", "{": "hash"}
@@ -46,26 +46,28 @@ type ValueOf<T> = T[keyof T]
 type OpenChars = keyof typeof open_head
 type EntPathOpenKind = ValueOf<typeof open_head> | ValueOf<typeof open_rest>;
 
-export type EntText = {kind: "text" | "expr",
-                       text: string, is_paren: boolean,
-                       innerRange: Range} & Range
+export type EntText = AnyToken & {
+  kind: "text" | "expr",
+  text: string, is_paren: boolean,
+  innerRange: Range
+}
 
 export type EntPath = EntPathItem[]
 
 export type EntTerm = EntText | EntPath
 
-export type EntPathItem = {kind: "var" | "prop", name: string} & Range |
-  {kind: "call" | "invoke", name: string, elements: EntTerm[]} & Range |
-  {kind: "array" | "aref" | "hash" | "href", elements: EntTerm[]} & Range
+export type EntPathItem =  AnyToken & {kind: "var" | "prop", name: string} |
+  AnyToken & {kind: "call" | "invoke", name: string, elements: EntTerm[]} |
+  AnyToken & {kind: "array" | "aref" | "hash" | "href", elements: EntTerm[]}
 
-export type EntNode = {kind: "entity", path: EntPath} & Range
+export type EntNode = AnyToken & {kind: "entity", path: EntPath}
 
 export function isVarOrCall(item: EntPathItem)
 : item is {kind: "var" | "call"} & EntPathItem {
   return item.kind === "var" || item.kind === "call"
 }
 
-export function isEntNode(token: {kind: string} & Range)
+export function isEntNode(token: AnyToken)
 : token is EntNode {
   return token.kind === "entity"
 }
@@ -106,8 +108,9 @@ export function parse_entpath(ctx: ParserContext): EntNode {
   if (! end) {
     ctx.throw_error("entity is not terminated by ;")
   }
+  const line = ctx.line
   ctx.tab(end)
-  return {kind: "entity", start, end: ctx.index, path}
+  return {kind: "entity", line, start, end: ctx.index, path}
 }
 
 function parse_pipeline(ctx: ParserContext): EntPath {
@@ -126,15 +129,16 @@ function parse_pipeline(ctx: ParserContext): EntPath {
     }
     else {
       const start = ctx.index // === match.index
+      const line = ctx.line
       ctx.tab_match(match)
       const kind: EntPathOpenKind =
         (is_head ? open_head : open_rest)[is_open]
       const elements = parse_entgroup(ctx, close_ch[is_open])
       const end = ctx.index
       if (kind === "call" || kind === "invoke") {
-        pipe.push({kind, name: mg.var as string, elements, start, end})
+        pipe.push({kind, name: mg.var as string, elements, line, start, end})
       } else {
-        pipe.push({kind, elements, start, end})
+        pipe.push({kind, elements, line, start, end})
       }
 
     }
@@ -175,7 +179,7 @@ function parse_entterm(ctx: ParserContext): EntTerm | undefined {
   // For backward compat
   if (match = ctx.match_index(/,/y)) {
     // yield empty string
-    let range = {start: match.index, end: match.index}
+    let range = {line: ctx.line, start: match.index, end: match.index}
     let term: EntText = {kind: "text", text: "",
                          ...range, is_paren: false, innerRange: range}
     ctx.tab_match(match);
@@ -187,6 +191,7 @@ function parse_entterm(ctx: ParserContext): EntTerm | undefined {
   }
   let term: EntText | EntPathItem[] | undefined
   if (match = ctx.match_index(re_text)) {
+    const line = ctx.line
     const start = ctx.index
     const is_paren = match.groups && match.groups.paren ? true : false;
     do {
@@ -203,7 +208,7 @@ function parse_entterm(ctx: ParserContext): EntTerm | undefined {
     const rawText = ctx.range_text(innerRange)
     const kind = /^=/.test(rawText) ? "expr" : "text"
     const text = kind === "expr" ? rawText.substring(1) : rawText
-    term = {kind, text, ...range, is_paren, innerRange}
+    term = {kind, text, line, ...range, is_paren, innerRange}
   } else {
     term = parse_pipeline(ctx)
   }

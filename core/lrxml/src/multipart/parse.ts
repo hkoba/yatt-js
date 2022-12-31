@@ -2,15 +2,15 @@
 
 import {LrxmlConfig} from '../config'
 import {
-  Range, ParserContext, parserContext, ParserSession
+  AnyToken, Range, ParserContext, parserContext, ParserSession
 } from '../context'
 
 import { tokenize_multipart_context } from './tokenize'
 
 import { AttItem, parse_attlist} from '../attlist/parse'
 
-export type Payload = {kind: "text", data: string} & Range |
-  {kind: "comment", data: string, innerRange: Range} & Range
+export type Payload = AnyToken & {kind: "text", data: string} |
+  AnyToken & {kind: "comment", data: string, innerRange: Range}
 
 // yatt:widget:html
 // ↓
@@ -27,7 +27,7 @@ export type PartBase = {
   payload: Payload[]
 }
 
-export type Part = PartBase & Range
+export type Part = AnyToken & PartBase 
 
 export function parse_multipart(
   source: string, config: {filename?: string} & LrxmlConfig
@@ -37,15 +37,17 @@ export function parse_multipart(
   return [parse_multipart_context(ctx), ctx.session]
 }
 
+type Start = {line: number, start: number}
+
 export function parse_multipart_context(ctx: ParserContext): Part[] {
-  let partList: [number, PartBase][] = []
+  let partList: [Start, PartBase][] = []
   let lex = tokenize_multipart_context(ctx)
   for (const tok of lex) {
     switch (tok.kind) {
       case "text": {
         push_payload(ctx, partList, {
           kind: tok.kind, data: ctx.range_text(tok),
-          ...(tok as Range)
+          ...ctx.token_range(tok)
         })
         break;
       }
@@ -56,7 +58,7 @@ export function parse_multipart_context(ctx: ParserContext): Part[] {
         push_payload(ctx, partList, {
           kind: tok.kind, data: ctx.range_text(tok),
           innerRange: tok.innerRange,
-          ...(tok as Range)
+          ...ctx.token_range(tok)
         })
         break;
       }
@@ -67,7 +69,7 @@ export function parse_multipart_context(ctx: ParserContext): Part[] {
           filename: ctx.session.filename,
           namespace, kind, subkind, attlist, payload: []
         }
-        partList.push([tok.start, part])
+        partList.push([{line: tok.start, start: tok.start}, part])
         break;
       }
       default: {
@@ -78,25 +80,25 @@ export function parse_multipart_context(ctx: ParserContext): Part[] {
   return add_range<PartBase>(partList, ctx.end)
 }
 
-function add_range<T>(list: [number, T][], end: number): (T & Range)[] {
-  let result: (T & Range)[] = []
+function add_range<T>(list: [Start, T][], end: number): (T & Range & {line: number})[] {
+  let result: (T & Range & {line: number})[] = []
   let [cur, ...rest] = list
   for (const nx of rest) {
-    const range = {start: cur[0], end: nx[0]}
+    const range = {...cur[0], end: nx[0].start}
     result.push({...range, ...cur[1]})
     cur = nx
   }
   if (cur != null) {
-    const range = {start: cur[0], end}
+    const range = {...cur[0], end}
     result.push({...range, ...cur[1]})
   }
   return result
 }
 
-function push_payload(ctx: ParserContext, partList: [number, PartBase][], payload: Payload) {
+function push_payload(ctx: ParserContext, partList: [Start, PartBase][], payload: Payload) {
   if (! partList.length) {
     // May fill default kind/namespace
-    partList.push([0,{
+    partList.push([{start: 0, line: 1}, {
       filename: ctx.session.filename,
       kind: "", namespace: "", subkind: [], attlist: [], payload: []
     }])

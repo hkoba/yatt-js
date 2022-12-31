@@ -3,16 +3,16 @@
 import {LrxmlConfig} from '../config'
 
 import {
-  Range, GlobalMatch, ParserContext, parserContext
+  AnyToken, Range, GlobalMatch, ParserContext, parserContext
 } from '../context'
 import { re_join } from '../utils/regexp'
 
 import { AttToken, tokenize_attlist } from '../attlist/tokenize'
 
-export type Text      = {kind: "text"}       & Range
-export type Comment   = {kind: "comment", innerRange: Range}    & Range
-export type DeclBegin = {kind: "decl_begin", detail: string} & Range
-export type DeclEnd   = {kind: "decl_end"}   & Range
+export type Text      = {kind: "text"}       & AnyToken
+export type Comment   = {kind: "comment", innerRange: Range}    & AnyToken
+export type DeclBegin = {kind: "decl_begin", detail: string} & AnyToken
+export type DeclEnd   = {kind: "decl_end"}   & AnyToken
 
 export type Chunk = Text | Comment | DeclBegin | AttToken | DeclEnd
 
@@ -52,7 +52,6 @@ export function* tokenize_multipart_context(ctx: ParserContext): ChunkGenerator 
   
   let globalMatch: GlobalMatch | null = null
   while ((globalMatch = ctx.global_match(re_decls)) !== null) {
-
     const prefix = ctx.prefix_of(globalMatch)
     if (prefix != null) {
       yield { kind: "text", ...ctx.tab_range(prefix) }
@@ -63,9 +62,11 @@ export function* tokenize_multipart_context(ctx: ParserContext): ChunkGenerator 
     const dm: DeclMatch = globalMatch.match.groups
 
     if (dm.comment != null) {
+      const line = ctx.line
       ctx.tab_match(globalMatch.match)
       const end = ctx.match_index(re_comment_end)
       if (!end || !end.groups) {
+        // XXX: compat_end_of_comment
         ctx.throw_error("Comment is not closed by '#-->'!", { index: globalMatch.match.index })
       }
       const innerRange = ctx.contained_string_range(globalMatch, end.groups.prefix)
@@ -73,7 +74,7 @@ export function* tokenize_multipart_context(ctx: ParserContext): ChunkGenerator 
         ctx.NEVER()
       }
       const comment = ctx.tab(globalMatch, end)
-      yield { kind: "comment", innerRange, ...comment }
+      yield { kind: "comment", innerRange, line, start: comment.start, end: comment.end }
     } else if (dm.declname != null) {
       // <!yatt:widget ...
       yield {
@@ -91,7 +92,6 @@ export function* tokenize_multipart_context(ctx: ParserContext): ChunkGenerator 
         // XXX: yatt vs lrxml
         ctx.throw_error("yatt declaration is not closed", { index: globalMatch.match.index })
       }
-
       yield { kind: "decl_end", ...ctx.tab_match(end) }
     } else {
       ctx.throw_error("Unknown case!")
@@ -100,7 +100,7 @@ export function* tokenize_multipart_context(ctx: ParserContext): ChunkGenerator 
   
   const rest = ctx.rest_range()
   if (rest != null) {
-    yield {kind: "text", ...rest}
+    yield {kind: "text", line: ctx.line, ...rest}
   }
 }
 

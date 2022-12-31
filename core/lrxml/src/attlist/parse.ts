@@ -1,5 +1,5 @@
 import {
-  Range, ParserContext, TokenT
+  Range, RangeLine, ParserContext, TokenT, AnyToken
 } from '../context'
 
 import { AttToken, isAttToken, AttBare, AttSq, AttDq, AttNest, AttIdentPlus, TokenContent } from '../attlist/tokenize'
@@ -8,7 +8,7 @@ import { AttStringItem, parse_attstring } from '../attstring/parse'
 
 import { EntNode } from '../entity/parse'
 
-type BaseTerm<T> = Range & {value: T, comment: string[]}
+type BaseTerm<T> = AnyToken & {value: T, comment: string[]}
 
 type QuotedStringTerm = {kind: AttSq | AttDq} & BaseTerm<string>;
 type BareStringTerm = {kind: AttBare} & BaseTerm<string>;
@@ -54,7 +54,7 @@ export function attValue(att: AttItem): AttValue {
   return obj as AttValue
 }
 
-export function parse_attlist<T extends {kind: string} & Range>(
+export function parse_attlist<T extends {kind: string} & RangeLine>(
   ctx: ParserContext, lex: Generator<T,any,any>, end_kind: string
 ): [AttItem[], T] {
   let attList: AttItem[] = []
@@ -167,7 +167,9 @@ function term_nest<U extends TokenT<string>>(
 ): NestedTerm {
   const [value, end] = parse_attlist(ctx, lex, "nestclo")
   return {
-    kind: "nest", value, start: token.start, end: end.end, comment: []
+    kind: "nest", value,
+    ...ctx.token_range(token, end),
+    comment: []
   }
 }
 
@@ -189,7 +191,7 @@ function term_string<U extends TokenT<string>>(
   const children = parse_attstring(ctx, innerRange)
   return {
     kind: token.kind, value,
-    start: token.start, end: token.end,
+    ...ctx.token_range(token),
     comment: [],
     children
   }
@@ -203,7 +205,7 @@ function term_identplus<U extends TokenT<string>>(
   return {
     kind: token.kind, value,
     has_three_colon: token.has_three_colon,
-    start: token.start, end: token.end,
+    ...ctx.token_range(token),
     comment: []
   }
 }
