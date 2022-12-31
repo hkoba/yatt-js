@@ -26,3 +26,28 @@ export function joinAsArray<T>(sep: T, list: T[]): T[] {
     return prev;
   }, [])
 }
+
+export function finalize_codefragment(
+  ctx: BuilderContextClass<CGenSession>,
+  fragments: CodeFragment[]
+): string {
+  let program = ""
+  for (const item of fragments) {
+    if (typeof(item) === "string") {
+      program += item
+    }
+    else if (item instanceof Array) {
+      program += finalize_codefragment(ctx, item)
+    }
+    else {
+      switch (item.kind) {
+        case "name": case "other":
+          program += item.code;
+          break;
+        default:
+          ctx.NEVER(item)
+      }
+    }
+  }
+  return program
+}
