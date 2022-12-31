@@ -118,6 +118,18 @@ export class ScanningContext<S extends ParserSession> {
     this.token_error(token, message, options)
   }
 
+  token_range(token: AnyToken, endItem?: number | RangeLine): RangeLine {
+    let end
+    if (endItem == null) {
+      end = token.end
+    } else if (typeof endItem === 'number') {
+      end = endItem
+    } else {
+      end = endItem.end
+    }
+    return {line: token.line, start: token.start, end}
+  }
+
   token_error(token: AnyToken, message: string, options?: {index?: number}): never {
     const index = token.start + (options?.index ?? 0);
     const [lastNl, lineNo, colNo] = extract_prefix_spec(this.session.source, index)
