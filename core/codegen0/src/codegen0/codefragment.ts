@@ -1,5 +1,9 @@
 import type {Node, AnonNode} from 'lrxml'
 
+import {SourceMapGenerator} from 'source-map'
+
+import {count_newlines} from 'lrxml'
+
 export type CodeFragmentPayload = {code: string, source?: Node | AnonNode}
 
 export type CodeFragmentRec =
@@ -28,26 +32,93 @@ export function joinAsArray<T>(sep: T, list: T[]): T[] {
 }
 
 export function finalize_codefragment(
-  ctx: BuilderContextClass<CGenSession>,
-  fragments: CodeFragment[]
-): string {
-  let program = ""
+  source: string,
+  file: string,
+  fragments: CodeFragment[],
+  options: {
+    file?: string
+    sourceRoot?: string
+  }
+): {outputText: string, sourceMapText: string} {
+
+  const generator = new SourceMapGenerator(options)
+  const line = 1
+  const outputCtx = {line, lineStart: 0, generator, outputText: ""}
+
+  finalize_codefragment_1(
+    source, file, fragments, outputCtx
+  )
+
+  const sourceMapText = generator.toString()
+
+  return {outputText: outputCtx.outputText, sourceMapText}
+}
+
+type OutputContext = {
+  line: number
+  lineStart: number
+  outputText: string
+  generator: SourceMapGenerator
+}
+
+function appendText(outputCtx: OutputContext, text: string): Position {
+  const line = outputCtx.line
+  const column = outputCtx.outputText.length - outputCtx.lineStart
+  const numNewLines = count_newlines(text)
+  outputCtx.outputText += text
+  outputCtx.line += numNewLines
+  if (numNewLines > 0) {
+    const last = text.lastIndexOf('\n')
+    outputCtx.lineStart = outputCtx.outputText.length - (text.length - last)
+  }
+  return {line, column}
+}
+
+function finalize_codefragment_1(
+  source: string,
+  file: string,
+  fragments: CodeFragment[],
+  outputCtx: OutputContext
+): void {
+
+
   for (const item of fragments) {
     if (typeof(item) === "string") {
-      program += item
+      appendText(outputCtx, item)
     }
     else if (item instanceof Array) {
-      program += finalize_codefragment(ctx, item)
+      finalize_codefragment_1(source, file, item, outputCtx)
     }
     else {
       switch (item.kind) {
-        case "name": case "other":
-          program += item.code;
+        case "other": case "name": {
+          if (item.source == null) {
+            appendText(outputCtx, item.code)
+          } else {
+            const original = tokenPosition(item.source)
+            const generated = appendText(outputCtx, item.code)
+
+            if (item.kind === "name") {
+              outputCtx.generator.addMapping({
+                original, generated, source: file, name: item.code
+              })
+            } else {
+              outputCtx.generator.addMapping({
+                original, generated, source: file
+              })
+            }
+          }
           break;
+        }
         default:
-          ctx.NEVER(item)
+          throw new Error(`never`)
       }
     }
   }
-  return program
+}
+
+type Position = {line: number, column: number}
+
+function tokenPosition(token: Node | AnonNode): Position {
+  return {line: token.line, column: token.end - token.start}
 }

@@ -63,6 +63,7 @@ export function generate_namespace(
 
   // XXX: should return templateName too.
   return {
+    template,
     templateName,
     ...generate_namespace_from_template(template, {
       templateName,
@@ -119,7 +120,9 @@ export function generate_namespace_from_template(
 
   let fileCtx = new BuilderContextClass(session)
 
-  return {outputText: finalize_codefragment(fileCtx, program), session};
+  return {...finalize_codefragment(
+    session.source, session.filename ?? '', program, {}
+  ), session};
 }
 
 if (module.id === '.') {

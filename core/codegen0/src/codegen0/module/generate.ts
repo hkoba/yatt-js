@@ -105,9 +105,12 @@ export function generate_module(
 
   let fileCtx = new BuilderContextClass(session)
 
+  const output = finalize_codefragment(source, filename, program, {})
+
   return {
     templateName, template,
-    outputText: finalize_codefragment(fileCtx, program)
+    session,
+    ...output
   }
 }
 
