@@ -1,10 +1,14 @@
 import { LrxmlParams, lrxmlParams, LrxmlConfig } from './config'
 
-import { lineNumber, extract_line, extract_prefix_spec, extract_suffix_spec } from './utils/count_lines'
+import {
+  lineNumber, extract_line, extract_prefix_spec, extract_suffix_spec
+  , count_newlines
+} from './utils/count_lines'
 
 export type Range = {start: number, end: number}
-export type Token = {kind: string} & Range
-export type TokenT<S> = {kind: S} & Range
+export type RangeLine = {line: number} & Range
+export type AnyToken = {kind: string} & RangeLine
+export type TokenT<S> = {kind: S} & RangeLine
 
 export function range_text(
   source: string, range: Range,
@@ -33,7 +37,7 @@ type VSCodeRange = {
 }
 
 export class TokenError extends Error {
-  constructor(public token: Token
+  constructor(public token: AnyToken
               & {line: number, column: number}
               & VSCodeRange, message: string) {
     super(message)
@@ -46,6 +50,7 @@ export type GlobalMatch = {
 }
 
 export class ScanningContext<S extends ParserSession> {
+  public line: number = 1
   constructor(public session: S,
               public index: number,
               public start: number,
@@ -106,14 +111,14 @@ export class ScanningContext<S extends ParserSession> {
   }
 
   maybe_token_error(
-    token: Token | undefined, message: string, options?: {index?: number}
+    token: AnyToken | undefined, message: string, options?: {index?: number}
   ): never {
     if (token === undefined)
       this.throw_error(message, options)
     this.token_error(token, message, options)
   }
 
-  token_error(token: Token, message: string, options?: {index?: number}): never {
+  token_error(token: AnyToken, message: string, options?: {index?: number}): never {
     const index = token.start + (options?.index ?? 0);
     const [lastNl, lineNo, colNo] = extract_prefix_spec(this.session.source, index)
     const tokenLine = extract_line(this.session.source, lastNl, colNo)
