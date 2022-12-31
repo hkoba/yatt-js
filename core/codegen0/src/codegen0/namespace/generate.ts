@@ -24,6 +24,8 @@ import {builtinMacros} from '../macro/'
 
 import {CodeFragment} from '../codefragment'
 
+import {TranspileOutput} from '../output'
+
 import {list_entity_functions} from './list_entity_functions'
 
 // XXX: Remove node path dependencies
@@ -37,7 +39,7 @@ export function generate_namespace(
   source: string, config: YattBuildConfig & {
     macro?: Partial<CGenMacro>,
   }
-): {outputText: string, templateName: string[], session: CGenSession}
+): TranspileOutput
 {
 
   const rootDir = Path.dirname(Path.dirname(Path.resolve(filename)))

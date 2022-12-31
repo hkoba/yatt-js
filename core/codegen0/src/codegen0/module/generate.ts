@@ -22,6 +22,8 @@ import {generate_action} from '../action/generate'
 
 import {CodeFragment} from '../codefragment'
 
+import {TranspileOutput} from '../output'
+
 import {CGenMacro} from '../macro'
 import {builtinMacros} from '../macro/'
 
@@ -32,7 +34,7 @@ export function generate_module(
   source: string, config: YattConfig & {
     macro?: Partial<CGenMacro>,
   }
-): {outputText: string, template: TemplateDeclaration, templateName: string[]}
+): TranspileOutput
 {
   const entFns: {[k: string]: any} = config.entFnsFile ?
     list_entity_functions(config.entFnsFile) : {}
