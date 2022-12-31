@@ -118,7 +118,7 @@ export class ScanningContext<S extends ParserSession> {
     this.token_error(token, message, options)
   }
 
-  token_range(token: AnyToken, endItem?: number | RangeLine): RangeLine {
+  token_range(token: RangeLine, endItem?: number | Range): RangeLine {
     let end
     if (endItem == null) {
       end = token.end
