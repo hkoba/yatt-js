@@ -10,9 +10,14 @@ const it = (source: string) => {
   return ary.map((tok) => {
     if (tok.kind === "comment" && tok.innerRange != null) {
       return {kind: tok.kind, "text": range_text(source, tok),
+              line: tok.line,
               innerRange: range_text(source, tok.innerRange)}
     } else {
-      return {kind: tok.kind, "text": range_text(source, tok)}
+      return {
+        kind: tok.kind,
+        line: tok.line,
+        "text": range_text(source, tok)
+      }
     }
   });
 }
@@ -24,25 +29,25 @@ tap.same(it('')
 tap.same(it(`<!yatt:foo>
 AEIOU
 `), [
-  {kind: "decl_begin", text: "<!yatt:foo"},
-  {kind: "decl_end", text: ">\n"},
-  {kind: "text", text: "AEIOU\n"}
+  {kind: "decl_begin", text: "<!yatt:foo", line: 1},
+  {kind: "decl_end", text: ">\n", line: 1},
+  {kind: "text", text: "AEIOU\n", line: 2}
 ])
 
 tap.same(it(`<!yatt:foo bar x=3 y="8" z='9'>
 `), [
-  {kind: "decl_begin", text: "<!yatt:foo"},
-  {kind: "identplus", text: "bar"},
-  {kind: "identplus", text: "x"},
-  {kind: "equal", text: "="},
-  {kind: "bare", text: "3"},
-  {kind: "identplus", text: "y"},
-  {kind: "equal", text: "="},
-  {kind: "dq", text: '"8"'},
-  {kind: "identplus", text: "z"},
-  {kind: "equal", text: "="},
-  {kind: "sq", text: "'9'"},
-  {kind: "decl_end", text: ">\n"},
+  {kind: "decl_begin", text: "<!yatt:foo", line: 1},
+  {kind: "identplus", text: "bar", line: 1},
+  {kind: "identplus", text: "x", line: 1},
+  {kind: "equal", text: "=", line: 1},
+  {kind: "bare", text: "3", line: 1},
+  {kind: "identplus", text: "y", line: 1},
+  {kind: "equal", text: "=", line: 1},
+  {kind: "dq", text: '"8"', line: 1},
+  {kind: "identplus", text: "z", line: 1},
+  {kind: "equal", text: "=", line: 1},
+  {kind: "sq", text: "'9'", line: 1},
+  {kind: "decl_end", text: ">\n", line: 1},
 ])
 
 tap.same(it(`<!--#yatt
@@ -52,7 +57,7 @@ tap.same(it(`<!--#yatt
 <!yatt:bar>
 
 #-->`), [
-  {kind: "comment", text: `<!--#yatt
+  {kind: "comment", line: 1, text: `<!--#yatt
 
 <!yatt:foo>
 
@@ -79,23 +84,23 @@ Another comment text
 ....................
 #-->
 `), [
-  {kind: "decl_begin", text: "<!yatt:widget"},
-  {kind: "identplus", text: "foo"},
-  {kind: "decl_end", text: ">\n"},
-  {kind: "text", text: "foooooooooooo\nooooooooooooo\nooooooooooooo\n"},
+  {kind: "decl_begin", text: "<!yatt:widget", line: 1},
+  {kind: "identplus", text: "foo", line: 1},
+  {kind: "decl_end", text: ">\n", line: 1},
+  {kind: "text", text: "foooooooooooo\nooooooooooooo\nooooooooooooo\n", line: 2},
   {kind: "comment", text: "<!--#yatt comment text #-->"
-   , innerRange: ` comment text `},
-  {kind: "text", text: "\n"},
-  {kind: "decl_begin", text: "<!yatt:widget"},
-  {kind: "identplus", text: "bar"},
-  {kind: "decl_end", text: ">\n"},
-  {kind: "text", text: "bar\n"},
+   , innerRange: ` comment text `, line: 5},
+  {kind: "text", text: "\n", line: 5},
+  {kind: "decl_begin", text: "<!yatt:widget", line: 6},
+  {kind: "identplus", text: "bar", line: 6},
+  {kind: "decl_end", text: ">\n", line: 6},
+  {kind: "text", text: "bar\n", line: 7},
   {kind: "comment", text: `<!--#yatt
 Another comment text
 ....................
 #-->`, innerRange: `
 Another comment text
 ....................
-`},
-  {kind: "text", text: "\n"},
+`, line: 8},
+  {kind: "text", text: "\n", line: 11},
 ])

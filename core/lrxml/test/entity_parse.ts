@@ -6,7 +6,6 @@ import {parserContext} from '../src/context'
 
 import {
   parse_entpath
-  , EntPathItem
 } from '../src/entity/parse'
 
 {
@@ -61,7 +60,7 @@ function noRange(item: any): Array<any> | Object {
 
   let result: {[k: string]: any} = {}
   for (const [k, v] of Object.entries(item)) {
-    if (k === 'start' || k === 'end' || k === 'innerRange')
+    if (k === 'start' || k === 'end' || k === 'innerRange' || k === 'line')
       continue
     if (k === "elements") {
       result[k] = (v as Array<any>).map(i => noRange(i))
