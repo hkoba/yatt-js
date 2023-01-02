@@ -1,6 +1,6 @@
 #!/usr/bin/env ts-node
 
-import {parserContext, ParserContext, Range} from '../context'
+import {parserContext, ParserContext, Range, RangeLine} from '../context'
 
 import {
   EntNode,
@@ -10,11 +10,12 @@ import {
 
 // XXX: LCMsg
 
+// XXX: switch to RangeLine
 export type AttStringItem = Range &
   ({kind: "text", value: string}
    | EntNode)
 
-export function parse_attstring(outerCtx: ParserContext, range: Range): AttStringItem[] {
+export function parse_attstring(outerCtx: ParserContext, range: RangeLine): AttStringItem[] {
   let re = outerCtx.re('attstring', () => new RegExp(re_entity_open(outerCtx.session.params.namespace, '&'), 'g'))
 
   const ctx = outerCtx.narrowed(range)
@@ -45,7 +46,7 @@ if (module.id === ".") {
       source: str, config: {}
     })
 
-    const node = parse_attstring(ctx, {start: 0, end: str.length})
+    const node = parse_attstring(ctx, {line: 1, start: 0, end: str.length})
     console.dir(node, {depth: null, colors: true})
   }
 }
