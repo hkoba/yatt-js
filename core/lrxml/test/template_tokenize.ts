@@ -11,24 +11,31 @@ import { range_text, hasLabel, parse_multipart, tokenize } from '../src/'
 const it = (source: string) => {
   let [partList, session] = parse_multipart(source, {});
   return Array.from(partList).map((part) => {
+    const tokens = tokenize(session, part.payload)
     return {
       part: part.kind,
       attlist: part.attlist.map(att => {
         if (hasLabel(att)) {
           return [att.label.kind, att.label.value,
-                  att.kind, (att as any).value]
+                  att.kind, (att as any).value, [att.label.line, att.line]]
         } else {
-          return [att.kind, (att as any).value]
+          return [att.kind, (att as any).value, [att.line]]
         }
       }),
-      tokens: Array.from(tokenize(session, part.payload)).map((tok) => {
+      tokens: Array.from(tokens).map((tok) => {
         if (tok.kind === "comment" && tok.innerRange != null) {
           return {
-            kind: tok.kind, "text": range_text(session.source, tok),
+            kind: tok.kind,
+            line: tok.line,
+            "text": range_text(session.source, tok),
             innerRange: range_text(session.source, tok.innerRange)
           }
         } else {
-          return { kind: tok.kind, "text": range_text(session.source, tok) }
+          return {
+            kind: tok.kind,
+            line: tok.line,
+            "text": range_text(session.source, tok)
+          }
         }
       })
     }
@@ -38,16 +45,28 @@ const it = (source: string) => {
 tap.same(it(``), [])
 
 tap.same(it(`<!yatt:foo bar x y>
-content
+<h2>&yatt:x;</h2>
+
+&yatt:y;
+
 `), [
   {
     part: "foo",
     attlist: [
-      ["identplus", "bar"], ["identplus", "x"], ["identplus", "y"]
+      ["identplus", "bar", [1]],
+      ["identplus", "x", [1]],
+      ["identplus", "y", [1]]
     ],
     tokens: [
-      {kind: "text", text: `content
-`}
+      {kind: "text", line: 2, text: `<h2>`},
+      {kind: "entpath_open", line: 2, text: `&yatt`},
+      {kind: "entity", line: 2, text: `:x;`},
+      {kind: "text", line: 2, text: `</h2>\n`},
+      {kind: "text", line: 3, text: `\n`},
+      {kind: "entpath_open", line: 4, text: `&yatt`},
+      {kind: "entity", line: 4, text: `:y;`},
+      {kind: "text", line: 4, text: `\n`},
+      {kind: "text", line: 5, text: `\n`}
     ]
   }
 ])
@@ -58,13 +77,13 @@ content
   {
     part: "foo",
     attlist: [
-      ["identplus", "bar"],
-      ["identplus", "x", "bare", 3],
-      ["identplus", "y", "dq",   "aaa"],
-      ["identplus", "z", "sq",   "bbb"],
+      ["identplus", "bar", [1]],
+      ["identplus", "x", "bare", 3, [1,1]],
+      ["identplus", "y", "dq",   "aaa", [1,1]],
+      ["identplus", "z", "sq",   "bbb", [1,1]],
     ],
     tokens: [
-      {kind: "text", text: `content
+      {kind: "text", line: 2, text: `content
 `}
     ]
   }
