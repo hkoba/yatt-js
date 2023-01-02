@@ -36,14 +36,24 @@ export function finalize_codefragment(
   file: string,
   fragments: CodeFragment[],
   options: {
-    file?: string
-    sourceRoot?: string
+    debug?: number,
+    sourceMapOptions?: {
+      file?: string
+      sourceRoot?: string
+    }
   }
 ): {outputText: string, sourceMapText: string} {
 
-  const generator = new SourceMapGenerator(options)
+  if (options.debug && options.debug >= 2) {
+    console.dir(fragments, {colors: true, depth: null})
+  }
+
+  const generator = new SourceMapGenerator(options.sourceMapOptions)
   const line = 1
-  const outputCtx = {line, lineStart: 0, generator, outputText: ""}
+  const outputCtx = {
+    debug: options.debug ?? 0,
+    line, lineStart: 0, generator, outputText: ""
+  }
 
   finalize_codefragment_1(
     source, file, fragments, outputCtx
@@ -55,6 +65,7 @@ export function finalize_codefragment(
 }
 
 type OutputContext = {
+  debug: number
   line: number
   lineStart: number
   outputText: string
@@ -81,7 +92,6 @@ function finalize_codefragment_1(
   outputCtx: OutputContext
 ): void {
 
-
   for (const item of fragments) {
     if (typeof(item) === "string") {
       appendText(outputCtx, item)
@@ -97,6 +107,10 @@ function finalize_codefragment_1(
           } else {
             const original = tokenPosition(item.source)
             const generated = appendText(outputCtx, item.code)
+
+            if (outputCtx.debug) {
+              console.log(`appending ${item.kind} ${item.code}`, original, generated)
+            }
 
             if (item.kind === "name") {
               outputCtx.generator.addMapping({
