@@ -132,16 +132,37 @@ if (module.id === '.') {
 
     let args = process.argv.slice(2)
     const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
-    let config: YattBuildConfig = {
+    let config: YattBuildConfig & {
+      sourcemap?: boolean, eachMapping?: boolean
+    } = {
       debug: { declaration: debugLevel },
       // ext: 'ytjs',
     }
     parse_long_options(args, {target: config})
 
+    const cm = config.sourcemap ? (await import('source-map')).SourceMapConsumer : null
+
     for (const filename of args) {
       let source = readFileSync(filename, {encoding: "utf-8"})
       const output = generate_namespace(filename, source, config)
-      process.stdout.write(output.outputText + '\n');
+      if (cm && output.sourceMapText) {
+
+        if (config.eachMapping) {
+          cm.with(
+            JSON.parse(output.sourceMapText), null,
+            consumer => {
+              consumer.eachMapping(m => {
+                console.log(m)
+              }, null, cm.GENERATED_ORDER)
+            }
+          )
+        } else {
+          process.stdout.write(output.sourceMapText + '\n');
+        }
+
+      } else {
+        process.stdout.write(output.outputText + '\n');
+      }
     }
   })()
 }
