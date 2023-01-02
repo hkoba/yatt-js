@@ -184,9 +184,10 @@ export class ParserContext extends ScanningContext<ParserSession> {
     }
   }
 
-  narrowed(range: Range): ParserContext {
+  narrowed(range: RangeLine): ParserContext {
     let subCtx = new ParserContext(this.session, range.start, range.start, range.end, this)
     subCtx.debug = this.debug
+    subCtx.line = range.line
     return subCtx
   }
 
@@ -261,7 +262,9 @@ export class ParserContext extends ScanningContext<ParserSession> {
       {start: from.match.index, end: from.lastIndex + (morestr ? morestr.length : 0)}
     const end = matched.end
     const line = this.line
-    this.line += this.count_newlines(this.index, end)
+    // Note: lines in prefix is not counted here
+    const newlines = this.count_newlines(matched.start, end)
+    this.line += newlines
     this.index = matched.end
     return {line, ...matched}
   }

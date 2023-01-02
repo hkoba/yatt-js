@@ -56,10 +56,13 @@ export type Token = Text | Comment | PI |
 function* splitline(ctx: ParserContext, prefix: Range): Generator<Token> {
   let offset = prefix.start
   for (const line of ctx.range_text(prefix).split(/(?<=\n)/)) {
+    // console.log(`at ${ctx.line}: (${line})`)
     let end = offset + line.length;
     yield { kind: "text", start: offset, end, line: ctx.line, lineEndLength: lineEndLength(line) }
     offset = end;
-    ctx.line++
+    if (line.charAt(line.length-1) === "\n") {
+      ctx.line++
+    }
   }
 }
 
@@ -93,7 +96,6 @@ export function* tokenize(session: ParserSession, payloadList: Payload[]): Gener
         if (prefix != null) {
           yield* splitline(ctx, prefix)
         }
-        
         let bm = globalMatch.match.groups as BodyMatch
         if (bm.entity != null) {
           // XXX: This must be handled in attlist too.
@@ -122,7 +124,6 @@ export function* tokenize(session: ParserSession, payloadList: Payload[]): Gener
           } else {
             const range = ctx.tab(globalMatch)
             yield {kind: "entpath_open", name: ctx.range_text(range), ...range}
-
             yield parse_entpath(ctx)
           }
         }
