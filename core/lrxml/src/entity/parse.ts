@@ -101,6 +101,7 @@ type EntPathMatch = {
 // XXX: Should preseve ns
 export function parse_entpath(ctx: ParserContext): EntNode {
 
+  const line = ctx.line
   const start = ctx.index
   const path = parse_pipeline(ctx);
 
@@ -108,7 +109,6 @@ export function parse_entpath(ctx: ParserContext): EntNode {
   if (! end) {
     ctx.throw_error("entity is not terminated by ;")
   }
-  const line = ctx.line
   ctx.tab(end)
   return {kind: "entity", line, start, end: ctx.index, path}
 }
