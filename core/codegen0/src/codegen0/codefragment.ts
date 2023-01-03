@@ -79,8 +79,7 @@ function appendText(outputCtx: OutputContext, text: string): Position {
   outputCtx.outputText += text
   outputCtx.line += numNewLines
   if (numNewLines > 0) {
-    const last = text.lastIndexOf('\n')
-    outputCtx.lineStart = outputCtx.outputText.length - (text.length - last)
+    outputCtx.lineStart = outputCtx.outputText.lastIndexOf('\n') + 1
   }
   return {line, column}
 }
@@ -105,7 +104,7 @@ function finalize_codefragment_1(
           if (item.source == null) {
             appendText(outputCtx, item.code)
           } else {
-            const original = tokenPosition(item.source)
+            const original = tokenPosition(source, item.source)
             const generated = appendText(outputCtx, item.code)
 
             if (outputCtx.debug) {
@@ -133,6 +132,8 @@ function finalize_codefragment_1(
 
 type Position = {line: number, column: number}
 
-function tokenPosition(token: Node | AnonNode): Position {
-  return {line: token.line, column: token.end - token.start}
+function tokenPosition(source: string, token: Node | AnonNode): Position {
+  const lastNl = source.lastIndexOf('\n', token.start)
+  const lineStart = lastNl + 1
+  return {line: token.line, column: token.start - lineStart}
 }
