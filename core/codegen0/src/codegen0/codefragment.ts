@@ -4,7 +4,11 @@ import {SourceMapGenerator} from 'source-map'
 
 import {count_newlines} from 'lrxml'
 
-export type CodeFragmentPayload = {code: string, source?: Node | AnonNode}
+export type CodeFragmentPayload = {
+  code: string,
+  source?: Node | AnonNode,
+  offset?: number
+}
 
 export type CodeFragmentRec =
   {kind: 'name'} & CodeFragmentPayload |
@@ -104,7 +108,7 @@ function finalize_codefragment_1(
           if (item.source == null) {
             appendText(outputCtx, item.code)
           } else {
-            const original = tokenPosition(source, item.source)
+            const original = tokenPosition(source, item.source, item.offset)
             const generated = appendText(outputCtx, item.code)
 
             if (outputCtx.debug) {
@@ -132,8 +136,11 @@ function finalize_codefragment_1(
 
 type Position = {line: number, column: number}
 
-function tokenPosition(source: string, token: Node | AnonNode): Position {
+function tokenPosition(source: string, token: Node | AnonNode, offset?: number): Position {
+  if (offset == null) {
+    offset = 0
+  }
   const lastNl = source.lastIndexOf('\n', token.start)
   const lineStart = lastNl + 1
-  return {line: token.line, column: token.start - lineStart}
+  return {line: token.line, column: token.start - lineStart + offset}
 }

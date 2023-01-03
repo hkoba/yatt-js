@@ -23,6 +23,8 @@ export function generate_entpath<T extends Part>(
 
   const result: CodeFragment[] = []
 
+  const offset = 1; // Offset to skip ':' for :x, :fun(), ...
+
   if (isVarOrCall(head)) {
     const variable = scope.lookup(head.name)
     if (variable != null) {
@@ -32,7 +34,7 @@ export function generate_entpath<T extends Part>(
       if (variable.typeName === "html") {
         need_runtime_escaping = false;
       }
-      result.push({kind: 'name', code: variable.varName, source: head})
+      result.push({kind: 'name', code: variable.varName, offset, source: head})
     } else {
       const entitySpec = find_entity(ctx.session, ctx.template, head.name)
       if (entitySpec == null) {
@@ -49,7 +51,7 @@ export function generate_entpath<T extends Part>(
         result.push(`${ctx.entFnPrefix()}.`)
       }
 
-      result.push({kind: 'name', code: head.name, source: head})
+      result.push({kind: 'name', code: head.name, offset, source: head})
 
       const args = head.kind === "call"
         ? generate_entlist(ctx, scope, head.elements, {})
