@@ -35,7 +35,6 @@ export default [
   // browser-friendly UMD build
   {
     input: 'src/index.ts',
-    sourcemap: true,
     output: {
       name: 'lrxml',
       file: pkg.browser,
@@ -59,7 +58,6 @@ export default [
   // `file` and `format` for each target)
   {
     input: 'src/index.ts',
-    sourcemap: true,
     external: [],
     plugins: [
       preserveShebangs(),
