@@ -36,8 +36,11 @@ export function generate_module(
   }
 ): TranspileOutput
 {
-  const entFns: {[k: string]: any} = config.entFnsFile ?
-    list_entity_functions(config.entFnsFile) : {}
+  const entFnsFile = config.entFnsFile ?? "entity-fn"
+
+  const entFns: {[k: string]: any} = list_entity_functions(entFnsFile)
+
+  // console.log(`entFns: `, entFns)
 
   const [template, builderSession] = build_template_declaration(
     filename, source, {

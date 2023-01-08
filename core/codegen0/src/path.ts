@@ -93,6 +93,21 @@ export function rootname(fn: string): string {
   return fn.substring(0, fn.length - path.extname(fn).length)
 }
 
+export function* upward_dirs(
+  origFn: string, rootDir?: string
+): Generator<string> {
+  let fn = path.resolve(path.dirname(origFn))
+  yield fn
+  let pos
+  while ((pos = fn.lastIndexOf(path.sep)) >= 0) {
+    const f = fn.substring(0, pos)
+    yield f
+    if (rootDir != null && f === rootDir)
+      return
+    fn = f
+  }
+}
+
 if (module.id === ".") {
   const [cmd, ...args] = process.argv.slice(2);
   switch (cmd) {

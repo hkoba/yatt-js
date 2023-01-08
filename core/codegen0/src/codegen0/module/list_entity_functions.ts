@@ -7,6 +7,8 @@ import {readFileSync, existsSync} from 'fs'
 
 type FunctionMG = {name?: string}
 
+import {upward_dirs} from '../../path'
+
 export function list_entity_functions(rootName: string): {[k: string]: any} {
 
   const funcRe = /^export (?:declare )?function (?<name>\w+)\(this: Connection,/mg
@@ -14,6 +16,9 @@ export function list_entity_functions(rootName: string): {[k: string]: any} {
   let dict: {[k: string]: any} = {}
 
   const fileName = find_file_with_extension(rootName, ['d.ts', 'ts']);
+
+  // console.log(`entity defs: ${fileName}`)
+
   const source = readFileSync(fileName, {encoding: 'utf-8'})
   let m
   while (m = funcRe.exec(source)) {
@@ -27,13 +32,15 @@ export function list_entity_functions(rootName: string): {[k: string]: any} {
 }
 
 function find_file_with_extension(rootName: string, extensions: string[]): string {
-  for (const ext of extensions) {
-    const fn = rootName + '.' + ext;
-    if (existsSync(fn)) {
-      return fn
+  for (const dir of upward_dirs(rootName)) {
+    for (const ext of extensions) {
+      const fn = dir + '/' + rootName + '.' + ext;
+      if (existsSync(fn)) {
+        return fn
+      }
     }
   }
-  throw new Error(`Can't find '${rootName}' with extensions: ${extensions}`)
+  throw new Error(`Can\'t find '${rootName}' with extensions: ${extensions}`)
 }
 
 if (module.id === '.') {
