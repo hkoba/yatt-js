@@ -38,6 +38,7 @@ export class WidgetBuilder implements DeclarationProcessor {
 
   createPart(ctx: BuilderContext, attlist: AttItem[]): [Widget, AttItem[]] {
     let name, nameNode, route
+    // XXX: TODO: [method="route"]
     if (! this.is_named) {
       // yatt:args
       // "/route"
@@ -46,7 +47,6 @@ export class WidgetBuilder implements DeclarationProcessor {
           && hasQuotedStringValue(attlist[0])) {
         route = ctx.range_text(attlist.shift()!);
       }
-
     } else {
       if (! attlist.length) {
         // XXX: token position
@@ -59,8 +59,13 @@ export class WidgetBuilder implements DeclarationProcessor {
       name = att[0]
       route = att[1]
       nameNode = att[2]
+      if (route && !name) {
+        name = location2name(route)
+      }
     }
     let widget = makeWidget(name, this.is_public, nameNode)
+    // XXX: must start with '/'
+    // XXX: route params
     widget.route = route;
     return [widget, attlist];
   }
@@ -74,7 +79,10 @@ export class ActionBuilder implements DeclarationProcessor {
     if (! attlist.length || attlist[0] == null) {
       ctx.throw_error(`Action name is not given`)
     }
-    const [name, route] = ctx.cut_name_and_route(attlist)!
+    let [name, route] = ctx.cut_name_and_route(attlist)!
+    if (route && !name) {
+      name = location2name(route)
+    }
     return [{kind: this.kind, name, route, is_public: true,
              argMap: new Map, varMap: new Map}, attlist]
   }
@@ -244,6 +252,13 @@ export function createPart(ctx: BuilderContext, rawPart: RawPart): [Part, AttIte
   }
   let attlist = ctx.copy_array(rawPart.attlist)
   return builder.createPart(ctx, attlist)
+}
+
+function location2name(loc: string): string {
+  return loc.replace(
+    /[^A-Za-z0-9]/g,
+    (s) => '_' + s.charCodeAt(0).toString(16)
+  )
 }
 
 if (module.id === ".") {
