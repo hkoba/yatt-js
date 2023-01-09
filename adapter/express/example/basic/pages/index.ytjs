@@ -11,7 +11,7 @@ bar:<input type="text" name="bar" value="&yatt:query(bar);"><br>
 <yatt:foo x y/>
 いいい
 
-<!yatt:page bar="/bar">
+<!yatt:page [GET "/bar"]>
 bar です
 
 <!yatt:widget foo x="?こんにちわ" y="?さようなら">
@@ -20,3 +20,6 @@ bar です
 <yatt:BODY/>
 </div>
 &yatt:y;
+
+<!yatt:action [POST="/test"] x y>
+return 'foo' + (x ?? 'xx')
