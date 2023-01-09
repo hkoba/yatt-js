@@ -16,6 +16,10 @@ export function list_entity_functions(rootName: string): {[k: string]: any} {
   let dict: {[k: string]: any} = {}
 
   const fileName = find_file_with_extension(rootName, ['d.ts', 'ts']);
+  if (fileName == null) {
+    // warn
+    return dict
+  }
 
   // console.log(`entity defs: ${fileName}`)
 
@@ -31,7 +35,8 @@ export function list_entity_functions(rootName: string): {[k: string]: any} {
   return dict
 }
 
-function find_file_with_extension(rootName: string, extensions: string[]): string {
+function find_file_with_extension(rootName: string, extensions: string[])
+: string | undefined {
   for (const dir of upward_dirs(rootName)) {
     for (const ext of extensions) {
       const fn = dir + '/' + rootName + '.' + ext;
@@ -40,7 +45,6 @@ function find_file_with_extension(rootName: string, extensions: string[]): strin
       }
     }
   }
-  throw new Error(`Can\'t find '${rootName}' with extensions: ${extensions}`)
 }
 
 if (module.id === '.') {
