@@ -46,25 +46,39 @@ import {makeConnection} from '${entFnsFile}'
   for (const [path, template] of pagesMap) {
     const viewId = `v${++viewNo}`
     routingScript += `import * as ${viewId} from './${rootDir}${path}'\n`
-    for (const widget of template.partMap.widget.values()) {
-      if (! widget.is_public)
+    for (const part of template) {
+      if (! part.is_public)
         continue
-      const route = path + (widget.route ?? "");
-      let paramsExpr = []
-      for (const [name, argSpec] of widget.argMap) {
-        if (argSpec.is_body_argument)
-          continue
-        paramsExpr.push(`${name}: req.params.${name} ?? req.query.${name}`)
+
+      let method, subroute, handler
+
+      if (typeof part.route === "string") {
+        [method, subroute] = ['all', part.route]
+      } else if (part.route != null) {
+        [method, subroute] = part.route
+      } else {
+        [method, subroute] = ['all', '']
       }
-      const handler = `(req: Request, res: Response) => {
-    let CON = makeConnection(req, res)
-    ${viewId}.render_${widget.name}(CON, {${paramsExpr.join(', ')}})
-    res.send(CON.buffer)
-  }`
-      routerBody += `  router.get("${route}", ${handler})\n`
+      const route = path + subroute
+
+      switch (part.kind) {
+        case "widget": {
+          handler = generate_page_handler(part, viewId);
+          break
+        }
+        case "action": {
+          handler = generate_action_handler(part, viewId);
+          break
+        }
+      }
+
+      if (handler == null)
+        continue
+
+      routerBody += `  router.${method}("${route}", ${handler})\n`
       if (/\/index$/.exec(route)) {
         const index = route.replace(/\/index$/, '/')
-        routerBody += `  router.get("${index}", ${handler})\n`
+        routerBody += `  router.${method}("${index}", ${handler})\n`
       }
     }
   }
@@ -79,6 +93,34 @@ routingScript += routerBody + `
     console.log(`Emitting routes to ${routingScriptFn}`)
     fs.writeFileSync(routingScriptFn, routingScript)
   }
+}
+
+function generate_page_handler(widget: cgen.Widget, viewId: string): string {
+  let paramsExpr = []
+  for (const [name, argSpec] of widget.argMap) {
+    if (argSpec.is_body_argument)
+      continue
+    paramsExpr.push(`${name}: req.params.${name} ?? req.query.${name}`)
+  }
+  return `(req: Request, res: Response) => {
+    let CON = makeConnection(req, res)
+    ${viewId}.render_${widget.name}(CON, {${paramsExpr.join(', ')}})
+    res.send(CON.buffer)
+  }`
+}
+
+function generate_action_handler(action: cgen.Action, viewId: string): string {
+  let paramsExpr = []
+  for (const [name, argSpec] of action.argMap) {
+    if (argSpec.is_body_argument)
+      continue
+    paramsExpr.push(`${name}: req.params.${name} ?? req.query.${name}`)
+  }
+  return `(req: Request, res: Response) => {
+    let CON = makeConnection(req, res)
+    ${viewId}.do_${action.name}(CON, {${paramsExpr.join(', ')}})
+    res.send(CON.buffer)
+  }`
 }
 
 if (module.id === ".") {
