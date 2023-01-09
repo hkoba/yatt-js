@@ -9,13 +9,19 @@
 
 - [ ] xhf tests
 
-- [ ] Complete sourcemap support
+- sourcemap support
+   - [x] underlying logic
+   - [ ] tests
+   - [ ] adaptor support?(where to save the sourcemap?)
 - more builtin macros
+   - [ ] extensible `yatt:foreach`
    - [ ] `yatt:if`
    - [ ] `yatt:my`
 - [ ] default values
 - [ ] ts-native types
 - [ ] generate without types?
+
+- [ ] `&yatt:render(widget);` with interface/type
 
 ## For Generic Web App Support
 
@@ -30,3 +36,8 @@
       - [ ] Inline route for yatt:page decls
 
 - [ ] Platform neutral directory organization for entities, pages, widgets and components?
+
+## For Node
+
+- [ ] router generator
+
