@@ -1,8 +1,7 @@
 import {
   ParserSession,
   ScanningContext,
-  AttItem, hasStringValue, hasQuotedStringValue, hasNestedLabel, hasLabel,
-  isIdentOnly
+  AttItem
 } from 'lrxml'
 
 import {YattParams, YattConfig} from '../config'
@@ -76,40 +75,6 @@ export class BuilderContextClass<S extends BuilderSession> extends ScanningConte
 
   copy_array<T>(ary: T[]): T[] {
     return Object.assign([], ary)
-  }
-
-  cut_name_and_route(attlist: AttItem[]): [string, string | undefined, AttItem] | null {
-    if (!attlist.length)
-      return null
-    let head = attlist.shift()
-    if (head == null)
-      return null
-    if (hasLabel(head)) {
-      if (hasNestedLabel(head)) {
-        this.NIMPL();
-      }
-      if (hasStringValue(head)) {
-        return [head.label.value, head.value, head]
-      }
-      else {
-        this.NIMPL()
-      }
-    }
-    else if (isIdentOnly(head)) {
-      return [head.value, undefined, head]
-    }
-    else {
-      if (hasNestedLabel(head)) {
-        this.NIMPL();
-      }
-      if (head.kind === "entity") {
-        this.NIMPL()
-      }
-      if (hasQuotedStringValue(head)) {
-        return ["", head.value, head]
-      }
-      return null;
-    }
   }
 
   dirname(path: string): string {

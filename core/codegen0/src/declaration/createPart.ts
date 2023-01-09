@@ -4,6 +4,7 @@ import {
   parse_multipart, RawPart, AttItem,
   isIdentOnly,
   hasLabel, hasQuotedStringValue
+  , hasNestedLabel, hasStringValue
 } from 'lrxml'
 
 import { yattParams } from '../config'
@@ -37,34 +38,14 @@ export class WidgetBuilder implements DeclarationProcessor {
   ) {}
 
   createPart(ctx: BuilderContext, attlist: AttItem[]): [Widget, AttItem[]] {
-    let name, nameNode, route
-    // XXX: TODO: [method="route"]
-    if (! this.is_named) {
-      // yatt:args
-      // "/route"
-      name = ""
-      if (attlist.length && !hasLabel(attlist[0])
-          && hasQuotedStringValue(attlist[0])) {
-        route = ctx.range_text(attlist.shift()!);
-      }
-    } else {
-      if (! attlist.length) {
-        // XXX: token position
-        ctx.throw_error(`Widget name is not given (1)`)
-      }
-      const att = ctx.cut_name_and_route(attlist)
-      if (! att) {
-        ctx.throw_error(`Widget name is not given (2)`)
-      }
-      name = att[0]
-      route = att[1]
-      nameNode = att[2]
-      if (route && !name) {
-        name = location2name(route)
-      }
+    const att = cut_name_and_route(ctx, this.is_named, attlist)
+    if (! att) {
+      ctx.throw_error(`Widget name is not given!`)
     }
+
+    const {name, nameNode, route} = att
+    // XXX: TODO: [method="route"]
     let widget = makeWidget(name, this.is_public, nameNode)
-    // XXX: must start with '/'
     // XXX: route params
     widget.route = route;
     return [widget, attlist];
@@ -79,10 +60,11 @@ export class ActionBuilder implements DeclarationProcessor {
     if (! attlist.length || attlist[0] == null) {
       ctx.throw_error(`Action name is not given`)
     }
-    let [name, route] = ctx.cut_name_and_route(attlist)!
-    if (route && !name) {
-      name = location2name(route)
+    const att = cut_name_and_route(ctx, false, attlist)
+    if (! att) {
+      ctx.throw_error(`Action name is not given!`)
     }
+    const {name, route} = att
     return [{kind: this.kind, name, route, is_public: true,
              argMap: new Map, varMap: new Map}, attlist]
   }
@@ -94,7 +76,7 @@ export class EntityBuilder implements DeclarationProcessor {
 
   createPart(ctx: BuilderContext, attlist: AttItem[]): [Entity, AttItem[]] {
     if (! attlist.length || attlist[0] == null) {
-      ctx.throw_error(`Entity name is not given`)
+      ctx.throw_error(`Entity name is not given!`)
     }
     const att = attlist.shift()!
     if (! isIdentOnly(att))
@@ -103,6 +85,74 @@ export class EntityBuilder implements DeclarationProcessor {
     return [{kind: this.kind, name, is_public: false,
              argMap: new Map, varMap: new Map}, attlist]
   }
+}
+
+export function cut_name_and_route(
+  ctx: BuilderContext,
+  is_named: boolean,
+  attlist: AttItem[]
+)
+: {name: string, route?: string, nameNode?: AttItem} | undefined
+{
+  let name, route, nameNode
+  if (! is_named) {
+    name = ""
+    if (attlist.length && !hasLabel(attlist[0])
+      && hasQuotedStringValue(attlist[0])) {
+      route = ctx.range_text(attlist.shift()!);
+    }
+  } else {
+    if (!attlist.length)
+      return
+    let head = attlist.shift()
+    if (head == null)
+      return
+    nameNode = head
+    if (hasLabel(head)) {
+      // name="value", [..]="..", [..]=[..]
+      if (hasNestedLabel(head)) {
+        // [..]=..
+        ctx.NIMPL(head);
+      }
+      if (hasStringValue(head)) {
+        // ..=".."
+        name = head.label.value
+        route = head.value
+      }
+      else {
+        // ..=[..]
+        ctx.NIMPL(head)
+      }
+    }
+    else if (isIdentOnly(head)) {
+      // name
+      name = head.value
+    }
+    else {
+      // "...", [...], %entity;
+      if (hasNestedLabel(head)) {
+        ctx.NIMPL(head);
+      }
+      if (head.kind === "entity") {
+        // %entity;
+        ctx.NIMPL(head)
+      }
+      if (hasQuotedStringValue(head)) {
+        // "..."
+        route = head.value
+        name = location2name(route)
+      } else {
+        // ???
+        ctx.NEVER(head)
+      }
+    }
+  }
+
+  if (route && route.charAt(0) !== "/") {
+    ctx.maybe_token_error(nameNode, `route doesn\'t start with '/'!: ${route}`)
+  }
+
+  return {name, route, nameNode}
 }
 
 export function builtin_builders(): BuilderMap {
