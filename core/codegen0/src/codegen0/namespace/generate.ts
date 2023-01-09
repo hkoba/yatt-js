@@ -89,12 +89,7 @@ export function generate_namespace_from_template(
 
   // XXX: todo: build file-scope entity functions first
 
-  for (const [kind, name] of template.partOrder) {
-    const partMap = template.partMap[kind]
-    const part = partMap.get(name)
-    if (part == null)
-      throw new Error(`BUG: Unknown part ${kind} ${name}`)
-
+  for (const part of template) {
     switch (part.kind) {
       case "action": {
         let ctx = new CodeGenContextClass(template, part, session);

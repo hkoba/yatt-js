@@ -72,12 +72,7 @@ export function generate_module(
 
   const importListPos = program.length
 
-  for (const [kind, name] of template.partOrder) {
-    const partMap = template.partMap[kind]
-    const part = partMap.get(name)
-    if (part == null)
-      throw new Error(`BUG: Unknown part ${kind} ${name}`)
-
+  for (const part of template) {
     switch (part.kind) {
       case "action": {
         let ctx = new CodeGenContextClass(template, part, session);
@@ -95,7 +90,10 @@ export function generate_module(
         let ctx = new CodeGenContextClass(template, part, session);
         let ast = parse_template(session, part.raw_part)
         program.push(generate_widget(ctx, ast))
+        break
       }
+      default:
+        // just ignore...
     }
   }
 
@@ -105,8 +103,6 @@ export function generate_module(
       (m) => `import * as ${m} from './${m}'\n`
     ))
   }
-
-  let fileCtx = new BuilderContextClass(session)
 
   const output = finalize_codefragment(source, filename, program, {})
 

@@ -235,7 +235,7 @@ export function populateTemplateDeclaration(path: string, builder_session: Build
   })
 
   const folder = ctx.dirname(path)
-  return {path, folder, partMap, routeMap, partOrder}
+  return new TemplateDeclaration(path, folder, partMap, routeMap, partOrder)
 }
 
 function add_route(
