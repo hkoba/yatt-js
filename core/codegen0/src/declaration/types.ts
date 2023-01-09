@@ -33,8 +33,8 @@ export class TemplateDeclaration {
         }
       }
     }
-
   }
+
 }
 
 export interface PartMapType {
@@ -44,4 +44,4 @@ export interface PartMapType {
   [k: string]: Map<string, PartBase>;
 }
 
-export type RouteMapType = Map<string, {part: Part}>;
+export type RouteMapType = Map<string, {part: Part, method?: string}>;

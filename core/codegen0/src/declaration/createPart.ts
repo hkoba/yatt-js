@@ -4,7 +4,7 @@ import {
   parse_multipart, RawPart, AttItem,
   isIdentOnly,
   hasLabel, hasQuotedStringValue
-  , hasNestedLabel, hasStringValue
+  , hasNestedLabel, hasStringValue, hasNestedTerm
 } from 'lrxml'
 
 import { yattParams } from '../config'
@@ -44,10 +44,8 @@ export class WidgetBuilder implements DeclarationProcessor {
     }
 
     const {name, nameNode, route} = att
-    // XXX: TODO: [method="route"]
-    let widget = makeWidget(name, this.is_public, nameNode)
+    let widget = makeWidget(name, this.is_public, nameNode, route)
     // XXX: route params
-    widget.route = route;
     return [widget, attlist];
   }
 }
@@ -60,7 +58,7 @@ export class ActionBuilder implements DeclarationProcessor {
     if (! attlist.length || attlist[0] == null) {
       ctx.throw_error(`Action name is not given`)
     }
-    const att = cut_name_and_route(ctx, false, attlist)
+    const att = cut_name_and_route(ctx, true, attlist)
     if (! att) {
       ctx.throw_error(`Action name is not given!`)
     }
@@ -87,20 +85,23 @@ export class EntityBuilder implements DeclarationProcessor {
   }
 }
 
+export type HTTP_METHOD = 'get' | 'post'
+
 export function cut_name_and_route(
   ctx: BuilderContext,
   is_named: boolean,
   attlist: AttItem[]
 )
-: {name: string, route?: string, nameNode?: AttItem} | undefined
+: {name: string, route?: string | [HTTP_METHOD, string], nameNode?: AttItem} | undefined
 {
-  let name, route, nameNode
+  let name, method, routeStr, nameNode
   if (! is_named) {
     name = ""
     if (attlist.length && !hasLabel(attlist[0])
       && hasQuotedStringValue(attlist[0])) {
-      route = ctx.range_text(attlist.shift()!);
+      routeStr = ctx.range_text(attlist.shift()!);
     }
+
   } else {
     if (!attlist.length)
       return
@@ -114,13 +115,16 @@ export function cut_name_and_route(
         // [..]=..
         ctx.NIMPL(head);
       }
+      name = head.label.value
       if (hasStringValue(head)) {
         // ..=".."
-        name = head.label.value
-        route = head.value
+        routeStr = head.value
+      }
+      else if (hasNestedTerm(head)) {
+        // ..=[..]
+        [method, routeStr] = parse_method_and_route(ctx, head, head.value)
       }
       else {
-        // ..=[..]
         ctx.NIMPL(head)
       }
     }
@@ -130,29 +134,68 @@ export function cut_name_and_route(
     }
     else {
       // "...", [...], %entity;
-      if (hasNestedLabel(head)) {
-        ctx.NIMPL(head);
-      }
       if (head.kind === "entity") {
         // %entity;
         ctx.NIMPL(head)
       }
       if (hasQuotedStringValue(head)) {
         // "..."
-        route = head.value
-        name = location2name(route)
-      } else {
+        routeStr = head.value
+      }
+      else if (hasNestedTerm(head)) {
+        [method, routeStr] = parse_method_and_route(ctx, head, head.value)
+      }
+      else {
         // ???
         ctx.NEVER(head)
       }
+      name = location2name(routeStr)
     }
   }
 
-  if (route && route.charAt(0) !== "/") {
-    ctx.maybe_token_error(nameNode, `route doesn\'t start with '/'!: ${route}`)
+  if (routeStr && routeStr.charAt(0) !== "/") {
+    ctx.maybe_token_error(nameNode, `route doesn\'t start with '/'!: ${routeStr}`)
   }
 
+  // XXX: Is this packing of [HTTP_METHOD, string] useful?
+  const route: string | [HTTP_METHOD, string] | undefined
+    = routeStr == null ? undefined
+    : method == null ? routeStr
+    : [method, routeStr]
+
   return {name, route, nameNode}
+}
+
+function parse_method_and_route(ctx: BuilderContext, head: AttItem, attlist: AttItem[]): [HTTP_METHOD, string] {
+
+  let method, routeStr
+
+  if (attlist.length === 2) {
+    const [m, r] = attlist
+    if (! hasStringValue(m)) {
+      ctx.token_error(head, `Unsupported route spec: ${JSON.stringify(m)}`)
+    }
+    if (! hasStringValue(r)) {
+      ctx.token_error(head, `Unsupported route spec: ${JSON.stringify(r)}`)
+    }
+
+    [method, routeStr] = [m.value.toLowerCase(), r.value]
+  }
+  else if (attlist.length === 1 && hasLabel(attlist[0])) {
+    const att = attlist[0]
+    if (! (isIdentOnly(att.label) && hasStringValue(att))) {
+      ctx.token_error(head, `Unsupported route spec: ${JSON.stringify(att)}`)
+    }
+    [method, routeStr] = [att.label.value.toLowerCase(), att.value]
+  }
+  else {
+    ctx.token_error(head, `Unsupported route spec: ${JSON.stringify(attlist)}`)
+  }
+
+  if (! (method === 'get' || method === 'post')) {
+    ctx.token_error(head, `Unsupported http method: ${method}`)
+  }
+  return [method, routeStr]
 }
 
 export function builtin_builders(): BuilderMap {
@@ -289,10 +332,14 @@ export function populateTemplateDeclaration(path: string, builder_session: Build
 }
 
 function add_route(
-  _ctx: BuilderContext, routeMap: RouteMapType, route: string, part: Part
+  _ctx: BuilderContext, routeMap: RouteMapType
+  , routeSpec: string | [string, string], part: Part
 ): void {
   // XXX: path-ro-regexp and add args to part
-  routeMap.set(route, {part});
+  const [method, route] = typeof routeSpec === 'string' ?
+    [undefined, routeSpec] : routeSpec
+
+  routeMap.set(route, {part, method});
 }
 
 export function createPart(ctx: BuilderContext, rawPart: RawPart): [Part, AttItem[]] | undefined {
