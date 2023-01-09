@@ -16,8 +16,7 @@ type IdentplusTerm = {kind: AttIdentPlus, has_three_colon: boolean} & BaseTerm<s
 export type StringTerm = (BareStringTerm | QuotedStringTerm) &
   {children: AttStringItem[]}
 
-type NestedTerm = {kind: AttNest} & BaseTerm<AttItem[]>;
-
+export type NestedTerm = {kind: AttNest} & BaseTerm<AttItem[]>;
 
 type EntTerm = (EntNode & {comment: string[]})
 

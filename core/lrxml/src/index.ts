@@ -16,6 +16,7 @@ export {
   // anonNode,
   Comment, Text, ElementNode, PI, LCMsg,
   hasStringValue, hasQuotedStringValue, hasNestedLabel, hasLabel,
+  hasNestedTerm,
   isBareLabeledAtt, isIdentOnly
 } from './template/'
 

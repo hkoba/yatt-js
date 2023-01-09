@@ -13,6 +13,7 @@ import {
   Label, StringTerm,
   attKindIsQuotedString,
   AttIdentOnly, AttLabeled, AttLabeledNested, AttLabeledByIdent
+  , NestedTerm
 } from '../attlist/parse'
 
 import { EntNode } from '../entity/parse'
@@ -58,9 +59,14 @@ export function isIdentOnly(att: AttItem | AttElement)
   return !hasLabel(att) && att.kind === 'identplus'
 }
 
+export function hasNestedTerm(att: AttItem | AttElement)
+: att is NestedTerm {
+  return att.kind === 'nest'
+}
+
 export function hasNestedLabel(att: AttItem | AttElement)
 : att is AttLabeledNested {
-  return att.kind === 'nest'
+  return hasLabel(att) && att.label.kind === 'nest'
 }
 
 export function hasLabel(att: AttItem | AttElement): att is AttLabeled {
