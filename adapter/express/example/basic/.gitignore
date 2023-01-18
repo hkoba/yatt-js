@@ -1,8 +1,5 @@
-yatt.ts
-/entity-fn.*
 /pages.ts
 /pages/*.ts
 *.js
 *.d.ts
 *.map
-
