@@ -104,7 +104,29 @@ function generate_page_handler(widget: cgen.Widget, viewId: string): string {
   }
   return `(req: Request, res: Response) => {
     let CON = makeConnection(req, res)
-    ${viewId}.render_${widget.name}(CON, {${paramsExpr.join(', ')}})
+    let handler, spec
+    if (CON.subitem != null) {
+      const {kind, name} = CON.subitem
+      switch (kind) {
+        case 'page': {
+          spec = 'render_' + name
+          break;
+        }
+        case 'action': {
+          spec = 'do_' + name
+          break;
+        }
+      }
+      handler = (${viewId} as {[k: string]: any})[spec]
+    } else {
+      spec = 'render_' + '${widget.name}'
+      handler = ${viewId}.render_${widget.name}
+    }
+    if (handler == null) {
+      throw new Error("Invalid request: " + spec)
+    }
+    console.log("Requested: ", spec)
+    handler(CON, {${paramsExpr.join(', ')}})
     res.send(CON.buffer)
   }`
 }
