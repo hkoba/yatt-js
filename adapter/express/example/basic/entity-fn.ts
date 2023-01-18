@@ -9,14 +9,28 @@ export type Connection = yatt.runtime.Connection & {
   buffer: string
   req: Request
   res: Response
+  subitem?: yatt.runtime.SubItemType
 }
 
 export function makeConnection(req: Request, res: Response): Connection {
-  console.log('params:', req.params)
-  console.log('query:', req.query)
+
+  if (process.env['DEBUG']) {
+    console.log('params:', req.params)
+    console.log('query:', req.query)
+    console.log('body:', req.body)
+  }
+
+  const bodySubItem = yatt.runtime.extract_sigil_from(req.body)
+  const querySubItem = yatt.runtime.extract_sigil_from(req.query)
+
+  if (process.env['DEBUG']) {
+    console.log('subitem-body: ', bodySubItem, 'query:', querySubItem)
+  }
+
   return {
     req, res,
     buffer: "",
+    subitem: bodySubItem ?? querySubItem,
     append(this: Connection, str: string) {
       this.buffer += str;
     },
