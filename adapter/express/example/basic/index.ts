@@ -8,6 +8,8 @@ import * as pages from './pages'
   const app = express()
   const PORT = process.env.PORT || 8080;
 
+  app.use(express.urlencoded({extended: true}))
+
   app.use('/', pages.express(express.Router()))
 
   // app.get('/*', (req: Request, res: Response, next: NextFunction) => {
