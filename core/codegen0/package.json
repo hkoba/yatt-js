@@ -7,9 +7,8 @@
     "yatt-js-lint": "dist/bin/yatt-js-lint.js"
   },
   "devDependencies": {
-    "@types/node": "^16.7.10",
     "@types/tap": "^15.0.2",
-    "tap": "^15.0.9",
+    "tap": "^15.2.3",
     "ts-node": "^10.2.1"
   },
   "tap": {

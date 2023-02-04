@@ -22,12 +22,11 @@
     "@rollup/plugin-commonjs": "^19.0.0",
     "@rollup/plugin-node-resolve": "^13.0.0",
     "@rollup/plugin-typescript": "^8.2.1",
-    "@types/node": "^16.3.2",
     "@types/tap": "^15.0.2",
     "magic-string": "^0.25.7",
     "rollup": "^2.52.1",
     "rollup-plugin-preserve-shebangs": "^0.2.0",
-    "tap": "^15.0.9",
+    "tap": "^15.2.3",
     "ts-node": "^10.0.0",
     "typescript": "^4.3.4"
   }
