@@ -1,8 +1,11 @@
 {
-  "name": "yatt-express",
-  "version": "1.0.0",
+  "name": "@yatt/express",
+  "version": "0.0.1",
   "description": "",
   "main": "index.js",
+  "dependencies": {
+    "@yatt/codegen0": "^0.0.1"
+  },
   "devDependencies": {
     "@types/express": "^4.17.13",
     "express": "^4.17.1"

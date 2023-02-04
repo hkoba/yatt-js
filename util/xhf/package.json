@@ -1,6 +1,6 @@
 {
-  "name": "xhf",
-  "version": "1.0.0",
+  "name": "@yatt/xhf",
+  "version": "0.0.1",
   "description": "xhf parser/formatter. xhf stands for eXtended Header Fields",
   "main": "dist/index.js",
   "scripts": {
