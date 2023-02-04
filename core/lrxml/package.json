@@ -2,18 +2,19 @@
   "name": "@yatt/lrxml",
   "version": "0.0.1",
   "description": "Loose but Recursive XML",
-  "main": "lib/index.js",
-  "module": "dist/lrxml.esm.js",
-  "browser": "dist/lrxml.umd.js",
+  "main": "lib/commonjs/index.js",
+  "module": "lib/es/index.mjs",
+  "browser": "lib/browser/index.umd.js",
   "tap": {
     "ts": true,
     "coverage": false,
     "files": "test/**/*.ts"
   },
   "scripts": {
+    "clean": "rm -rf lib",
     "b": "tsc -p tsconfig.build.json",
-    "build": "tsc -p tsconfig.build.json && rollup -c",
-    "watch": "tsc -w -p tsconfig.build.json & rollup -c -w",
+    "build": "npm run clean && rollup -c",
+    "watch": "npm run clean && rollup -c -w",
     "test": "tap"
   },
   "author": "",

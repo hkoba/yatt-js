@@ -31,6 +31,8 @@ const StripToplevelGuard = {
   }
 }
 
+const tsconfig = 'tsconfig.build.json'
+
 export default [
   // browser-friendly UMD build
   {
@@ -46,7 +48,7 @@ export default [
       StripToplevelGuard,
       resolve(),   // so Rollup can find external modules
       commonjs(),  // so Rollup can convert external modules to an ES module
-      typescript({module: "esnext"}) // so Rollup can convert TypeScript to JavaScript
+      typescript({tsconfig, module: "esnext"}) // so Rollup can convert TypeScript to JavaScript
     ]
   },
 
@@ -62,10 +64,10 @@ export default [
     plugins: [
       preserveShebangs(),
       StripToplevelGuard,
-      typescript({module: "esnext"}) // so Rollup can convert TypeScript to JavaScript
+      typescript({tsconfig, module: "esnext"}) // so Rollup can convert TypeScript to JavaScript
     ],
     output: [
-      // { file: pkg.main, format: 'cjs', sourcemap: true },
+      { file: pkg.main, format: 'cjs', sourcemap: true },
       { file: pkg.module, format: 'es', sourcemap: true }
     ]
   }
