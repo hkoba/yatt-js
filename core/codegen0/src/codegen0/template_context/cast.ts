@@ -1,4 +1,4 @@
-import {Term} from 'lrxml'
+import {Term} from '@yatt/lrxml'
 
 import {CodeGenContext, Part} from '../context'
 import {VarScope} from '../varscope'

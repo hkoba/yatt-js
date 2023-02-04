@@ -2,7 +2,7 @@ import {
   ElementNode
   , AttItem, AttElement, AttValue, attValue, isBareLabeledAtt
   , hasQuotedStringValue, isIdentOnly
-} from 'lrxml'
+} from '@yatt/lrxml'
 
 import {WidgetGenContext} from '../context'
 

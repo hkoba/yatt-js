@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import {TokenError} from 'lrxml'
+import {TokenError} from '@yatt/lrxml'
 import {YattConfig} from '../config'
 import {longestPrefixDir} from '../path'
 import {generate_namespace} from '../codegen0/namespace/generate'
@@ -9,7 +9,7 @@ import {generate_module} from '../codegen0/module/generate'
 import * as Path from 'path'
 import {readFileSync, existsSync} from 'fs'
 
-import { parse_long_options } from 'lrxml'
+import { parse_long_options } from '@yatt/lrxml'
 
 function* pathParents(path: string): Generator<string> {
   let p = Path.isAbsolute(path) ? path : Path.resolve(path)

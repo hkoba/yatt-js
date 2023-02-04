@@ -6,7 +6,7 @@ LRXML Syntax - Loose but Recursive XML (LRXML) format.
 
 ```ts
 #!/usr/bin/env ts-node
-import {parse_multipart, parse_template, LrxmlConfig} from 'lrxml'
+import {parse_multipart, parse_template, LrxmlConfig} from '@yatt/lrxml'
 
 const source = `<!yatt:args x y>
 <h2>&yatt:x;</h2>

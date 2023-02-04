@@ -174,7 +174,7 @@ if (module.id === ".") {
     // const Fs = await import("fs")
     // const Path = await import("path")
 
-    const {parse_long_options} = await import("lrxml")
+    const {parse_long_options} = await import('@yatt/lrxml')
     const {build_template_declaration} = await import("../declaration/")
 
     const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0

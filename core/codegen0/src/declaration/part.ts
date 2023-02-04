@@ -1,4 +1,4 @@
-import { RawPart, AttItem } from 'lrxml'
+import { RawPart, AttItem } from '@yatt/lrxml'
 
 import { Variable } from './vartype'
 

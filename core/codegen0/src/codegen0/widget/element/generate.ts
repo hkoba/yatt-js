@@ -1,4 +1,4 @@
-import { Node } from 'lrxml'
+import { Node } from '@yatt/lrxml'
 import {WidgetGenContext, Widget} from '../../context'
 import {Variable, TemplateDeclaration} from '../../../declaration'
 import {VarScope} from '../../varscope'

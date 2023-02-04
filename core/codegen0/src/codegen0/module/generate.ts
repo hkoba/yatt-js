@@ -1,6 +1,6 @@
 #!/usr/bin/env ts-node
 
-import {parse_template} from 'lrxml'
+import {parse_template} from '@yatt/lrxml'
 
 import {YattConfig, primaryNS} from '../../config'
 
@@ -115,7 +115,7 @@ export function generate_module(
 
 if (module.id === '.') {
   (async () => {
-    const { parse_long_options } = await import('lrxml')
+    const { parse_long_options } = await import('@yatt/lrxml')
     const { readFileSync } = await import('fs')
     const Path = await import('path')
 

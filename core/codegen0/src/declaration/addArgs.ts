@@ -1,4 +1,4 @@
-import {AttItem, isBareLabeledAtt, isIdentOnly, hasLabel, hasQuotedStringValue} from 'lrxml'
+import {AttItem, isBareLabeledAtt, isIdentOnly, hasLabel, hasQuotedStringValue} from '@yatt/lrxml'
 
 import { BuilderContext } from './context'
 

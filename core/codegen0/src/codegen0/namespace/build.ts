@@ -52,7 +52,7 @@ export function build_namespace(fileList: string[], config: YattConfig): void {
 
 if (module.id === ".") {
   (async () => {
-    const { parse_long_options } = await import('lrxml')
+    const { parse_long_options } = await import('@yatt/lrxml')
 
     let args = process.argv.slice(2)
     const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0

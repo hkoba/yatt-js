@@ -1,4 +1,4 @@
-import {BodyNode} from 'lrxml'
+import {BodyNode} from '@yatt/lrxml'
 import {WidgetGenContext} from '../context'
 import {VarScope} from '../varscope'
 

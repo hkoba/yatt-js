@@ -1,4 +1,4 @@
-import {ElementNode} from 'lrxml'
+import {ElementNode} from '@yatt/lrxml'
 
 import {WidgetGenContext} from './context'
 

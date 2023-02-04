@@ -1,4 +1,4 @@
-import {AttItem} from 'lrxml'
+import {AttItem} from '@yatt/lrxml'
 import {Part, Widget, makeWidget} from './part'
 
 import {BuilderContext} from './context'

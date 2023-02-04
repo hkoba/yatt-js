@@ -1,4 +1,4 @@
-import { AttItem, hasQuotedStringValue, isBareLabeledAtt } from 'lrxml'
+import { AttItem, hasQuotedStringValue, isBareLabeledAtt } from '@yatt/lrxml'
 
 import { DeclarationProcessor, BuilderContext } from './context'
 

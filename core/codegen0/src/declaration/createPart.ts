@@ -5,7 +5,7 @@ import {
   isIdentOnly,
   hasLabel, hasQuotedStringValue
   , hasNestedLabel, hasStringValue, hasNestedTerm
-} from 'lrxml'
+} from '@yatt/lrxml'
 
 import { yattParams } from '../config'
 
@@ -362,7 +362,7 @@ if (module.id === ".") {
   (async () => {
     let [...args] = process.argv.slice(2);
     console.time('load lrxml');
-    const { parse_long_options } = await import("lrxml")
+    const { parse_long_options } = await import('@yatt/lrxml')
     console.timeLog('load lrxml');
     const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
     let config = {

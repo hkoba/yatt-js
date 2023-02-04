@@ -2,7 +2,7 @@ import {
   ParserSession,
   ScanningContext,
   AttItem
-} from 'lrxml'
+} from '@yatt/lrxml'
 
 import {YattParams, YattConfig} from '../config'
 

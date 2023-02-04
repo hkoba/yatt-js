@@ -2,7 +2,7 @@
 
 import {paragraph} from './paragraph'
 
-import {count_newlines} from 'lrxml'
+import {count_newlines} from '@yatt/lrxml'
 
 export type Sigil = ':' | '-' | ',' | '=' | '[' | ']' | '{' | '}'
 

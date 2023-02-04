@@ -1,4 +1,4 @@
-import {AttItem, isIdentOnly} from 'lrxml'
+import {AttItem, isIdentOnly} from '@yatt/lrxml'
 
 import {BuilderContext} from './context'
 

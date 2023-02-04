@@ -1,8 +1,8 @@
-import type {Node, AnonNode} from 'lrxml'
+import type {Node, AnonNode} from '@yatt/lrxml'
 
 import {SourceMapGenerator} from 'source-map'
 
-import {count_newlines} from 'lrxml'
+import {count_newlines} from '@yatt/lrxml'
 
 export type CodeFragmentPayload = {
   code: string,

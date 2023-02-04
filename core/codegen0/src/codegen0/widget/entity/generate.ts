@@ -1,4 +1,4 @@
-import {Node, EntPathItem, EntTerm, isVarOrCall} from 'lrxml'
+import {Node, EntPathItem, EntTerm, isVarOrCall} from '@yatt/lrxml'
 import {CodeGenContext, Part} from '../../context'
 import {VarScope} from '../../varscope'
 import {escapeAsStringLiteral} from '../../escape'

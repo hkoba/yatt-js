@@ -1,6 +1,6 @@
 import {
   Term, hasQuotedStringValue, isIdentOnly
-} from 'lrxml'
+} from '@yatt/lrxml'
 
 import {CodeGenContext, Part} from '../context'
 import {VarScope} from '../varscope'

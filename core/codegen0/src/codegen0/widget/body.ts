@@ -1,4 +1,4 @@
-import {Node} from 'lrxml'
+import {Node} from '@yatt/lrxml'
 import {WidgetGenContext} from '../context'
 import {VarScope} from '../varscope'
 import {escapeAsStringLiteral} from '../escape'

@@ -1,6 +1,6 @@
 #!/usr/bin/env ts-node
 
-import {parse_template} from 'lrxml'
+import {parse_template} from '@yatt/lrxml'
 
 import {CodeGenContextClass, CGenSession, finalize_codefragment} from '../context'
 import {
@@ -122,7 +122,7 @@ export function generate_namespace_from_template(
 
 if (module.id === '.') {
   (async () => {
-    const { parse_long_options } = await import('lrxml')
+    const { parse_long_options } = await import('@yatt/lrxml')
     const { readFileSync } = await import('fs')
 
     let args = process.argv.slice(2)

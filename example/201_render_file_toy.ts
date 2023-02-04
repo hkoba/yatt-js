@@ -6,7 +6,7 @@ import {
   , isIdentOnly, isBareLabeledAtt
   , hasStringValue
   , extract_line, extract_prefix_spec
-} from 'lrxml'
+} from '@yatt/lrxml'
 
 import {
   build_template_declaration, TemplateDeclaration,
@@ -309,7 +309,7 @@ import {compile, makeProgram} from '../core/codegen0/src/utils/compileTs'
 
 (async () => {
   let args = process.argv.slice(2)
-  const { parse_long_options } = await import('lrxml')
+  const { parse_long_options } = await import('@yatt/lrxml')
   const { readFileSync } = await import('fs')
   const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
   let config = {

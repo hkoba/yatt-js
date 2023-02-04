@@ -1,4 +1,4 @@
-import {Node} from 'lrxml'
+import {Node} from '@yatt/lrxml'
 
 import {CodeFragment} from '../codefragment'
 

@@ -1,4 +1,4 @@
-import {LrxmlParams, lrxmlParams} from 'lrxml'
+import {LrxmlParams, lrxmlParams} from '@yatt/lrxml'
 
 export type YattParams = LrxmlParams & {
   outDir?: string;

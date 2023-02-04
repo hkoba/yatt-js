@@ -1,6 +1,6 @@
 import {
   Node, AttItem, isIdentOnly, isBareLabeledAtt, hasStringValue
-} from 'lrxml'
+} from '@yatt/lrxml'
 import {WidgetGenContext, Widget} from '../../context'
 import {VarScope} from '../../varscope'
 import {generate_argdecls} from '../argdecls'
