@@ -4,13 +4,14 @@
   "description": "Loose but Recursive XML",
   "main": "lib/lrxml.cjs",
   "module": "lib/lrxml.mjs",
+  "types": "types/lrxml.d.ts",
   "tap": {
     "ts": true,
     "coverage": false,
     "files": "test/**/*.ts"
   },
   "scripts": {
-    "clean": "rm -rf lib",
+    "clean": "rm -rf lib types",
     "b": "tsc -p tsconfig.build.json",
     "build": "npm run clean && rollup -c",
     "watch": "npm run clean && rollup -c -w",
@@ -23,6 +24,7 @@
     "@rollup/plugin-node-resolve": "^13.0.0",
     "@rollup/plugin-typescript": "^8.2.1",
     "@types/tap": "^15.0.2",
+    "dts-bundle-generator": "^7.2.0",
     "magic-string": "^0.25.7",
     "rollup": "^2.52.1",
     "rollup-plugin-preserve-shebangs": "^0.2.0",

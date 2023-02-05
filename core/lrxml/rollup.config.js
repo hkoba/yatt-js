@@ -7,6 +7,11 @@ import MagicString from 'magic-string'
 
 import pkg from './package.json';
 
+import util from 'node:util'
+import child_process from 'node:child_process'
+
+const execFile = util.promisify(child_process.execFile)
+
 const StripToplevelGuard = {
   name: 'strip-toplevel-guard',
   transform(code, id) {
@@ -44,7 +49,17 @@ export default [
     plugins: [
       preserveShebangs(),
       StripToplevelGuard,
-      esbuild({tsconfig})
+      esbuild({tsconfig}),
+      {
+        name: "run dts-bundle-generator",
+        async closeBundle() {
+          console.log(`Finally, running dts-bundle-generator`)
+          const { stdout, stderr } = await execFile('dts-bundle-generator', [
+            "-o", pkg.types, 'src/index.ts'
+          ])
+          return
+        }
+      }
     ],
     output: [
       { file: pkg.main, format: 'cjs', sourcemap: true },
