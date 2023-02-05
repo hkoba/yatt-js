@@ -2,8 +2,8 @@
   "name": "@yatt/lrxml",
   "version": "0.0.1",
   "description": "Loose but Recursive XML",
-  "main": "lib/commonjs/index.js",
-  "module": "lib/es/index.mjs",
+  "main": "lib/lrxml.cjs",
+  "module": "lib/lrxml.mjs",
   "tap": {
     "ts": true,
     "coverage": false,
