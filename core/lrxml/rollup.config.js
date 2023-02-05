@@ -34,24 +34,6 @@ const StripToplevelGuard = {
 const tsconfig = 'tsconfig.build.json'
 
 export default [
-  // browser-friendly UMD build
-  {
-    input: 'src/index.ts',
-    output: {
-      name: 'lrxml',
-      file: pkg.browser,
-      format: 'umd',
-      sourcemap: true
-    },
-    plugins: [
-      preserveShebangs(),
-      StripToplevelGuard,
-      resolve(),   // so Rollup can find external modules
-      commonjs(),  // so Rollup can convert external modules to an ES module
-      typescript({tsconfig, module: "esnext"}) // so Rollup can convert TypeScript to JavaScript
-    ]
-  },
-
   // CommonJS (for Node) and ES module (for bundlers) build.
   // (We could have three entries in the configuration array
   // instead of two, but it's quicker to generate multiple

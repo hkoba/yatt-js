@@ -4,7 +4,6 @@
   "description": "Loose but Recursive XML",
   "main": "lib/commonjs/index.js",
   "module": "lib/es/index.mjs",
-  "browser": "lib/browser/index.umd.js",
   "tap": {
     "ts": true,
     "coverage": false,
