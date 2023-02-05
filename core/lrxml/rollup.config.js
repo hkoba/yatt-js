@@ -1,9 +1,7 @@
 'use strict';
 // https://github.com/rollup/rollup-starter-lib/blob/typescript/rollup.config.js
 
-import resolve from '@rollup/plugin-node-resolve';
-import commonjs from '@rollup/plugin-commonjs';
-import typescript from '@rollup/plugin-typescript';
+import esbuild from 'rollup-plugin-esbuild'
 import { preserveShebangs } from 'rollup-plugin-preserve-shebangs';
 import MagicString from 'magic-string'
 
@@ -46,11 +44,11 @@ export default [
     plugins: [
       preserveShebangs(),
       StripToplevelGuard,
-      typescript({tsconfig, module: "esnext"}) // so Rollup can convert TypeScript to JavaScript
+      esbuild({tsconfig})
     ],
     output: [
       { file: pkg.main, format: 'cjs', sourcemap: true },
       { file: pkg.module, format: 'es', sourcemap: true }
     ]
-  }
+  },
 ];
