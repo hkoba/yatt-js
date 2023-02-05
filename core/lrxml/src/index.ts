@@ -1,35 +1,43 @@
-export {lrxmlParams, LrxmlParams, LrxmlConfig} from './config'
+export type {LrxmlParams, LrxmlConfig} from './config'
+export {lrxmlParams} from './config'
 
-export {
-  parserContext, parserSession, Range, ParserContext, ParserSession, ScanningContext,
-  range_text,
+export type {
+  Range, ParserSession,
   AnyToken, TokenT, TokenError
 } from './context'
 
+export {
+  parserContext, parserSession, ParserContext, ScanningContext,
+  range_text,
+} from './context'
+
+
 export {tokenize_multipart, tokenize_multipart_context} from './multipart/tokenize'
 
-export {parse_multipart, parse_multipart_context, Part as RawPart} from './multipart/parse'
+export type {Part as RawPart} from './multipart/parse'
+export {parse_multipart, parse_multipart_context} from './multipart/parse'
 
-export {
-  tokenize,
-  parse_template, Node, Term, AnonNode, BodyNode, AttElement,
+export type {
+  Node, Term, AnonNode, BodyNode, AttElement,
   // anonNode,
   Comment, Text, ElementNode, PI, LCMsg,
+} from './template/'
+export {
+  tokenize,
+  parse_template,
   hasStringValue, hasQuotedStringValue, hasNestedLabel, hasLabel,
   hasNestedTerm,
   isBareLabeledAtt, isIdentOnly
 } from './template/'
 
-export {
-  AttItem, AttValue, attValue
-} from './attlist/parse'
+export type {AttItem, AttValue} from './attlist/parse'
+export { attValue } from './attlist/parse'
 
-export {
-  AttStringItem,
-  parse_attstring
-} from './attstring/parse'
+export type { AttStringItem } from './attstring/parse'
+export { parse_attstring } from './attstring/parse'
 
-export {EntNode, EntTerm, EntPath, EntPathItem, isVarOrCall} from './entity/parse'
+export type {EntNode, EntTerm, EntPath, EntPathItem} from './entity/parse'
+export {isVarOrCall}  from './entity/parse'
 
 export { parse_long_options } from './utils/long-options'
 export {

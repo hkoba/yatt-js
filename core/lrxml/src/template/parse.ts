@@ -1,19 +1,21 @@
 #!/usr/bin/env ts-node
 
 import {LrxmlConfig} from '../config'
-import { RangeLine, Range, ParserContext, ParserSession } from '../context'
+import type { RangeLine, Range, ParserSession } from '../context'
+import { ParserContext } from '../context'
 
 import { tokenize, Token, Text, Comment, PI } from './tokenize'
 
 import { Part } from '../multipart/parse'
 
-import {
-  parse_attlist, AttItem,
-  Term,
-  Label, StringTerm,
-  attKindIsQuotedString,
+import type {
+  AttItem, Term, Label, StringTerm,
   AttIdentOnly, AttLabeled, AttLabeledNested, AttLabeledByIdent
   , NestedTerm
+} from '../attlist/parse'
+import {
+  parse_attlist, 
+  attKindIsQuotedString,
 } from '../attlist/parse'
 
 import { EntNode } from '../entity/parse'
