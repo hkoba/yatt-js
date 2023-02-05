@@ -3,7 +3,6 @@
   "compilerOptions": {
     "rootDir": "./src",
     "declaration": true,
-    "declarationDir": ".",
   },
-  "exclude": ["node_modules", "dist", "test"]
+  "exclude": ["node_modules", "lib", "test"]
 }
