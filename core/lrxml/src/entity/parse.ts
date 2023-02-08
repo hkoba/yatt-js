@@ -31,7 +31,7 @@ export type EntPrefixMatch = {
   msgclo?: string
 }
 
-export type LCMsg = AnyToken & {kind: "lcmsg_sep" | "lcmsg_close"} |
+export type LCMsgToken = AnyToken & {kind: "lcmsg_sep" | "lcmsg_close"} |
   AnyToken & {kind: "lcmsg_open", namespace: string[]}
 
 const open_head: {[k: string]: "call" | "array" | "hash"} =
@@ -61,6 +61,7 @@ export type EntPathItem =  AnyToken & {kind: "var" | "prop", name: string} |
   AnyToken & {kind: "array" | "aref" | "hash" | "href", elements: EntTerm[]}
 
 export type EntNode = AnyToken & {kind: "entity", path: EntPath}
+
 
 export function isVarOrCall(item: EntPathItem)
 : item is {kind: "var" | "call"} & EntPathItem {

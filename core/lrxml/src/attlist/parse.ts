@@ -1,5 +1,5 @@
 import {
-  Range, RangeLine, ParserContext, TokenT, AnyToken
+  RangeLine, ParserContext, TokenT, AnyToken
 } from '../context'
 
 import { AttToken, isAttToken, AttBare, AttSq, AttDq, AttNest, AttIdentPlus, TokenContent } from '../attlist/tokenize'
@@ -18,9 +18,9 @@ export type StringTerm = (BareStringTerm | QuotedStringTerm) &
 
 export type NestedTerm = {kind: AttNest} & BaseTerm<AttItem[]>;
 
-type EntTerm = (EntNode & {comment: string[]})
+type EntTermWComment = (EntNode & {comment: string[]})
 
-export type Term = IdentplusTerm | StringTerm | NestedTerm | EntTerm
+export type Term = IdentplusTerm | StringTerm | NestedTerm | EntTermWComment
 
 export type Label = IdentplusTerm | NestedTerm
 
@@ -175,7 +175,7 @@ function term_nest<U extends TokenT<string>>(
 function term_entity<U extends TokenT<string>>(
   ctx: ParserContext, lex: Generator<U,any,any>,
   token: EntNode
-): EntTerm {
+): EntTermWComment {
   // XXX: Evil cast
   return {comment: [], ...(token as unknown as EntNode)}
 }

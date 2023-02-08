@@ -9,7 +9,7 @@ import { Payload } from '../multipart/parse'
 
 import { tokenize_attlist, AttToken } from '../attlist/tokenize'
 
-import { parse_entpath, re_entity_open, re_lcmsg, EntNode, EntPrefixMatch, LCMsg } from '../entity/parse'
+import { parse_entpath, re_entity_open, re_lcmsg, EntNode, EntPrefixMatch, LCMsgToken } from '../entity/parse'
 
 import { re_join, re_lookahead } from '../utils/regexp'
 
@@ -51,7 +51,7 @@ export type TagClose = AnyToken & {
 type EntOpen = AnyToken & {kind: "entpath_open", name: string}
 
 export type Token = Text | Comment | PI |
-  TagOpen | AttToken | TagClose | EntOpen | EntNode | LCMsg
+  TagOpen | AttToken | TagClose | EntOpen | EntNode | LCMsgToken
 
 function* splitline(ctx: ParserContext, prefix: Range): Generator<Token> {
   let offset = prefix.start

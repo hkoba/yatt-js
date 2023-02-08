@@ -9,12 +9,12 @@ import { re_join } from '../utils/regexp'
 
 import { AttToken, tokenize_attlist } from '../attlist/tokenize'
 
-export type Text      = {kind: "text"}       & AnyToken
-export type Comment   = {kind: "comment", innerRange: Range}    & AnyToken
-export type DeclBegin = {kind: "decl_begin", detail: string} & AnyToken
-export type DeclEnd   = {kind: "decl_end"}   & AnyToken
+export type MPText      = {kind: "text"}       & AnyToken
+export type MPComment   = {kind: "comment", innerRange: Range}    & AnyToken
+export type MPDeclBegin = {kind: "decl_begin", detail: string} & AnyToken
+export type MPDeclEnd   = {kind: "decl_end"}   & AnyToken
 
-export type Chunk = Text | Comment | DeclBegin | AttToken | DeclEnd
+export type Chunk = MPText | MPComment | MPDeclBegin | AttToken | MPDeclEnd
 
 type DeclMatch = { comment?: string, declname?: string, prefix?: string }
 
