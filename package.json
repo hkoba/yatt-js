@@ -6,6 +6,7 @@
   "workspaces": [
     "core/lrxml",
     "core/codegen0",
+    "adapter/express",
     "util/xhf"
   ],
   "scripts": {

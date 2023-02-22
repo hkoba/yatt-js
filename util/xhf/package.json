@@ -32,5 +32,9 @@
     "ts-node": "^10.1.0",
     "typescript": "^4.4.2"
   },
-  "homepage": "https://github.com/hkoba/yatt-js#readme"
+  "homepage": "https://github.com/hkoba/yatt-js#readme",
+  "types": "./dist/index.d.ts",
+  "directories": {
+    "test": "test"
+  }
 }

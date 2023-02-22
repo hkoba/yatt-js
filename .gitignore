@@ -10,3 +10,4 @@ lib/example
 lib/src
 lib/test
 example/dist
+.npmrc
