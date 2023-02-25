@@ -11,6 +11,7 @@ export type CodeFragmentPayload = {
 }
 
 export type CodeFragmentRec =
+  {kind: 'type', annotation: CodeFragment[]} |
   {kind: 'name'} & CodeFragmentPayload |
   {kind: 'other'} & CodeFragmentPayload
 
@@ -22,7 +23,7 @@ export function isCodeFragment<T>(arg: CodeFragment | T): arg is CodeFragment {
   if (arg instanceof Array)
     return true
   const kind = (arg as CodeFragmentRec).kind;
-  return kind === 'name' || kind === 'other'
+  return kind === 'name' || kind === 'type' || kind === 'other'
 }
 
 export function joinAsArray<T>(sep: T, list: T[]): T[] {
@@ -35,17 +36,20 @@ export function joinAsArray<T>(sep: T, list: T[]): T[] {
   }, [])
 }
 
+export type CodeFragmentFinalizerOptions = {
+  debug?: number,
+  ts?: boolean,
+  sourceMapOptions?: {
+    file?: string
+    sourceRoot?: string
+  }
+}
+
 export function finalize_codefragment(
   source: string,
   file: string,
   fragments: CodeFragment[],
-  options: {
-    debug?: number,
-    sourceMapOptions?: {
-      file?: string
-      sourceRoot?: string
-    }
-  }
+  options: CodeFragmentFinalizerOptions
 ): {outputText: string, sourceMapText: string} {
 
   if (options.debug && options.debug >= 2) {
@@ -56,6 +60,7 @@ export function finalize_codefragment(
   const line = 1
   const outputCtx = {
     debug: options.debug ?? 0,
+    ts: options.ts ?? true,
     line, lineStart: 0, generator, outputText: ""
   }
 
@@ -69,6 +74,7 @@ export function finalize_codefragment(
 }
 
 type OutputContext = {
+  ts: boolean
   debug: number
   line: number
   lineStart: number
@@ -104,6 +110,12 @@ function finalize_codefragment_1(
     }
     else {
       switch (item.kind) {
+        case "type": {
+          if (outputCtx.ts) {
+            finalize_codefragment_1(source, file, item.annotation, outputCtx)
+          }
+          break
+        }
         case "other": case "name": {
           if (item.source == null) {
             appendText(outputCtx, item.code)

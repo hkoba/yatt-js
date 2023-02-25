@@ -1,4 +1,3 @@
-import {Node} from '@yatt/lrxml'
 import {CodeGenContext, Part} from '../context'
 import {VarScope} from '../varscope'
 import {varTypeExpr} from './vartype'
@@ -7,7 +6,7 @@ import {CodeFragment, joinAsArray} from '../codefragment'
 
 export function generate_argdecls<T extends Part>(
   ctx: CodeGenContext<T>, _scope: VarScope, widget: T
-): CodeFragment {
+): CodeFragment[] {
   const args: CodeFragment[] = []
   const types: CodeFragment[] = []
   for (const [name, varSpec] of widget.argMap.entries()) {
@@ -28,10 +27,13 @@ export function generate_argdecls<T extends Part>(
 
   }
   return [
-    "{",
+    ["{",
     joinAsArray(', ', args),
-    "}: {",
-    joinAsArray('; ', types),
-    "}"
+    "}",
+    {kind: "type", annotation: [
+      ": {",
+      joinAsArray('; ', types),
+      "}"
+    ]}]
   ]
 }

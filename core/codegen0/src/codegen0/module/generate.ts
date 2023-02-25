@@ -6,8 +6,6 @@ import {YattConfig, primaryNS} from '../../config'
 
 import {
   build_template_declaration
-  , TemplateDeclaration
-  , BuilderContextClass
 } from '../../declaration'
 
 import {srcDir, templatePath} from '../../path'
@@ -33,6 +31,7 @@ export function generate_module(
   filename: string,
   source: string, config: YattConfig & {
     macro?: Partial<CGenMacro>,
+    es?: boolean
   }
 ): TranspileOutput
 {
@@ -65,9 +64,9 @@ export function generate_module(
   if (config.entFnsFile) {
     const nsName = primaryNS(builderSession.params);
     program.push(`import * as \$${nsName} from '${config.entFnsFile}'\n`)
-    program.push(`import type {Connection} from '${config.entFnsFile}'\n`)
+    program.push({kind: 'type', annotation: [`import type {Connection} from '${config.entFnsFile}'\n`]})
   } else {
-    program.push(`type Connection = yatt.runtime.Connection\n`)
+    program.push({kind: 'type', annotation: [`type Connection = yatt.runtime.Connection\n`]})
   }
 
   const importListPos = program.length
@@ -104,7 +103,9 @@ export function generate_module(
     ))
   }
 
-  const output = finalize_codefragment(source, filename, program, {})
+  const output = finalize_codefragment(source, filename, program, {
+    ts: !(config.es ?? false)
+  })
 
   return {
     templateName, template,

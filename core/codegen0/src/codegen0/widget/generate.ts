@@ -5,7 +5,7 @@ import {VarScope} from '../varscope'
 import {generate_argdecls} from './argdecls'
 import {generate_body} from './body'
 
-import {CodeFragment} from '../codefragment'
+import {CodeFragment, joinAsArray} from '../codefragment'
 
 export function generate_widget(ctx: WidgetGenContext, nodeList: BodyNode[])
  : CodeFragment
@@ -24,19 +24,18 @@ export function generate_widget(ctx: WidgetGenContext, nodeList: BodyNode[])
 
   const argDecls = generate_argdecls(ctx, scope, ctx.part);
 
-  const implicitArgs = []
+  const implicitArgs: CodeFragment[] = []
   let bodyPreamble = ""
   if (ctx.hasThis) {
-    implicitArgs.push(`this: typeof ${ctx.session.templateName.join('.')}`)
+    implicitArgs.push(['this', {kind: "type", annotation: [`: typeof ${ctx.session.templateName.join('.')}`]}])
     bodyPreamble += `const $this = this`;
   }
-  implicitArgs.push(`CON: ${ctx.session.params.connectionTypeName}`)
+  implicitArgs.push(['CON', {kind: "type", annotation: [`: ${ctx.session.params.connectionTypeName}`]}])
 
   // XXX: default value
   // XXX: tmpl name
   program.push(
-    "(" + implicitArgs.join(', ') + ", ",
-    argDecls,
+    "(", joinAsArray(', ', implicitArgs.concat(argDecls)),
     ") {" + bodyPreamble + "\n",
   )
 
