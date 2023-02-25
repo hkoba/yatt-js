@@ -18,7 +18,7 @@ import {generate_entity} from '../entity/generate'
 
 import {generate_action} from '../action/generate'
 
-import {CodeFragment} from '../codefragment'
+import {CodeFragment, typeAnnotation} from '../codefragment'
 
 import {TranspileOutput} from '../output'
 
@@ -64,9 +64,9 @@ export function generate_module(
   if (config.entFnsFile) {
     const nsName = primaryNS(builderSession.params);
     program.push(`import * as \$${nsName} from '${config.entFnsFile}'\n`)
-    program.push({kind: 'type', annotation: [`import type {Connection} from '${config.entFnsFile}'\n`]})
+    program.push(typeAnnotation(`import type {Connection} from '${config.entFnsFile}'\n`))
   } else {
-    program.push({kind: 'type', annotation: [`type Connection = yatt.runtime.Connection\n`]})
+    program.push(typeAnnotation(`type Connection = yatt.runtime.Connection\n`))
   }
 
   const importListPos = program.length

@@ -36,6 +36,10 @@ export function joinAsArray<T>(sep: T, list: T[]): T[] {
   }, [])
 }
 
+export function typeAnnotation(...arg: CodeFragment[]): CodeFragment {
+  return {kind: 'type', annotation: arg}
+}
+
 export type CodeFragmentFinalizerOptions = {
   debug?: number,
   ts?: boolean,
