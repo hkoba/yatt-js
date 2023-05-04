@@ -25,7 +25,9 @@ export type ParserSession = {
   // parent?: ParserSession
 }
 
-export function session_range_text<S extends {source: string}>(session: S, range: Range): string {
+export function session_range_text<S extends {source: string}>(
+  session: S, range: Range
+): string {
   return range_text(session.source, range)
 }
 
@@ -61,7 +63,9 @@ export class ScanningContext<S extends ParserSession> {
     }
   }
 
-  range_of<T extends RangeLine>(data: T, startOffset: number = 0, endOffset: number = 0): RangeLine {
+  range_of<T extends RangeLine>(
+    data: T, startOffset: number = 0, endOffset: number = 0
+  ): RangeLine {
     return {
       line: data.line,
       start: data.start + startOffset,
@@ -138,10 +142,13 @@ export class ScanningContext<S extends ParserSession> {
     const index = token.start + (options?.index ?? 0);
     const [lastNl, lineNo, colNo] = extract_prefix_spec(this.session.source, index)
     const tokenLine = extract_line(this.session.source, lastNl, colNo)
-    const fileInfo = this.session.filename ? ` at ${this.session.filename}` : ""
-    const longMessage = `${message} for token ${token.kind}${fileInfo} line ${lineNo} column ${colNo}`
+    let fileInfo = this.session.filename ? ` at ${this.session.filename}` : ""
+    fileInfo += ` line ${lineNo} column ${colNo}`
+    const longMessage = `${message} for token ${token.kind}${fileInfo}`
 
-    const [numLines, endCharacter] = extract_suffix_spec(this.session.source, token.start, token.end)
+    const [numLines, endCharacter] = extract_suffix_spec(
+      this.session.source, token.start, token.end
+    )
     const startLine = lineNo-1
     const startCharacter = colNo-1;
     const endLine = startLine + numLines
@@ -307,12 +314,19 @@ function trim_input(match: RegExpExecArray | null) {
   return obj
 }
 
-export function parserSession(v: {source: string, filename?: string, config: LrxmlConfig}) : ParserSession {
+export function parserSession(v: {
+  source: string, filename?: string, config: LrxmlConfig
+}) : ParserSession {
 
-  return {source: v.source, filename: v.filename, params: lrxmlParams(v.config), patterns: {}}
+  return {
+    source: v.source, filename: v.filename, params: lrxmlParams(v.config),
+    patterns: {}
+  }
 }
 
-export function parserContext(v: {source: string, filename?: string, config: LrxmlConfig}): ParserContext {
+export function parserContext(v: {
+  source: string, filename?: string, config: LrxmlConfig
+}): ParserContext {
 
   return new ParserContext(parserSession(v))
 }

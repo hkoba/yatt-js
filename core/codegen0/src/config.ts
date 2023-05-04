@@ -16,7 +16,9 @@ export type YattParams = LrxmlParams & {
     codegen?: number
   }
 }
-export type YattConfig = Partial<Omit<YattParams, 'libDirs'>> & {libDirs?: string | string[]};
+export type YattConfig = Partial<Omit<YattParams, 'libDirs'>> & {
+  libDirs?: string | string[]
+};
 
 export function primaryNS(params: YattParams): string {
   return params.namespace[0]
