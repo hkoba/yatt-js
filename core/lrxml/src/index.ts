@@ -3,11 +3,12 @@ export {lrxmlParams} from './config'
 
 export type {
   Range, ParserSession,
-  AnyToken, TokenT, TokenError
+  AnyToken, TokenT
 } from './context'
 
 export {
   parserContext, parserSession, ParserContext, ScanningContext,
+  TokenError,
   range_text,
 } from './context'
 
