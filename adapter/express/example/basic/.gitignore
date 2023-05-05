@@ -2,3 +2,7 @@ gen/
 *.js
 *.d.ts
 *.map
+src/pages.ts
+src/pages/.htyattrc.ts
+src/pages/index.ts
+src/yatt.ts

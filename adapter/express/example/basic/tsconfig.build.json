@@ -1,6 +1,14 @@
 {
   "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "rootDir": "src",
+    "rootDirs": [],
+  },
   "exclude": [
+    "gen*",
+    "build",
+    "yatt",
     "build.ts",
     "test",
     "example",

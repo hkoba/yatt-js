@@ -2,9 +2,15 @@ import {LrxmlParams, lrxmlParams} from '@yatt/lrxml'
 
 export const yattRcFile = ".htyattrc"
 
-export type YattParams = LrxmlParams & {
+export type YattProjectParams = {
+  yattSrcRoot: string;
+  rootDir?: string;
+  libDirs: string[];
   outDir?: string;
-  libDirs: string[]
+  linkDir?: string;
+}
+
+export type YattParams = LrxmlParams & YattProjectParams & {
   lookup_subdirectory_first: boolean
   templateNamespace?: string;
   exportNamespace?: boolean;
@@ -35,6 +41,7 @@ export function yattParams(
   const lrxmlDefault = lrxmlParams(config)
   let {
     outDir,
+    yattSrcRoot = './',
     libDirs = [],
     lookup_subdirectory_first = false,
     templateNamespace,
@@ -47,6 +54,7 @@ export function yattParams(
   return {
     ...lrxmlDefault,
     outDir,
+    yattSrcRoot,
     libDirs: typeof(libDirs) === "string" ? [libDirs] : libDirs,
     lookup_subdirectory_first,
     templateNamespace,

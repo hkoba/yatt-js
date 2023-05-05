@@ -42,6 +42,20 @@ export function pathUnderRootDir(filename: string, rootDir?: string): string | u
   }
 }
 
+export function prefixUnderRootDir(filename: string, rootDir?: string): string {
+  const dir = pathUnderRootDir(path.dirname(filename), rootDir)
+  if (dir == null) {
+    return "./"
+  } else {
+    return prefixPath(dir)
+  }
+}
+
+export function prefixPath(dir: string): string {
+  return Array.from(path.dirname(dir).split(path.sep)
+                    , (_) => "..").join(path.sep) + "/"
+}
+
 export function guessRootDir(fileList: string[]): string {
   const path = longestPrefixDir(fileList)
   if (path == null || path === "") {
@@ -74,19 +88,27 @@ export function longestPrefixDir(fileList: string[]): string | undefined {
 }
 
 export function outFileName(filename: string, newExt: string, config: YattConfig): string {
-  const ext = path.extname(filename)
   if (config.outDir != null && config.outDir !== "") {
-    if (config.rootDir == null || config.rootDir === "")
-      throw new Error(`rootDir should not be empty when outDir is specified`);
-    const subName = pathUnderRootDir(filename, config.rootDir)
+    if (config.yattSrcRoot == null || config.yattSrcRoot === ""
+      || config.yattSrcRoot === "./")
+      throw new Error(`yattSrcRoot should not be empty when outDir is specified`);
+    console.log(`filename=${filename}, yattSrcRoot=${config.yattSrcRoot}`)
+    const subName = pathUnderRootDir(filename, config.yattSrcRoot)
+    console.log(` => subName = ${subName}`)
     if (subName == null)
-      throw new Error(`Can\'t determine outFileName for ${filename} under rootDir ${config.rootDir}`);
+      throw new Error(`Can\'t determine outFileName for ${filename} under yattSrcRoot ${config.yattSrcRoot}`);
     // XXX: rewrite with rootname()
-    const rootName = path.join(path.dirname(subName), path.basename(subName, ext))
-    return path.join(config.outDir, rootName + newExt)
+    const rootName = fileNameWithNewExt(subName, newExt)
+    return path.join(config.outDir, rootName)
   } else {
-    return path.join(path.dirname(filename), path.basename(filename, ext) + newExt)
+    return fileNameWithNewExt(filename, newExt)
   }
+}
+
+export function fileNameWithNewExt(filename: string, newExt: string): string {
+  const ext = path.extname(filename)
+  return path.join(path.dirname(filename)
+                   , path.basename(filename, ext) + newExt)
 }
 
 export function rootname(fn: string): string {
@@ -115,6 +137,12 @@ if (module.id === ".") {
       console.log(longestPrefixDir(args)); break
     case "templatePath":
       console.log(templatePath(args[0], args[1])); break;
+    case "pathUnderRootDir":
+      console.log(pathUnderRootDir(args[0], args[1])); break;
+    case "prefixUnderRootDir":
+      console.log(prefixUnderRootDir(args[0], args[1])); break;
+    case "prefixPath":
+      console.log(prefixPath(args[0])); break;
     default:
       console.error(`Unknown command: ${cmd}`);
   }

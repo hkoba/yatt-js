@@ -8,7 +8,7 @@ import {
   build_template_declaration
 } from '../../declaration'
 
-import {srcDir, templatePath} from '../../path'
+import {srcDir, templatePath, prefixUnderRootDir} from '../../path'
 
 import {CodeGenContextClass, finalize_codefragment} from '../context'
 
@@ -27,6 +27,7 @@ import {builtinMacros} from '../macro/'
 
 import {list_entity_functions} from './list_entity_functions'
 
+import {existsSync} from "node:fs"
 import * as Path from "node:path"
 
 export function generate_module(
@@ -42,7 +43,7 @@ export function generate_module(
     Path.join(Path.dirname(filename), yattRcFile)
   )
 
-  // console.log(`entFns: `, entFns)
+  console.log(`entFns: `, entFns)
 
   const [template, builderSession] = build_template_declaration(
     filename, source, {
@@ -63,11 +64,19 @@ export function generate_module(
   }
 
   let program: CodeFragment[] = []
-  program.push(`import {yatt} from '${srcDir}/yatt'\n`);
-  if (config.entFnsFile) {
+
+  const rootPrefix = prefixUnderRootDir(filename, config.yattSrcRoot)
+  // XXX: yatt => yatt-runtime
+  if (existsSync(`${config.yattSrcRoot}/yatt.ts`)) {
+    program.push(`import {yatt} from '${rootPrefix}yatt'\n`);
+  } else {
+    program.push(`import {yatt} from '${srcDir}/yatt'\n`);
+  }
+
+  if (Object.keys(entFns).length) {
     const nsName = primaryNS(builderSession.params);
-    program.push(`import * as \$${nsName} from '${config.entFnsFile}'\n`)
-    program.push(typeAnnotation(`import type {Connection} from '${config.entFnsFile}'\n`))
+    program.push(`import * as \$${nsName} from './${yattRcFile}'\n`)
+    program.push(typeAnnotation(`import type {Connection} from './${yattRcFile}'\n`))
   } else {
     program.push(typeAnnotation(`type Connection = yatt.runtime.Connection\n`))
   }
