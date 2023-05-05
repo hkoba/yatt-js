@@ -1,12 +1,13 @@
 import {LrxmlParams, lrxmlParams} from '@yatt/lrxml'
 
+export const yattRcFile = ".htyattrc"
+
 export type YattParams = LrxmlParams & {
   outDir?: string;
   libDirs: string[]
   lookup_subdirectory_first: boolean
   templateNamespace?: string;
   exportNamespace?: boolean;
-  entFnsFile?: string,
   connectionTypeName: string,
   noEmit: boolean;
   body_argument_name: string;
@@ -38,7 +39,6 @@ export function yattParams(
     lookup_subdirectory_first = false,
     templateNamespace,
     exportNamespace,
-    entFnsFile,
     connectionTypeName = 'Connection',
     noEmit = false,
     body_argument_name = "BODY",
@@ -51,7 +51,6 @@ export function yattParams(
     lookup_subdirectory_first,
     templateNamespace,
     exportNamespace,
-    entFnsFile,
     connectionTypeName,
     noEmit,
     body_argument_name

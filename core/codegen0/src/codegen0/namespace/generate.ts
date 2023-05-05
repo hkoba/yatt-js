@@ -15,7 +15,7 @@ import {generate_entity} from '../entity/generate'
 
 import {generate_action} from '../action/generate'
 
-// import {entFnPrefix} from '../../config'
+import {yattRcFile} from '../../config'
 
 import {srcDir, templatePath} from '../../path'
 
@@ -43,7 +43,7 @@ export function generate_namespace(
 {
 
   const rootDir = Path.dirname(Path.dirname(Path.resolve(filename)))
-  const entFnFile = `${rootDir}/root/entity-fn.ts`
+  const entFnFile = `${rootDir}/root/${yattRcFile}.ts`
 
   const entFns = statSync(entFnFile, {throwIfNoEntry: false}) ?
     list_entity_functions(

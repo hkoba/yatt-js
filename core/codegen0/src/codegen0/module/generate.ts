@@ -2,7 +2,7 @@
 
 import {parse_template} from '@yatt/lrxml'
 
-import {YattConfig, primaryNS} from '../../config'
+import {YattConfig, primaryNS, yattRcFile} from '../../config'
 
 import {
   build_template_declaration
@@ -27,6 +27,8 @@ import {builtinMacros} from '../macro/'
 
 import {list_entity_functions} from './list_entity_functions'
 
+import * as Path from "node:path"
+
 export function generate_module(
   filename: string,
   source: string, config: YattConfig & {
@@ -35,9 +37,10 @@ export function generate_module(
   }
 ): TranspileOutput
 {
-  const entFnsFile = config.entFnsFile ?? "entity-fn"
 
-  const entFns: {[k: string]: any} = list_entity_functions(entFnsFile)
+  const entFns: {[k: string]: any} = list_entity_functions(
+    Path.join(Path.dirname(filename), yattRcFile)
+  )
 
   // console.log(`entFns: `, entFns)
 
