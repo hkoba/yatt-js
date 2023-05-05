@@ -1,8 +1,8 @@
 #!/usr/bin/env ts-node
 
-import * as Path from 'path'
+import * as Path from 'node:path'
 
-import * as Fs from 'fs'
+import * as Fs from 'node:fs'
 
 import {YattConfig} from '../config'
 
@@ -172,7 +172,7 @@ if (module.id === ".") {
     let [...args] = process.argv.slice(2)
 
     // const Fs = await import("fs")
-    // const Path = await import("path")
+    // const Path = await import("node:path")
 
     const {parse_long_options} = await import('@yatt/lrxml')
     const {build_template_declaration} = await import("../declaration/")

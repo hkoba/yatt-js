@@ -1,7 +1,7 @@
 #!/usr/bin/env ts-node
 
 // XXX: Remove node path dependencies
-import path from 'path'
+import path from 'node:path'
 import {strictEqual} from 'assert'
 
 import {YattConfig} from './config'

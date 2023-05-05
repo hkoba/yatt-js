@@ -310,7 +310,7 @@ import {compile, makeProgram} from '../core/codegen0/src/utils/compileTs'
 (async () => {
   let args = process.argv.slice(2)
   const { parse_long_options } = await import('@yatt/lrxml')
-  const { readFileSync } = await import('fs')
+  const { readFileSync } = await import('node:fs')
   const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
   let config = {
     debug: { declaration: debugLevel },

@@ -82,7 +82,7 @@ export function* tokenizer(str: string): Generator<XHF_Token[]> {
 
 if (module.id === ".") {
   (async () => {
-    const fs = await import('fs')
+    const fs = await import('node:fs')
 
     // console.log(re_item)
 

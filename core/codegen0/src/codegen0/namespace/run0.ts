@@ -4,8 +4,7 @@ import {generate_namespace} from './generate'
 
 import {YattConfig} from '../../config'
 
-// XXX: Remove node path dependencies
-import {readFileSync} from 'fs'
+import {readFileSync} from 'node:fs'
 
 import {compile, makeProgram, reportDiagnostics} from '../../utils/compileTs'
 

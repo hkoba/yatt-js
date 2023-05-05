@@ -130,7 +130,7 @@ function parse_expression(token: XHF_Token) {
 
 if (module.id === ".") {
   (async () => {
-    const fs = await import('fs')
+    const fs = await import('node:fs')
     const {promisify} = await import('util')
 
     const write = promisify(process.stdout.write.bind(process.stdout))

@@ -129,8 +129,8 @@ export function generate_module(
 if (module.id === '.') {
   (async () => {
     const { parse_long_options } = await import('@yatt/lrxml')
-    const { readFileSync } = await import('fs')
-    const Path = await import('path')
+    const { readFileSync } = await import('node:fs')
+    const Path = await import('node:path')
 
     let args = process.argv.slice(2)
     const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0

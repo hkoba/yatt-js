@@ -28,9 +28,8 @@ import {TranspileOutput} from '../output'
 
 import {list_entity_functions} from './list_entity_functions'
 
-// XXX: Remove node path dependencies
-import * as Path from 'path'
-import {statSync} from 'fs'
+import * as Path from 'node:path'
+import {statSync} from 'node:fs'
 
 export const DEFAULT_NAMESPACE = '$tmpl'
 
@@ -123,7 +122,7 @@ export function generate_namespace_from_template(
 if (module.id === '.') {
   (async () => {
     const { parse_long_options } = await import('@yatt/lrxml')
-    const { readFileSync } = await import('fs')
+    const { readFileSync } = await import('node:fs')
 
     let args = process.argv.slice(2)
     const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0

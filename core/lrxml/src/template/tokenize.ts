@@ -180,7 +180,7 @@ export function* tokenize(session: ParserSession, payloadList: Payload[]): Gener
 
 if (module.id === ".") {
   (async () => {
-    const { readFileSync } = await import('fs')
+    const { readFileSync } = await import('node:fs')
     const [_cmd, _script, ...args] = process.argv;
     const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0;
 

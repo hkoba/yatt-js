@@ -6,9 +6,8 @@ import {YattConfig} from '../../config'
 
 import {generate_namespace} from './generate'
 
-// XXX: Remove node path dependencies
-import {readFileSync, writeFileSync} from 'fs'
-import * as Path from 'path'
+import {readFileSync, writeFileSync} from 'node:fs'
+import * as Path from 'node:path'
 
 import {longestPrefixDir, srcDir} from '../../path'
 

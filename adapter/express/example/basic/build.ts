@@ -1,7 +1,7 @@
 #!/usr/bin/env ts-node
 
-import fs from 'fs'
-import * as Path from 'path'
+import fs from 'node:fs'
+import * as Path from 'node:path'
 
 import {glob} from 'glob'
 

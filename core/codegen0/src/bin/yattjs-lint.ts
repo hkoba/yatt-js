@@ -6,8 +6,8 @@ import {longestPrefixDir} from '../path'
 import {generate_namespace} from '../codegen0/namespace/generate'
 import {generate_module} from '../codegen0/module/generate'
 
-import * as Path from 'path'
-import {readFileSync, existsSync} from 'fs'
+import * as Path from 'node:path'
+import {readFileSync, existsSync} from 'node:fs'
 
 import { parse_long_options } from '@yatt/lrxml'
 

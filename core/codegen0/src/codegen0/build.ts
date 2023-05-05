@@ -7,9 +7,8 @@ import {longestPrefixDir, outFileName} from '../path'
 import {generate_namespace} from './namespace/generate'
 import {generate_module} from './module/generate'
 
-// XXX: Remove node path dependencies
-import {readFileSync, writeFileSync} from 'fs'
-import * as Path from 'path'
+import {readFileSync, writeFileSync} from 'node:fs'
+import * as Path from 'node:path'
 
 export function build(fileList: string[], config: YattConfig) {
   if (config.rootDir == null) {

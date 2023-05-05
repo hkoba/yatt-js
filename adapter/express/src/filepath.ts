@@ -1,7 +1,7 @@
 #!/usr/bin/env ts-node
 
-import * as Path from 'path'
-import fs from 'fs'
+import * as Path from 'node:path'
+import fs from 'node:fs'
 
 export type FilePath = {
   rootDir: string

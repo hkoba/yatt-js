@@ -1,7 +1,7 @@
 #!/usr/bin/env ts-node
 
 import {glob} from 'glob'
-import * as Path from 'path'
+import * as Path from 'node:path'
 
 import * as cgen from '@yatt/codegen0'
 

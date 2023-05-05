@@ -371,7 +371,7 @@ if (module.id === ".") {
     }
     parse_long_options(args, {target: config})
 
-    const { readFileSync } = await import('fs')
+    const { readFileSync } = await import('node:fs')
 
     console.time('run');
     for (const fn of args) {

@@ -209,7 +209,7 @@ function parse_lcmsg(ctx: ParserContext, lex: Generator<Token>)
 
 if (module.id === ".") {
   (async () => {
-    const { readFileSync } = await import('fs')
+    const { readFileSync } = await import('node:fs')
     const [_cmd, _script, ...args] = process.argv;
 
     const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0;

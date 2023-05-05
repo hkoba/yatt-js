@@ -16,7 +16,7 @@ export function* paragraph(str: string): Generator<Paragraph> {
 
 if (module.id === ".") {
   (async () => {
-    const fs = await import('fs')
+    const fs = await import('node:fs')
 
     for (const fileName of process.argv.slice(2)) {
       const str = fs.readFileSync(fileName, {encoding: 'utf-8'})
