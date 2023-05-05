@@ -18,9 +18,9 @@ export type YattParams = LrxmlParams & YattProjectParams & {
   noEmit: boolean;
   body_argument_name: string;
   debug: {
-    parser?: number,
+    codegen?: number,
     declaration?: number,
-    codegen?: number
+    parser?: number
   }
 }
 export type YattConfig = Partial<Omit<YattParams, 'libDirs'>> & {
