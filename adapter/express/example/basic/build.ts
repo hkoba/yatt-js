@@ -18,26 +18,40 @@ async function build(origConfig: cgen.YattConfig) {
     console.log(`project style:`, config.projectStyle, cgen.extractProjectStyle(config))
   }
 
-  const publicSubDir = Path.basename(config.rootDir)
-
   const rootDir = config.rootDir.replace(/\/$/, '')
   console.log('rootDir:', rootDir)
 
-  if (config.outDir && ! fs.existsSync(config.outDir)) {
-    console.log(`mkdir: ${config.outDir}`)
-    fs.mkdirSync(config.outDir)
-  }
+  generate_runtime(rootDir, config)
+
+  const pagesMap = generate_pages(rootDir, config)
+
+  generate_router(pagesMap, config)
+
+}
+
+function generate_runtime(rootDir: string, config: YattParams) {
+  if (config.noEmit) return
 
   const yattRuntimeFile = rootDir.replace(/[^\/]+$/, 'yatt.ts');
   if (! fs.existsSync(yattRuntimeFile)) {
     fs.copyFileSync(cgen.path.srcDir + '/yatt.ts', yattRuntimeFile)
     console.log(`Copied ${yattRuntimeFile} from ${cgen.path.srcDir}`)
   }
-  if (!config.noEmit && config.linkDir) {
+  if (config.linkDir) {
     ensureSymlink(Path.join(cgen.path.prefixPath(config.linkDir)
                             , yattRuntimeFile)
                   , Path.join(config.linkDir, 'yatt.ts'))
   }
+}
+
+function generate_pages(rootDir: string, config: YattParams): pageMapType {
+
+  if (!config.noEmit && config.outDir && ! fs.existsSync(config.outDir)) {
+    console.log(`mkdir: ${config.outDir}`)
+    fs.mkdirSync(config.outDir)
+  }
+
+  const publicSubDir = Path.basename(rootDir)
 
   const pagesMap: pageMapType = new Map;
   for (const fn of glob.sync('**/*.ytjs', {root: rootDir, cwd: rootDir})) {
@@ -89,9 +103,7 @@ async function build(origConfig: cgen.YattConfig) {
     }
   }
 
-
-  generate_router(pagesMap, config)
-
+  return pagesMap
 }
 
 function generate_router(pagesMap: pageMapType, config: YattParams) {
