@@ -31,7 +31,7 @@ export function templatePath(filename: string, rootDir?: string): string[] {
 }
 
 export function pathUnderRootDir(filename: string, rootDir?: string): string | undefined {
-  if (rootDir == null || rootDir === '') {
+  if (rootDir == null || rootDir === '' || rootDir === './') {
     return path.basename(filename);
   } else {
     strictEqual(rootDir.charAt(rootDir.length-1), path.sep
