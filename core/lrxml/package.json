@@ -14,7 +14,7 @@
     "clean": "rm -rf lib types",
     "b": "tsc -p tsconfig.build.json",
     "build": "npm run clean && rollup -c",
-    "watch": "npm run clean && rollup -c -w",
+    "watch": "rollup -c -w",
     "test": "tap"
   },
   "author": "",
