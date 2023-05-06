@@ -10,7 +10,7 @@ import { YattParams } from '@yatt/codegen0'
 
 type pageMapType = Map<string, cgen.TemplateDeclaration>
 
-async function build(origConfig: cgen.YattConfig) {
+export async function build(origConfig: cgen.YattConfig) {
 
   const config = cgen.yattParams(origConfig)
 
@@ -21,7 +21,7 @@ async function build(origConfig: cgen.YattConfig) {
   const rootDir = config.rootDir.replace(/\/$/, '')
   console.log('rootDir:', rootDir)
 
-  generate_runtime(rootDir, config)
+  generate_runtime(config.rootDir, config)
 
   const pagesMap = generate_pages(rootDir, config)
 
@@ -32,7 +32,7 @@ async function build(origConfig: cgen.YattConfig) {
 function generate_runtime(rootDir: string, config: YattParams) {
   if (config.noEmit) return
 
-  const yattRuntimeFile = rootDir.replace(/[^\/]+$/, 'yatt.ts');
+  const yattRuntimeFile = Path.join(config.yattSrcPrefix ?? rootDir, 'yatt.ts');
   if (! fs.existsSync(yattRuntimeFile)) {
     fs.copyFileSync(cgen.path.srcDir + '/yatt.ts', yattRuntimeFile)
     console.log(`Copied ${yattRuntimeFile} from ${cgen.path.srcDir}`)
@@ -51,7 +51,7 @@ function generate_pages(rootDir: string, config: YattParams): pageMapType {
     fs.mkdirSync(config.outDir)
   }
 
-  const publicSubDir = Path.basename(rootDir)
+  const publicSubDir = config.yattSrcPrefix ? Path.basename(rootDir) : ""
 
   const pagesMap: pageMapType = new Map;
   for (const fn of glob.sync('**/*.ytjs', {root: rootDir, cwd: rootDir})) {
@@ -108,7 +108,7 @@ function generate_pages(rootDir: string, config: YattParams): pageMapType {
 
 function generate_router(pagesMap: pageMapType, config: YattParams) {
 
-  const publicSubDir = Path.basename(config.rootDir)
+  const publicSubDir = config.yattSrcPrefix ? Path.basename(config.rootDir) : ""
   const rootDirName = Path.basename(config.rootDir)
 
 
@@ -256,7 +256,6 @@ if (module.id === ".") {
     let args = process.argv.slice(2)
     const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
     let config = {
-      yattSrcPrefix: "yatt/",
       debug: { declaration: debugLevel, build: debugLevel },
       // ext: 'ytjs',
     }

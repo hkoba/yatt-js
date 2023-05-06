@@ -1,2 +1,3 @@
-import {Router} from 'express'
+
+export {build} from './build'
 

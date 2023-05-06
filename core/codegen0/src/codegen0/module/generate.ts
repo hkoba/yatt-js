@@ -22,7 +22,6 @@ import {CodeFragment, typeAnnotation} from '../codefragment'
 
 import {TranspileOutput} from '../output'
 
-import {CGenMacro} from '../macro'
 import {builtinMacros} from '../macro/'
 
 import {list_entity_functions} from './list_entity_functions'
@@ -64,9 +63,10 @@ export function generate_module(
 
   let program: CodeFragment[] = []
 
-  const rootPrefix = prefixUnderRootDir(filename, config.yattSrcPrefix)
+  const preferedRoot = config.yattSrcPrefix ?? config.rootDir
+  const rootPrefix = prefixUnderRootDir(filename, preferedRoot)
   // XXX: yatt => yatt-runtime
-  if (existsSync(`${config.yattSrcPrefix || '.'}/yatt.ts`)) {
+  if (existsSync(`${preferedRoot}/yatt.ts`)) {
     program.push(`import {yatt} from '${rootPrefix}yatt'\n`);
   } else {
     program.push(`import {yatt} from '${srcDir}/yatt'\n`);

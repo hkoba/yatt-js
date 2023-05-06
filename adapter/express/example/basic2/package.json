@@ -4,10 +4,10 @@
   "description": "express example",
   "main": "index.js",
   "scripts": {
-    "start": "node build",
+    "start": "node index.js",
     "clean": "rm -rf gen build && find src/ -type l |xargs -r rm",
-    "build": "../../src/build.ts --yattSrcPrefix=yatt/ && tsc -p tsconfig.build.json",
-    "watch-node": "nodemon build/index.js",
+    "build": "../../src/build.ts --rootDir=pages/ && tsc -p tsconfig.build.json",
+    "watch-node": "nodemon index.js",
     "test": "tap"
   },
   "tap": {
