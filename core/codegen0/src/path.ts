@@ -89,14 +89,14 @@ export function longestPrefixDir(fileList: string[]): string | undefined {
 
 export function outFileName(filename: string, newExt: string, config: YattConfig): string {
   if (config.outDir != null && config.outDir !== "") {
-    if (config.yattSrcRoot == null || config.yattSrcRoot === ""
-      || config.yattSrcRoot === "./")
-      throw new Error(`yattSrcRoot should not be empty when outDir is specified`);
-    console.log(`filename=${filename}, yattSrcRoot=${config.yattSrcRoot}`)
-    const subName = pathUnderRootDir(filename, config.yattSrcRoot)
+    if (config.yattSrcPrefix == null || config.yattSrcPrefix === ""
+      || config.yattSrcPrefix === "./")
+      throw new Error(`yattSrcPrefix should not be empty when outDir is specified`);
+    console.log(`filename=${filename}, yattSrcPrefix=${config.yattSrcPrefix}`)
+    const subName = pathUnderRootDir(filename, config.yattSrcPrefix)
     console.log(` => subName = ${subName}`)
     if (subName == null)
-      throw new Error(`Can\'t determine outFileName for ${filename} under yattSrcRoot ${config.yattSrcRoot}`);
+      throw new Error(`Can\'t determine outFileName for ${filename} under yattSrcPrefix ${config.yattSrcPrefix}`);
     // XXX: rewrite with rootname()
     const rootName = fileNameWithNewExt(subName, newExt)
     return path.join(config.outDir, rootName)

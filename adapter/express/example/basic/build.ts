@@ -7,15 +7,18 @@ import {glob} from 'glob'
 
 import * as cgen from '@yatt/codegen0'
 
-async function build(config: cgen.YattConfig) {
+type pageMapType = Map<string, cgen.TemplateDeclaration>
 
-  const publicSubDir = "pages"
+async function build(origConfig: cgen.YattConfig) {
 
-  // rootDir の trailing slash 問題
+  const config = cgen.yattParams(origConfig)
 
-  if (! config.rootDir) {
-    config.rootDir = config.yattSrcRoot + publicSubDir + '/'
+  if (config.debug?.build) {
+    console.log(`project style:`, config.projectStyle, cgen.extractProjectStyle(config))
   }
+
+  const publicSubDir = Path.basename(config.rootDir)
+
   const rootDir = config.rootDir.replace(/\/$/, '')
   console.log('rootDir:', rootDir)
 
@@ -43,7 +46,7 @@ async function build(config: cgen.YattConfig) {
                   , Path.join(linkDir, 'yatt.ts'))
   }
 
-  const pagesMap: Map<string, cgen.TemplateDeclaration> = new Map;
+  const pagesMap: pageMapType = new Map;
   for (const fn of glob.sync('**/*.ytjs', {root: rootDir, cwd: rootDir})) {
     const filename = Path.join(rootDir, fn)
     const source = fs.readFileSync(filename, {encoding: 'utf-8'})
@@ -238,9 +241,8 @@ if (module.id === ".") {
     let args = process.argv.slice(2)
     const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
     let config = {
-      yattSrcRoot: "yatt/",
-      linkDir: "src/",
-      debug: { declaration: debugLevel },
+      yattSrcPrefix: "yatt/",
+      debug: { declaration: debugLevel, build: debugLevel },
       // ext: 'ytjs',
     }
     parse_long_options(args, {target: config})

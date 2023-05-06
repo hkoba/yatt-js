@@ -9,3 +9,5 @@ export * from './utils/compileTs'
 export * from './yatt'
 
 export * as path from './path'
+
+export * from './project/layout'

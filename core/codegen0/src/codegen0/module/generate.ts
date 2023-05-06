@@ -2,7 +2,7 @@
 
 import {parse_template} from '@yatt/lrxml'
 
-import {YattConfig, primaryNS, yattRcFile} from '../../config'
+import {YattConfig, YattParams, yattParams, primaryNS, yattRcFile} from '../../config'
 
 import {
   build_template_declaration
@@ -32,12 +32,11 @@ import * as Path from "node:path"
 
 export function generate_module(
   filename: string,
-  source: string, config: YattConfig & {
-    macro?: Partial<CGenMacro>,
-    es?: boolean
-  }
+  source: string, origConfig: YattConfig | YattParams
 ): TranspileOutput
 {
+
+  const config = yattParams(origConfig)
 
   const entFns: {[k: string]: any} = list_entity_functions(
     Path.join(Path.dirname(filename), yattRcFile)
@@ -65,9 +64,9 @@ export function generate_module(
 
   let program: CodeFragment[] = []
 
-  const rootPrefix = prefixUnderRootDir(filename, config.yattSrcRoot)
+  const rootPrefix = prefixUnderRootDir(filename, config.yattSrcPrefix)
   // XXX: yatt => yatt-runtime
-  if (existsSync(`${config.yattSrcRoot}/yatt.ts`)) {
+  if (existsSync(`${config.yattSrcPrefix || '.'}/yatt.ts`)) {
     program.push(`import {yatt} from '${rootPrefix}yatt'\n`);
   } else {
     program.push(`import {yatt} from '${srcDir}/yatt'\n`);
