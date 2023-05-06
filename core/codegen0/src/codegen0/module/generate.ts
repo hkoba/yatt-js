@@ -2,7 +2,7 @@
 
 import {parse_template} from '@yatt/lrxml'
 
-import {YattConfig, YattParams, yattParams, primaryNS, yattRcFile} from '../../config'
+import {YattConfig, YattParams, isYattParams, yattParams, primaryNS, yattRcFile} from '../../config'
 
 import {
   build_template_declaration
@@ -36,7 +36,7 @@ export function generate_module(
 ): TranspileOutput
 {
 
-  const config = yattParams(origConfig)
+  const config = isYattParams(origConfig) ? origConfig : yattParams(origConfig)
 
   const entFns: {[k: string]: any} = list_entity_functions(
     Path.join(Path.dirname(filename), yattRcFile)
