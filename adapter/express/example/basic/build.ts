@@ -6,6 +6,7 @@ import * as Path from 'node:path'
 import {glob} from 'glob'
 
 import * as cgen from '@yatt/codegen0'
+import { YattParams } from '@yatt/codegen0'
 
 type pageMapType = Map<string, cgen.TemplateDeclaration>
 
@@ -22,11 +23,7 @@ async function build(origConfig: cgen.YattConfig) {
   const rootDir = config.rootDir.replace(/\/$/, '')
   console.log('rootDir:', rootDir)
 
-  const rootDirName = Path.basename(rootDir)
-
-  config.outDir ??= "./gen"
-
-  if (! fs.existsSync(config.outDir)) {
+  if (config.outDir && ! fs.existsSync(config.outDir)) {
     console.log(`mkdir: ${config.outDir}`)
     fs.mkdirSync(config.outDir)
   }
@@ -36,14 +33,10 @@ async function build(origConfig: cgen.YattConfig) {
     fs.copyFileSync(cgen.path.srcDir + '/yatt.ts', yattRuntimeFile)
     console.log(`Copied ${yattRuntimeFile} from ${cgen.path.srcDir}`)
   }
-  let linkDir
-  if (config.linkDir && config.linkDir !== '' && config.linkDir !== './') {
-    linkDir = config.linkDir
-  }
-  if (!config.noEmit && linkDir) {
-    ensureSymlink(Path.join(cgen.path.prefixPath(linkDir)
+  if (!config.noEmit && config.linkDir) {
+    ensureSymlink(Path.join(cgen.path.prefixPath(config.linkDir)
                             , yattRuntimeFile)
-                  , Path.join(linkDir, 'yatt.ts'))
+                  , Path.join(config.linkDir, 'yatt.ts'))
   }
 
   const pagesMap: pageMapType = new Map;
@@ -78,11 +71,11 @@ async function build(origConfig: cgen.YattConfig) {
     console.log(`Emitting ${outFn} from ${filename}`)
     fs.writeFileSync(outFn, output.outputText)
 
-    if (linkDir) {
+    if (config.outDir && config.linkDir) {
       // linkDir (src/) が有れば、gen/ に作った ts をそこに symlink
       const linkTargetPrefix = cgen.path.prefixPath(filename)
       const tsFn = cgen.path.fileNameWithNewExt(fn, '.ts')
-      const linkFn = Path.join(linkDir, publicSubDir, tsFn)
+      const linkFn = Path.join(config.linkDir, publicSubDir, tsFn)
       console.log(`page linkFn=${linkFn}, outFn=${outFn}, linkTargetPrefix=${linkTargetPrefix}`)
       ensureSymlink(Path.join(linkTargetPrefix, config.outDir, publicSubDir, tsFn)
                     , linkFn)
@@ -95,6 +88,16 @@ async function build(origConfig: cgen.YattConfig) {
       }
     }
   }
+
+
+  generate_router(pagesMap, config)
+
+}
+
+function generate_router(pagesMap: pageMapType, config: YattParams) {
+
+  const publicSubDir = Path.basename(config.rootDir)
+  const rootDirName = Path.basename(config.rootDir)
 
 
   let viewNo = 0
@@ -157,9 +160,9 @@ routingScript += routerBody + `
     console.log(`Emitting routes to ${routingScriptFn}`)
     fs.writeFileSync(routingScriptFn, routingScript)
 
-    if (linkDir) {
-      ensureSymlink(Path.join(cgen.path.prefixPath(linkDir), routingScriptFn)
-                    , Path.join(linkDir, rootDirName + '.ts'))
+    if (config.linkDir) {
+      ensureSymlink(Path.join(cgen.path.prefixPath(config.linkDir), routingScriptFn)
+                    , Path.join(config.linkDir, rootDirName + '.ts'))
     }
   }
 }
