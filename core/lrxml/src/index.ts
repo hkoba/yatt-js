@@ -1,5 +1,5 @@
 export type {LrxmlParams, LrxmlConfig} from './config'
-export {lrxmlParams} from './config'
+export {lrxmlParams, IsLrxmlParams} from './config'
 
 export type {
   Range, ParserSession,
