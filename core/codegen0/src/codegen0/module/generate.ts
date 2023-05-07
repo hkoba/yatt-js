@@ -41,8 +41,6 @@ export function generate_module(
     Path.join(Path.dirname(filename), yattRcFile)
   )
 
-  console.log(`entFns: `, entFns)
-
   const [template, builderSession] = build_template_declaration(
     filename, source, {
       entFns,

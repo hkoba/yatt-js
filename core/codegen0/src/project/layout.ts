@@ -69,8 +69,6 @@ export function applyProjectStyle(
   styleSpec?: string | YattProjectStyle
 ): YattProjectParams & {projectStyle?: string} {
 
-  console.log('origConfig: ', origConfig)
-
   const style = {...getProjectStyle(styleSpec)}
 
   const projectStyle = typeof style.projectStyle === 'string'
@@ -87,15 +85,11 @@ export function applyProjectStyle(
 
   yattSrcPrefix ??= style.yattSrcPrefix
 
-  console.log('yattRoot: ', yattRoot)
-
   yattRoot ??= Path.normalize(
     yattSrcPrefix ? yattSrcPrefix + (style.yattRoot ?? "") :
       (style.yattRoot ?? ".")
   )
   yattRoot = yattRoot.replace(/\/*$/, '/')
-
-  console.log(' => ', yattRoot)
 
   documentRoot ??= Path.normalize(
     yattSrcPrefix ? yattSrcPrefix + (style.documentRoot ?? "") :
