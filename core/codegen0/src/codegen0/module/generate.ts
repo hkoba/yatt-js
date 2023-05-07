@@ -51,7 +51,7 @@ export function generate_module(
   )
   const templateName = templatePath(
     filename,
-    builderSession.params.rootDir
+    builderSession.params.documentRoot
   );
 
   const session = {
@@ -63,10 +63,9 @@ export function generate_module(
 
   let program: CodeFragment[] = []
 
-  const preferedRoot = config.yattSrcPrefix ?? config.rootDir
-  const rootPrefix = prefixUnderRootDir(filename, preferedRoot)
+  const rootPrefix = prefixUnderRootDir(filename, config.yattRoot)
   // XXX: yatt => yatt-runtime
-  if (existsSync(`${preferedRoot}/yatt.ts`)) {
+  if (existsSync(`${config.yattRoot}/yatt.ts`)) {
     program.push(`import {yatt} from '${rootPrefix}yatt'\n`);
   } else {
     program.push(`import {yatt} from '${srcDir}/yatt'\n`);

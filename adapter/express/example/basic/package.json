@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node build",
     "clean": "rm -rf gen build && find src/ -type l |xargs -r rm",
-    "build": "../../src/build.ts --yattSrcPrefix=yatt/ && tsc -p tsconfig.build.json",
+    "build": "../../src/build.ts --projectStyle=yatt/pages && tsc -p tsconfig.build.json",
     "watch-node": "nodemon build/index.js",
     "test": "tap"
   },

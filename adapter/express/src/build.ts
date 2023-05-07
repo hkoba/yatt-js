@@ -18,21 +18,18 @@ export async function build(origConfig: cgen.YattConfig) {
     console.log(`project style:`, config.projectStyle, cgen.extractProjectStyle(config))
   }
 
-  const rootDir = config.rootDir.replace(/\/$/, '')
-  console.log('rootDir:', rootDir)
+  generate_runtime(config.yattRoot, config)
 
-  generate_runtime(config.rootDir, config)
-
-  const pagesMap = generate_pages(rootDir, config)
+  const pagesMap = generate_pages(config.documentRoot, config)
 
   generate_router(pagesMap, config)
 
 }
 
-function generate_runtime(rootDir: string, config: YattParams) {
+function generate_runtime(yattRoot: string, config: YattParams) {
   if (config.noEmit) return
 
-  const yattRuntimeFile = Path.join(config.yattSrcPrefix ?? rootDir, 'yatt.ts');
+  const yattRuntimeFile = Path.join(yattRoot, 'yatt.ts');
   if (! fs.existsSync(yattRuntimeFile)) {
     fs.copyFileSync(cgen.path.srcDir + '/yatt.ts', yattRuntimeFile)
     console.log(`Copied ${yattRuntimeFile} from ${cgen.path.srcDir}`)
@@ -74,7 +71,7 @@ function generate_pages(rootDir: string, config: YattParams): pageMapType {
       const yattRcFn = Path.join(Path.dirname(filename), cgen.yattRcFile + ".ts")
       console.log(`src yattRcFn = ${yattRcFn}`)
       hasYattRC = fs.existsSync(yattRcFn)
-      if (hasYattRC) {
+      if (hasYattRC && config.linkDir) {
         const linkTargetPrefix = cgen.path.prefixPath(yattRcFn)
         const linkPath = Path.join(Path.dirname(outFn), cgen.yattRcFile + ".ts")
         ensureSymlink(Path.join(linkTargetPrefix, yattRcFn)
@@ -108,8 +105,9 @@ function generate_pages(rootDir: string, config: YattParams): pageMapType {
 
 function generate_router(pagesMap: pageMapType, config: YattParams) {
 
-  const publicSubDir = config.yattSrcPrefix ? Path.basename(config.rootDir) : ""
-  const rootDirName = Path.basename(config.rootDir)
+  const publicSubDir = (config.yattSrcPrefix || !config.outDir)
+    ? Path.basename(config.documentRoot) : ""
+  const rootDirName = Path.basename(config.documentRoot)
 
 
   let viewNo = 0
@@ -167,7 +165,7 @@ routingScript += routerBody + `
 }
 `
 
-  const routingScriptFn = config.outDir + '/' + rootDirName + '.ts'
+  const routingScriptFn = (config.outDir ?? ".") + '/' + rootDirName + '.ts'
   if (! config.noEmit) {
     console.log(`Emitting routes to ${routingScriptFn}`)
     fs.writeFileSync(routingScriptFn, routingScript)
@@ -260,6 +258,8 @@ if (module.id === ".") {
       // ext: 'ytjs',
     }
     parse_long_options(args, {target: config})
+
+    console.log(`parsed config: `, config)
 
     build(config)
   })()

@@ -11,8 +11,11 @@ import {readFileSync, writeFileSync} from 'node:fs'
 import * as Path from 'node:path'
 
 export function build(fileList: string[], config: YattConfig) {
-  if (config.rootDir == null) {
-    config.rootDir = longestPrefixDir(fileList)
+  if (config.documentRoot == null) {
+    config.documentRoot = longestPrefixDir(fileList) ?? "./"
+  }
+  if (config.appRoot == null) {
+    config.appRoot = Path.dirname(Path.normalize(config.documentRoot))
   }
 
   const generate = config.templateNamespace ? generate_namespace :

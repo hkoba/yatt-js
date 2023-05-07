@@ -29,7 +29,8 @@ export type YattConfig = Partial<Omit<YattParams, 'libDirs'>> & {
 
 export function isYattParams(arg: YattConfig | YattParams): arg is YattParams {
   return IsLrxmlParams(arg)
-    && arg.rootDir != null && arg.libDirs != null
+    && arg.yattRoot != null
+    && arg.documentRoot != null && arg.libDirs != null
     && arg.connectionTypeName != null
     && arg.body_argument_name != null
 }
@@ -47,7 +48,8 @@ export function yattParams(
 ): YattParams {
   const lrxmlDefault = lrxmlParams(config)
   let {
-    rootDir, libDirs, outDir, linkDir, yattSrcPrefix, projectStyle,
+    yattRoot, documentRoot, libDirs, outDir, linkDir,
+    yattSrcPrefix, projectStyle,
     lookup_subdirectory_first = false,
     templateNamespace,
     exportNamespace,
@@ -59,7 +61,7 @@ export function yattParams(
   return {
     ...lrxmlDefault,
     ...applyProjectStyle(
-      {rootDir, libDirs, outDir, linkDir, yattSrcPrefix},
+      {yattRoot, documentRoot, libDirs, outDir, linkDir, yattSrcPrefix},
       projectStyle
     ),
     lookup_subdirectory_first,

@@ -1,7 +1,10 @@
 #!/usr/bin/env ts-node
 
+import * as Path from "node:path"
+
 export type YattProjectParams = {
-  rootDir: string
+  yattRoot: string
+  documentRoot: string
   libDirs: string[]
   outDir?: string
   linkDir?: string
@@ -9,7 +12,8 @@ export type YattProjectParams = {
 }
 
 export type YattProjectStyle = {
-  rootDir?: string
+  yattRoot?: string
+  documentRoot?: string
   libDirs?: string[]
   outDir?: string
   linkDir?: string
@@ -17,13 +21,19 @@ export type YattProjectStyle = {
   yattSrcPrefix?: string
 }
 
+const pagesStyle = {
+  yattRoot:      "./",
+  projectStyle: "pages",
+  documentRoot: "pages/",
+  libDirs:     ["widgets/"],
+  outDir:       "gen/",
+  linkDir:      "src/"
+}
+
 const projectStyles: {[k: string]: YattProjectStyle} = {
-  "default": {
-    projectStyle: "default",
-    rootDir:       "pages/",
-    libDirs:      ["widgets/"],
-    outDir:    "gen/",
-    linkDir:   "src/"
+  "pages": pagesStyle,
+  "yatt/pages": {
+    ...pagesStyle, projectStyle: "yatt/pages", yattSrcPrefix: "yatt/"
   }
 }
 
@@ -32,8 +42,11 @@ type YattProjectConfig = Partial<Omit<YattProjectParams, 'libDirs'>> & {
   projectStyle?: string
 }
 
-function getProjectStyle(styleSpec: string | YattProjectStyle)
+function getProjectStyle(styleSpec?: string | YattProjectStyle)
 : YattProjectStyle {
+  if (styleSpec == null)
+    return {}
+
   const getBase = (key: string) => {
     if (! projectStyles[key]) {
       throw new Error(`Unknown project style: ${key}`)
@@ -53,13 +66,19 @@ function getProjectStyle(styleSpec: string | YattProjectStyle)
 
 export function applyProjectStyle(
   origConfig: YattProjectConfig,
-  styleSpec: string | YattProjectStyle = "default"
-): YattProjectParams {
+  styleSpec?: string | YattProjectStyle
+): YattProjectParams & {projectStyle?: string} {
+
+  console.log('origConfig: ', origConfig)
 
   const style = {...getProjectStyle(styleSpec)}
 
+  const projectStyle = typeof style.projectStyle === 'string'
+    ? style.projectStyle : undefined
+
   let {
-    rootDir,
+    yattRoot,
+    documentRoot,
     libDirs,
     yattSrcPrefix,
     outDir = style.outDir,
@@ -68,15 +87,29 @@ export function applyProjectStyle(
 
   yattSrcPrefix ??= style.yattSrcPrefix
 
-  // XXX: path.normalize???
-  const defaultRootDir = yattSrcPrefix
-    ? yattSrcPrefix + (style.rootDir ?? "") : "./"
+  console.log('yattRoot: ', yattRoot)
+
+  yattRoot ??= Path.normalize(
+    yattSrcPrefix ? yattSrcPrefix + (style.yattRoot ?? "") :
+      (style.yattRoot ?? ".")
+  )
+  yattRoot = yattRoot.replace(/\/*$/, '/')
+
+  console.log(' => ', yattRoot)
+
+  documentRoot ??= Path.normalize(
+    yattSrcPrefix ? yattSrcPrefix + (style.documentRoot ?? "") :
+      (style.documentRoot ?? ".")
+  )
+  documentRoot = documentRoot.replace(/\/*$/, '/')
 
   const defaultLibDirs = (yattSrcPrefix && style.libDirs)
-    ? style.libDirs.map(d => yattSrcPrefix + d) : [];
+    ? style.libDirs.map(d => yattSrcPrefix + d) : (style.libDirs ?? []);
 
   return {
-    rootDir: rootDir ?? defaultRootDir,
+    projectStyle,
+    yattRoot,
+    documentRoot,
     libDirs: typeof libDirs === 'string' ? [libDirs] : defaultLibDirs,
     yattSrcPrefix,
     outDir, linkDir
@@ -86,6 +119,6 @@ export function applyProjectStyle(
 export function extractProjectStyle<T extends YattProjectConfig>(
   config: T
 ): YattProjectConfig {
-  const {yattSrcPrefix, rootDir, libDirs, outDir, linkDir} = config
-  return {yattSrcPrefix, rootDir, libDirs, outDir, linkDir}
+  const {yattSrcPrefix, yattRoot, documentRoot, libDirs, outDir, linkDir} = config
+  return {yattSrcPrefix, yattRoot, documentRoot, libDirs, outDir, linkDir}
 }
