@@ -1,0 +1,32 @@
+<!yatt:args x y>
+
+foo=&yatt:param(foo);<br>
+
+<form method="POST">
+foo:<input type="text" name="foo" value="&yatt:query(foo);"><br>
+bar:<input type="text" name="bar" value="&yatt:query(bar);"><br>
+<input type="submit" name="~prev" value="戻る">
+<input type="submit" name="~next" value="次へ">
+</form>
+
+<yatt:foo x y/>
+いいい
+
+<!yatt:page prev>
+前です
+
+<!yatt:page next>
+次です
+
+<!yatt:page [GET "/bar"]>
+bar です
+
+<!yatt:widget foo x="?こんにちわ" y="?さようなら">
+<h2>&yatt:x;</h2>
+<div>
+<yatt:BODY/>
+</div>
+&yatt:y;
+
+<!yatt:action [POST="/test"] x y>
+return 'foo' + (x ?? 'xx')
