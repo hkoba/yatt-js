@@ -14,8 +14,8 @@ export function build(fileList: string[], config: YattConfig) {
   if (config.documentRoot == null) {
     config.documentRoot = longestPrefixDir(fileList) ?? "./"
   }
-  if (config.appRoot == null) {
-    config.appRoot = Path.dirname(Path.normalize(config.documentRoot))
+  if (config.yattRoot == null) {
+    config.yattRoot = Path.dirname(Path.normalize(config.documentRoot))
   }
 
   const generate = config.templateNamespace ? generate_namespace :
