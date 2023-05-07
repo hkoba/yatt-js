@@ -22,8 +22,8 @@ export type YattProjectStyle = {
 }
 
 const pagesStyle = {
-  yattRoot:      "./",
   projectStyle: "pages",
+  yattRoot:     "./",
   documentRoot: "pages/",
   libDirs:     ["widgets/"],
   outDir:       "gen/",
