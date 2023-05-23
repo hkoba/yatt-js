@@ -7,7 +7,9 @@
     "start": "node build",
     "clean": "rm -rf gen build && find src/ -type l |xargs -r rm",
     "build": "../../src/build.ts --projectStyle=yatt/pages && tsc -p tsconfig.build.json",
-    "watch-node": "nodemon build/index.js",
+    "watch": "npm run build && npm run watch:yatt & npm run watch:node",
+    "watch:yatt": "../../src/build.ts --projectStyle=yatt/pages & tsc -w -p tsconfig.build.json",
+    "watch:node": "nodemon build/index.js",
     "test": "tap"
   },
   "tap": {

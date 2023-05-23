@@ -6,27 +6,28 @@ import * as Path from 'node:path'
 import {glob} from 'glob'
 
 import * as cgen from '@yatt/codegen0'
-import { YattParams } from '@yatt/codegen0'
 
 type pageMapType = Map<string, cgen.TemplateDeclaration>
 
-export async function build(origConfig: cgen.YattConfig) {
+export async function build(origConfig: cgen.YattConfig | cgen.YattParams): Promise<pageMapType> {
 
-  const config = cgen.yattParams(origConfig)
+  const config = cgen.isYattParams(origConfig)
+    ? origConfig : cgen.yattParams(origConfig)
 
   if (config.debug?.build) {
     console.log(`project style:`, config.projectStyle, cgen.extractProjectStyle(config))
   }
 
-  generate_runtime(config.yattRoot, config)
+  build_runtime(config.yattRoot, config)
 
-  const pagesMap = generate_pages(config.documentRoot, config)
+  const pagesMap = build_pages(config.documentRoot, config)
 
-  generate_router(pagesMap, config)
+  build_router(pagesMap, config)
 
+  return pagesMap
 }
 
-function generate_runtime(yattRoot: string, config: YattParams) {
+export function build_runtime(yattRoot: string, config: cgen.YattParams) {
   if (config.noEmit) return
 
   const yattRuntimeFile = Path.join(yattRoot, 'yatt.ts');
@@ -41,69 +42,91 @@ function generate_runtime(yattRoot: string, config: YattParams) {
   }
 }
 
-function generate_pages(rootDir: string, config: YattParams): pageMapType {
+export function build_pages(rootDir: string, config: cgen.YattParams): pageMapType {
 
   if (!config.noEmit && config.outDir && ! fs.existsSync(config.outDir)) {
     console.log(`mkdir: ${config.outDir}`)
     fs.mkdirSync(config.outDir)
   }
 
-  const publicSubDir = config.yattSrcPrefix ? Path.basename(rootDir) : ""
-
   const pagesMap: pageMapType = new Map;
+  const dirSet: Set<string> = new Set
   for (const fn of glob.sync('**/*.ytjs', {root: rootDir, cwd: rootDir})) {
     const filename = Path.join(rootDir, fn)
-    const source = fs.readFileSync(filename, {encoding: 'utf-8'})
-    const output = cgen.generate_module(filename, source, config)
-    if (output == null)
-      throw new Error(`yatt transpile error found in: ${filename}`)
-    pagesMap.set('/' + output.templateName, output.template)
-    if (config.noEmit)
-      continue
+    const dir = Path.dirname(filename)
     const outFn = cgen.path.outFileName(filename, '.ts', config)
-    if (! fs.existsSync(Path.dirname(outFn))) {
-      fs.mkdirSync(Path.dirname(outFn))
+    if (! dirSet.has(dir)) {
+      build_rc(dir, rootDir, Path.dirname(outFn), config)
+      dirSet.add(dir)
     }
 
-    // 元ディレクトリに .htyattrc.ts があれば、gen にも symlink
-    let hasYattRC
-    {
-      const yattRcFn = Path.join(Path.dirname(filename), cgen.yattRcFile + ".ts")
-      console.log(`src yattRcFn = ${yattRcFn}`)
-      hasYattRC = fs.existsSync(yattRcFn)
-      if (hasYattRC && config.linkDir) {
-        const linkTargetPrefix = cgen.path.prefixPath(yattRcFn)
-        const linkPath = Path.join(Path.dirname(outFn), cgen.yattRcFile + ".ts")
-        ensureSymlink(Path.join(linkTargetPrefix, yattRcFn)
-                      , linkPath)
-      }
-    }
-
-    console.log(`Emitting ${outFn} from ${filename}`)
-    fs.writeFileSync(outFn, output.outputText)
-
-    if (config.outDir && config.linkDir) {
-      // linkDir (src/) が有れば、gen/ に作った ts をそこに symlink
-      const linkTargetPrefix = cgen.path.prefixPath(filename)
-      const tsFn = cgen.path.fileNameWithNewExt(fn, '.ts')
-      const linkFn = Path.join(config.linkDir, publicSubDir, tsFn)
-      console.log(`page linkFn=${linkFn}, outFn=${outFn}, linkTargetPrefix=${linkTargetPrefix}`)
-      ensureSymlink(Path.join(linkTargetPrefix, config.outDir, publicSubDir, tsFn)
-                    , linkFn)
-
-      if (hasYattRC) {
-        const yattRcFn = cgen.yattRcFile + ".ts"
-        const linkTargetPrefix = cgen.path.prefixPath(linkFn)
-        ensureSymlink(Path.join(linkTargetPrefix, config.outDir, publicSubDir, yattRcFn)
-                      , Path.join(Path.dirname(linkFn), yattRcFn))
-      }
-    }
+    build_page(fn, pagesMap, config)
   }
 
   return pagesMap
 }
 
-function generate_router(pagesMap: pageMapType, config: YattParams) {
+export function build_page(
+  fn: string, pagesMap: pageMapType, config: cgen.YattParams
+) {
+  // XXX: rootDir
+  const rootDir = config.documentRoot
+  const filename = Path.join(rootDir, fn)
+  const publicSubDir = config.yattSrcPrefix ? Path.basename(rootDir) : ""
+
+  const source = fs.readFileSync(filename, {encoding: 'utf-8'})
+  const output = cgen.generate_module(filename, source, config)
+  if (output == null)
+    throw new Error(`yatt transpile error found in: ${filename}`)
+  
+  pagesMap.set('/' + output.templateName, output.template)
+  
+  if (config.noEmit)
+    return
+
+  const outFn = cgen.path.outFileName(filename, '.ts', config)
+  if (! fs.existsSync(Path.dirname(outFn))) {
+    fs.mkdirSync(Path.dirname(outFn))
+  }
+
+  console.log(`Emitting ${outFn} from ${filename}`)
+  fs.writeFileSync(outFn, output.outputText)
+
+  if (config.outDir && config.linkDir) {
+    // linkDir (src/) が有れば、gen/ に作った ts をそこに symlink
+    const linkTargetPrefix = cgen.path.prefixPath(filename)
+    const tsFn = cgen.path.fileNameWithNewExt(fn, '.ts')
+    const linkFn = Path.join(config.linkDir, publicSubDir, tsFn)
+    console.log(`page linkFn=${linkFn}, outFn=${outFn}, linkTargetPrefix=${linkTargetPrefix}`)
+    ensureSymlink(Path.join(linkTargetPrefix, config.outDir, publicSubDir, tsFn)
+                  , linkFn)
+
+  }
+}
+
+export function build_rc(dir: string, rootDir: string, outDir: string, config: cgen.YattParams) {
+  const publicSubDir = config.yattSrcPrefix ? Path.basename(rootDir) : ""
+  const yattRcFn = Path.join(dir, cgen.yattRcFile + ".ts")
+  console.log(`src yattRcFn = ${yattRcFn}`)
+  if (fs.existsSync(yattRcFn) && config.linkDir) {
+    const linkTargetPrefix = cgen.path.prefixPath(yattRcFn)
+    const linkPath = Path.join(outDir, cgen.yattRcFile + ".ts")
+    ensureSymlink(Path.join(linkTargetPrefix, yattRcFn)
+                  , linkPath)
+  }
+
+  if (config.outDir && config.linkDir) {
+    const yattRcFn = cgen.yattRcFile + ".ts"
+    // fake linkFn
+    const linkFn = Path.join(config.linkDir, publicSubDir, yattRcFn)
+    const linkTargetPrefix = cgen.path.prefixPath(linkFn)
+    ensureSymlink(Path.join(linkTargetPrefix, config.outDir, publicSubDir, yattRcFn)
+                  , Path.join(Path.dirname(linkFn), yattRcFn))
+  }
+}
+
+
+export function build_router(pagesMap: pageMapType, config: cgen.YattParams) {
 
   const publicSubDir = (config.yattSrcPrefix || !config.outDir)
     ? Path.basename(config.documentRoot) : ""
