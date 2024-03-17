@@ -1,36 +1,26 @@
 {
   "name": "yatt",
   "version": "0.0.1",
-  "private": true,
+  "author": "buribullet@gmail.com",
+  "devDependencies": {
+    "rollup": "^2.79.1",
+    "rollup-plugin-esbuild": "^4.10.3",
+    "tap": "^18.7.1",
+    "ts-node": "^10.1.0",
+    "typescript": "^4.4.2"
+  },
   "description": "Yet Another Template Transpiler to TypeScript",
-  "workspaces": [
-    "core/lrxml",
-    "core/codegen0",
-    "adapter/express",
-    "util/xhf"
-  ],
+  "license": "MIT",
+  "private": true,
   "scripts": {
     "build": "npm run build --workspaces",
     "watch": "npm run watch --workspaces",
     "test": "tap"
   },
-  "tap": {
-    "ts": true,
-    "test-ignore": "/vscode/",
-    "coverage": false
-  },
-  "author": "buribullet@gmail.com",
-  "license": "MIT",
-  "devDependencies": {
-    "@types/glob": "^7.2.0",
-    "@types/tap": "^15.0.2",
-    "rollup": "^2.79.1",
-    "rollup-plugin-esbuild": "^4.10.3",
-    "tap": "^16.3.4",
-    "ts-node": "^10.1.0",
-    "typescript": "^4.4.2"
-  },
-  "dependencies": {
-    "@types/minimatch": "^5.1.2"
-  }
+  "workspaces": [
+    "core/lrxml",
+    "core/codegen0",
+    "adapter/express",
+    "util/xhf"
+  ]
 }
