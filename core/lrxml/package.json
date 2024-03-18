@@ -5,11 +5,6 @@
   "main": "lib/lrxml.cjs",
   "module": "lib/lrxml.mjs",
   "types": "types/lrxml.d.ts",
-  "tap": {
-    "ts": true,
-    "coverage": false,
-    "files": "test/**/*.ts"
-  },
   "scripts": {
     "clean": "rm -rf lib types",
     "b": "tsc -p tsconfig.build.json",

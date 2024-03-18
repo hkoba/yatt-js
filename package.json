@@ -22,5 +22,8 @@
     "core/codegen0",
     "adapter/express",
     "util/xhf"
-  ]
+  ],
+  "tap": {
+    "disable-coverage": true
+  }
 }

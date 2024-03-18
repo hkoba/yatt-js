@@ -11,10 +11,6 @@
     "tap": "^15.2.3",
     "ts-node": "^10.2.1"
   },
-  "tap": {
-    "ts": true,
-    "coverage": false
-  },
   "scripts": {
     "b": "tsc -p tsconfig.build.json",
     "build": "tsc -p tsconfig.build.json",
