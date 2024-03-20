@@ -1,4 +1,4 @@
-import Module = require('module');
+import Module = require('node:module');
 // Use this style because class Module is exporeted via 'export ='
 export {Module}
 
