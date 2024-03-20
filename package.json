@@ -3,6 +3,9 @@
   "version": "0.0.1",
   "author": "buribullet@gmail.com",
   "devDependencies": {
+    "@types/node":"20.11.30",
+    "glob":"10.3.10",
+    "esbuild": "^0.20.2",
     "rollup": "^2.79.1",
     "rollup-plugin-esbuild": "^4.10.3",
     "tap": "^18.7.1",
