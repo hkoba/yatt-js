@@ -1,7 +1,7 @@
 #!/usr/bin/env -S deno run -A
 
 declare global {
-  interface ImportMeta {main?: boolean}
+  interface ImportMeta {main: boolean}
 }
 
 import {parserContext, ParserContext, Range, RangeLine} from '../context.ts'
