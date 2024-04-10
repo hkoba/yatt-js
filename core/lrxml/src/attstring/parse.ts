@@ -45,6 +45,7 @@ export function parse_attstring(outerCtx: ParserContext, range: RangeLine): AttS
 }
 
 MODULINO: if (import.meta.main) {
+  const process = await import("node:process")
   for (const str of process.argv.slice(2)) {
     let ctx = parserContext({
       source: str, config: {}

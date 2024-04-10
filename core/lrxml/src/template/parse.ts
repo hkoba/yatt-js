@@ -97,9 +97,9 @@ function parse_tokens(
   while (!(cur = lex.next()).done) {
     const tok = cur.value
     ctx.index = tok.start
-    if (ctx.debug) {
-      process.stdout.write('|' + '  '.repeat(depth) + `${tok.start} - ${tok.kind}\n`)
-    }
+    // if (ctx.debug) {
+    //   process.stdout.write('|' + '  '.repeat(depth) + `${tok.start} - ${tok.kind}\n`)
+    // }
     switch (tok.kind) {
       case "text": case "comment": case "pi": {
         sink.push(tok)

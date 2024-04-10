@@ -48,6 +48,7 @@ export function parse_long_options(argv: string[], config: Config): Result {
 }
 
 MODULINO: if (import.meta.main) {
+  const process = await import("node:process")
   let args = process.argv.slice(2)
   console.log('OPTS: ', parse_long_options(args, {}))
   console.log('REST: ', args)
