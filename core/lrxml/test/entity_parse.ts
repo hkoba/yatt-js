@@ -1,44 +1,47 @@
 #!/usr/bin/env -S deno run -A
 
-import tap from 'tap'
+import {assertEquals} from 'https://deno.land/std/assert/mod.ts'
 
-import {parserContext} from '../src/context'
+import {parserContext} from '../src/context.ts'
 
 import {
   parse_entpath
-} from '../src/entity/parse'
+} from '../src/entity/parse.ts'
 
 {
-  const it = (source: string) => {
-    let ctx = parserContext({
-      source, config: {}
+  const test = (source: string, expect: any) => {
+    Deno.test(source, () => {
+      let ctx = parserContext({
+        source, config: {}
+      })
+      const node = parse_entpath(ctx);
+      const got = node.path.map((i) => noRange(i));
+      assertEquals(got, expect)
     })
-    const node = parse_entpath(ctx);
-    return node.path.map((i) => noRange(i))
   }
 
-  tap.same(it(`:foo;`), [{kind: 'var', name: 'foo'}])
+  test(`:foo;`, [{kind: 'var', name: 'foo'}])
 
-  tap.same(it(`:foo:bar;`), [{kind: 'var', name: 'foo'}, {kind: 'prop', name: 'bar'}])
+  test(`:foo:bar;`, [{kind: 'var', name: 'foo'}, {kind: 'prop', name: 'bar'}])
 
-  tap.same(it(`:foo:bar();`), [{kind: 'var', name: 'foo'}, {
+  test(`:foo:bar();`, [{kind: 'var', name: 'foo'}, {
     kind: 'invoke', name: 'bar', elements: []
   }])
 
-  tap.same(it(`:foo:bar():baz;`), [{kind: 'var', name: 'foo'}, {
+  test(`:foo:bar():baz;`, [{kind: 'var', name: 'foo'}, {
     kind: 'invoke', name: 'bar', elements: []
   }, {kind: 'prop', name: 'baz'}])
 
-  tap.same(it(`:foo(bar);`), [{kind: 'call', name: 'foo', elements: [
+  test(`:foo(bar);`, [{kind: 'call', name: 'foo', elements: [
     {kind: 'text', text: 'bar', is_paren: false}
   ]}])
 
-  tap.same(it(`:foo():bar();`), [
+  test(`:foo():bar();`, [
     {kind: 'call', name: 'foo', elements: []},
     {kind: 'invoke', name: 'bar', elements: []}
   ])
 
-  tap.same(it(`:param(foo,:param(bar){hoe});`), [
+  test(`:param(foo,:param(bar){hoe});`, [
     {kind: "call", name: 'param', elements: [
       {kind: "text", text: "foo", is_paren: false},
       [

@@ -1,8 +1,8 @@
 #!/usr/bin/env -S deno run -A
 
-import tap from 'tap'
+import {assertEquals} from 'https://deno.land/std/assert/mod.ts'
 
-import { parse_long_options, Config } from '../src/utils/long-options'
+import { parse_long_options, Config } from '../src/utils/long-options.ts'
 
 //========================================
 
@@ -11,28 +11,33 @@ const it = (argv: string[], config: Config) => {
   return [opts, argv]
 }
 
-tap.same(
+Deno.test("option terminator --", () => {
+  assertEquals(
   it(['--'],{}),
   [{}, []]
-)
+)})
 
-tap.same(
+Deno.test("basic", () => {
+  assertEquals(
   it(['--foo', '--bar=BAR', '--', 'rest'],{}),
   [{foo: true, bar: "BAR"}, ['rest']]
-)
+)})
 
-tap.same(
+Deno.test("json values", () => {
+  assertEquals(
   it(['--foo=3', '--bar={"foo":"bar","baz":"qux"}', '--baz=[3,"foo",4]'],{}),
   [{foo: 3, bar: {"foo":"bar","baz":"qux"}, baz: [3,"foo",4]}, []]
-)
+)})
 
-tap.same(
+Deno.test("alias", () => {
+  assertEquals(
   it(['-d', '-v'], {alias: {d: "debug", v: "verbose"}}),
   [{debug: true, verbose: true}, []]
-);
+)});
 
 (() => {
   let target = {foo: false, bar: "BAR"}
   parse_long_options(['--foo'], {target: target})
-  tap.same(target, {foo: true, bar: "BAR"})
+  Deno.test("default values", () => {
+    assertEquals(target, {foo: true, bar: "BAR"})})
 })()

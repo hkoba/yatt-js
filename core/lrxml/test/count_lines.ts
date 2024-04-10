@@ -1,26 +1,40 @@
 #!/usr/bin/env -S deno run -A
 
-import tap from 'tap'
+import {assertEquals} from 'https://deno.land/std/assert/mod.ts'
 
-import {lineNumber, extract_line, extract_prefix_spec} from '../src/utils/count_lines'
+import {lineNumber, extract_line, extract_prefix_spec} from '../src/utils/count_lines.ts'
 
-tap.same(lineNumber(``), 1)
+Deno.test("lineNumber: empty string", () => {
+  assertEquals(lineNumber(``), 1)
+})
 
-tap.same(lineNumber(`foo`), 1)
+Deno.test("lineNumber: a line without newline", () => {
+  assertEquals(lineNumber(`foo`), 1)
+})
 
-tap.same(lineNumber(`foo
-bar`), 2)
+Deno.test("foo\\nbar", () => {
+  assertEquals(lineNumber(`foo
+  bar`), 2)
+})
 
-tap.same(lineNumber(`foo
+Deno.test("foo\\nbar\\n", () => {
+  assertEquals(lineNumber(`foo
 bar
 `), 3)
+})
 
-tap.same(extract_line(`01234`, 0, 2), `01234` + `\n ^`);
+Deno.test("extract_line: 0, 2", () => {
+  assertEquals(extract_line(`01234`, 0, 2), `01234` + `\n ^`)
+});
 
-tap.same(extract_line(`foo
+Deno.test("extract_line: 4, 2", () => {
+  assertEquals(extract_line(`foo
 bar
-`, 4, 2), `bar` + `\n ^`);
+`, 4, 2), `bar` + `\n ^`)
+});
 
-tap.same(extract_prefix_spec(`foo
+Deno.test("extract_prefix_spec: 5", () => {
+  assertEquals(extract_prefix_spec(`foo
 bar
-`, 5), [3, 2, 2]);
+`, 5), [3, 2, 2])
+});

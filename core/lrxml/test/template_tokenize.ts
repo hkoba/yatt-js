@@ -4,9 +4,9 @@
 // * enable 'esModuleInterop' flags
 // * prepare tsconfig.build.json and add rootDir: src, exclude: ["test"]
 
-import tap from 'tap'
+import {assertEquals} from 'https://deno.land/std/assert/mod.ts'
 
-import { range_text, hasLabel, parse_multipart, tokenize } from '../src/'
+import { range_text, hasLabel, parse_multipart, tokenize } from '../src/index.ts'
 
 const it = (source: string) => {
   let [partList, session] = parse_multipart(source, {});
@@ -42,9 +42,12 @@ const it = (source: string) => {
   })
 }
 
-tap.same(it(``), [])
+Deno.test("Empty string results empty tokens", () => {
+  assertEquals(it(``), [])
+})
 
-tap.same(it(`<!yatt:foo bar x y>
+Deno.test("A declaration with simple names and its body with entity references", () => {
+  assertEquals(it(`<!yatt:foo bar x y>
 <h2>&yatt:x;</h2>
 
 &yatt:y;
@@ -69,16 +72,17 @@ tap.same(it(`<!yatt:foo bar x y>
       {kind: "text", line: 5, text: `\n`}
     ]
   }
-])
+])})
 
-tap.same(it(`<!yatt:foo bar x=3 y="aaa" z='bbb'>
+Deno.test("A declaration with name=value pair list", () => {
+  assertEquals(it(`<!yatt:foo bar x=3 y="aaa" z='bbb'>
 content
 `), [
   {
     part: "foo",
     attlist: [
       ["identplus", "bar", [1]],
-      ["identplus", "x", "bare", 3, [1,1]],
+      ["identplus", "x", "bare", "3", [1,1]],
       ["identplus", "y", "dq",   "aaa", [1,1]],
       ["identplus", "z", "sq",   "bbb", [1,1]],
     ],
@@ -87,5 +91,5 @@ content
 `}
     ]
   }
-])
+])})
 

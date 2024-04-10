@@ -1,8 +1,8 @@
 #!/usr/bin/env -S deno run -A
 
-import tap from 'tap';
+import {assertEquals} from 'https://deno.land/std/assert/mod.ts'
 
-import {parse_multipart, AttItem, hasLabel, isIdentOnly} from '../src/'
+import {parse_multipart, AttItem, hasLabel, isIdentOnly} from '../src/index.ts'
 
 {
   const unnest = (att: AttItem): any => {
@@ -33,12 +33,14 @@ import {parse_multipart, AttItem, hasLabel, isIdentOnly} from '../src/'
     })
   };
 
-  tap.same(it(`<!yatt:widget foo bar='value/0'>
+  Deno.test("widget declaration", () => {
+    assertEquals(it(`<!yatt:widget foo bar='value/0'>
 `), [
   {kind: "widget", attlist: ['foo', ['bar', 'value/0']]}
-])
+])})
 
-  tap.same(it(`<yatt:foo x=3 y="8"/>
+  Deno.test("widget call, declaration and entity reference", () => {
+    assertEquals(it(`<yatt:foo x=3 y="8"/>
 
 <!yatt:widget foo x y="?7">
 <h2>&yatt:x;</h2>
@@ -47,13 +49,14 @@ import {parse_multipart, AttItem, hasLabel, isIdentOnly} from '../src/'
 `), [
   {kind: "", attlist: []},
   {kind: "widget", attlist: ['foo', 'x', ['y', '?7']]},
-])
+])})
 
-  tap.same(it(`<!yatt:widget main title>
+  Deno.test("widget declaration with bracket quote", () => {
+    assertEquals(it(`<!yatt:widget main title>
 
 <!yatt:widget container main=[delegate]>
 `), [
   {kind: "widget", attlist: ['main', 'title']},
   {kind: "widget", attlist: ['container', ['main', ['delegate']]]},
-])
+])})
 }
