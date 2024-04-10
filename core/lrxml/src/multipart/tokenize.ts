@@ -1,13 +1,17 @@
-#!/usr/bin/env ts-node
+#!/usr/bin/env -S deno run -A
 
-import {LrxmlConfig} from '../config'
+declare global {
+  interface ImportMeta {main?: boolean}
+}
+
+import {LrxmlConfig} from '../config.ts'
 
 import {
   AnyToken, Range, GlobalMatch, ParserContext, parserContext
-} from '../context'
-import { re_join } from '../utils/regexp'
+} from '../context.ts'
+import { re_join } from '../utils/regexp.ts'
 
-import { AttToken, tokenize_attlist } from '../attlist/tokenize'
+import { AttToken, tokenize_attlist } from '../attlist/tokenize.ts'
 
 export type MPText      = {kind: "text"}       & AnyToken
 export type MPComment   = {kind: "comment", innerRange: Range}    & AnyToken
@@ -104,11 +108,12 @@ export function* tokenize_multipart_context(ctx: ParserContext): ChunkGenerator 
   }
 }
 
-if (module.id === ".") {
+MODULINO: if (import.meta.main) {
   (async () => {
+    const process = await import("node:process")
     const { readFileSync } = await import("node:fs")
     const [_cmd, _script, ...args] = process.argv;
-    const { parse_long_options } = await import("../utils/long-options")
+    const { parse_long_options } = await import("../utils/long-options.ts")
     const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
 
     let config: LrxmlConfig = {

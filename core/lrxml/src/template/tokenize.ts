@@ -1,17 +1,17 @@
-#!/usr/bin/env ts-node
+#!/usr/bin/env -S deno run -A
 
-import {LrxmlConfig} from '../config'
+import {LrxmlConfig} from '../config.ts'
 import {
   AnyToken, Range, ParserContext, ParserSession
-} from '../context'
+} from '../context.ts'
 
-import { Payload } from '../multipart/parse'
+import { Payload } from '../multipart/parse.ts'
 
-import { tokenize_attlist, AttToken } from '../attlist/tokenize'
+import { tokenize_attlist, AttToken } from '../attlist/tokenize.ts'
 
-import { parse_entpath, re_entity_open, re_lcmsg, EntNode, EntPrefixMatch, LCMsgToken } from '../entity/parse'
+import { parse_entpath, re_entity_open, re_lcmsg, EntNode, EntPrefixMatch, LCMsgToken } from '../entity/parse.ts'
 
-import { re_join, re_lookahead } from '../utils/regexp'
+import { re_join, re_lookahead } from '../utils/regexp.ts'
 
 function re_body(ns: string[]): RegExp {
   const nspat = ns.join("|")
@@ -178,8 +178,9 @@ export function* tokenize(session: ParserSession, payloadList: Payload[]): Gener
   }
 }
 
-if (module.id === ".") {
+MODULINO: if (import.meta.main) {
   (async () => {
+    const process = await import("node:process")
     const { readFileSync } = await import('node:fs')
     const [_cmd, _script, ...args] = process.argv;
     const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0;
@@ -189,9 +190,9 @@ if (module.id === ".") {
         debug: { parser: debugLevel }
       }
 
-      const { session_range_text } = await import('../context')
-      const { parse_multipart } = await import('../multipart/parse')
-      const { parse_long_options } = await import("../utils/long-options")
+      const { session_range_text } = await import('../context.ts')
+      const { parse_multipart } = await import('../multipart/parse.ts')
+      const { parse_long_options } = await import("../utils/long-options.ts")
       parse_long_options(args, {target: config})
       
       for (const fn of args) {

@@ -1,9 +1,9 @@
-import { LrxmlParams, lrxmlParams, LrxmlConfig } from './config'
+import { LrxmlParams, lrxmlParams, LrxmlConfig } from './config.ts'
 
 import {
   lineNumber, extract_line, extract_prefix_spec, extract_suffix_spec
   , count_newlines
-} from './utils/count_lines'
+} from './utils/count_lines.ts'
 
 export type Range = {start: number, end: number}
 export type RangeLine = {line: number} & Range

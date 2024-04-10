@@ -1,12 +1,16 @@
-#!/usr/bin/env ts-node
+#!/usr/bin/env -S deno run -A
 
-import {parserContext, ParserContext, Range, RangeLine} from '../context'
+declare global {
+  interface ImportMeta {main?: boolean}
+}
+
+import {parserContext, ParserContext, Range, RangeLine} from '../context.ts'
 
 import {
   EntNode,
   parse_entpath,
   re_entity_open
-} from '../entity/parse'
+} from '../entity/parse.ts'
 
 // XXX: LCMsg
 
@@ -40,7 +44,7 @@ export function parse_attstring(outerCtx: ParserContext, range: RangeLine): AttS
   return items;
 }
 
-if (module.id === ".") {
+MODULINO: if (import.meta.main) {
   for (const str of process.argv.slice(2)) {
     let ctx = parserContext({
       source: str, config: {}

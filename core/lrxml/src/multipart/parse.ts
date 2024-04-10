@@ -1,13 +1,17 @@
-#!/usr/bin/env ts-node
+#!/usr/bin/env -S deno run -A
 
-import {LrxmlConfig} from '../config'
+declare global {
+  interface ImportMeta {main?: boolean}
+}
+
+import {LrxmlConfig} from '../config.ts'
 import {
   AnyToken, Range, ParserContext, parserContext, ParserSession
-} from '../context'
+} from '../context.ts'
 
-import { tokenize_multipart_context } from './tokenize'
+import { tokenize_multipart_context } from './tokenize.ts'
 
-import { AttItem, parse_attlist} from '../attlist/parse'
+import { AttItem, parse_attlist} from '../attlist/parse.ts'
 
 export type Payload = AnyToken & {kind: "text", data: string} |
   AnyToken & {kind: "comment", data: string, innerRange: Range}
@@ -108,11 +112,12 @@ function push_payload(ctx: ParserContext, partList: [Start, PartBase][], payload
 
 // console.log(this)
 
-if (module.id === ".") {
+MODULINO: if (import.meta.main) {
   (async () => {
+    const process = await import("node:process")
     const { readFileSync } = await import('node:fs')
     const [_cmd, _script, ...args] = process.argv;
-    const { parse_long_options } = await import("../utils/long-options")
+    const { parse_long_options } = await import("../utils/long-options.ts")
     const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
     let config: LrxmlConfig = {
       debug: { parser: debugLevel }

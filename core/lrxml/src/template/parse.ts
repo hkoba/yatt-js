@@ -1,24 +1,24 @@
-#!/usr/bin/env ts-node
+#!/usr/bin/env -S deno run -A
 
-import {LrxmlConfig} from '../config'
-import type { RangeLine, Range, ParserSession } from '../context'
-import { ParserContext } from '../context'
+import {LrxmlConfig} from '../config.ts'
+import type { RangeLine, Range, ParserSession } from '../context.ts'
+import { ParserContext } from '../context.ts'
 
-import { tokenize, Token, Text, Comment, PI } from './tokenize'
+import { tokenize, Token, Text, Comment, PI } from './tokenize.ts'
 
-import { Part } from '../multipart/parse'
+import { Part } from '../multipart/parse.ts'
 
 import type {
   AttItem, Term, Label, StringTerm,
   AttIdentOnly, AttLabeled, AttLabeledNested, AttLabeledByIdent
   , NestedTerm
-} from '../attlist/parse'
+} from '../attlist/parse.ts'
 import {
   parse_attlist, 
   attKindIsQuotedString,
-} from '../attlist/parse'
+} from '../attlist/parse.ts'
 
-import { EntNode } from '../entity/parse'
+import { EntNode } from '../entity/parse.ts'
 
 export type Node = BodyNode | AttItem
 export type AnonNode = {kind: string} & RangeLine
@@ -207,8 +207,9 @@ function parse_lcmsg(ctx: ParserContext, lex: Generator<Token>)
   ctx.throw_error(`lcmsg is not terminated!`)
 }
 
-if (module.id === ".") {
+MODULINO: if (import.meta.main) {
   (async () => {
+    const process = await import("node:process")
     const { readFileSync } = await import('node:fs')
     const [_cmd, _script, ...args] = process.argv;
 
@@ -219,10 +220,10 @@ if (module.id === ".") {
         debug: { parser: debugLevel }
       }
 
-      const { parse_long_options } = await import("../utils/long-options")
+      const { parse_long_options } = await import("../utils/long-options.ts")
       parse_long_options(args, {target: config})
 
-      const { parse_multipart } = await import('../multipart/parse')
+      const { parse_multipart } = await import('../multipart/parse.ts')
 
       for (const fn of args) {
         const source = readFileSync(fn, { encoding: "utf-8" })

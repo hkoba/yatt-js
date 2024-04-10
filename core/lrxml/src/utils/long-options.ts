@@ -1,4 +1,4 @@
-#!/usr/bin/env ts-node
+#!/usr/bin/env -S deno run -A
 
 export type Result = {[k: string]: string | boolean | Object | Array<any>}
 
@@ -47,7 +47,7 @@ export function parse_long_options(argv: string[], config: Config): Result {
   return target
 }
 
-if (module.id === ".") {
+MODULINO: if (import.meta.main) {
   let args = process.argv.slice(2)
   console.log('OPTS: ', parse_long_options(args, {}))
   console.log('REST: ', args)

@@ -1,8 +1,12 @@
-#!/usr/bin/env ts-node
+#!/usr/bin/env -S deno run -A
 
-import { AnyToken, Range, ParserContext, parserContext } from '../context'
+declare global {
+  interface ImportMeta {main?: boolean}
+}
 
-import { re_join } from '../utils/regexp'
+import { AnyToken, Range, ParserContext, parserContext } from '../context.ts'
+
+import { re_join } from '../utils/regexp.ts'
 
 export type EntPrefixChar = '&' | '%'
 
@@ -238,7 +242,7 @@ function parse_entparen(ctx: ParserContext): void {
   }
 }
 
-if (module.id === ".") {
+MODULINO: if (import.meta.main) {
   for (const str of process.argv.slice(2)) {
     let ctx = parserContext({
       source: str, config: {}

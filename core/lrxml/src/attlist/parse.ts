@@ -1,12 +1,12 @@
 import {
   RangeLine, ParserContext, TokenT, AnyToken
-} from '../context'
+} from '../context.ts'
 
-import { AttToken, isAttToken, AttBare, AttSq, AttDq, AttNest, AttIdentPlus, TokenContent } from '../attlist/tokenize'
+import { AttToken, isAttToken, AttBare, AttSq, AttDq, AttNest, AttIdentPlus, TokenContent } from '../attlist/tokenize.ts'
 
-import { AttStringItem, parse_attstring } from '../attstring/parse'
+import { AttStringItem, parse_attstring } from '../attstring/parse.ts'
 
-import { EntNode } from '../entity/parse'
+import { EntNode } from '../entity/parse.ts'
 
 type BaseTerm<T> = AnyToken & {value: T, comment: string[]}
 

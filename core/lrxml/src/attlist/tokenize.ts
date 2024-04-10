@@ -1,7 +1,7 @@
-import { AnyToken, Range, ParserContext } from '../context'
-import { re_join } from '../utils/regexp'
+import { AnyToken, Range, ParserContext } from '../context.ts'
+import { re_join } from '../utils/regexp.ts'
 
-import { re_entity_open, EntPrefixChar, parse_entpath, EntNode } from '../entity/parse'
+import { re_entity_open, EntPrefixChar, parse_entpath, EntNode } from '../entity/parse.ts'
 
 function re_att(ns: string[], entPrefixChar: EntPrefixChar): RegExp {
   const pat = re_join(
