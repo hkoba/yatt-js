@@ -1,12 +1,12 @@
-import {AttItem, isIdentOnly} from '@yatt/lrxml'
+import {AttItem, isIdentOnly} from '../deps.ts'
 
-import {BuilderContext} from './context'
+import {BuilderContext} from './context.ts'
 
-import {Part, Widget} from './part'
+import {Part, Widget} from './part.ts'
 
-import {DelegateVar} from './vartype'
+import {DelegateVar} from './vartype.ts'
 
-import {add_args_cont, ArgAdder} from './addArgs'
+import {add_args_cont, ArgAdder} from './addArgs.ts'
 
 export function build_delegate_variable_adder(
   ctx: BuilderContext, part: Part, gen: Generator<AttItem>,

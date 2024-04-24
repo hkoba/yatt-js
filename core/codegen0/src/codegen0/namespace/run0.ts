@@ -1,4 +1,4 @@
-#!/usr/bin/env ts-node
+#!/usr/bin/env -S deno run -A
 
 import {generate_namespace} from './generate'
 
@@ -10,7 +10,7 @@ import {compile, makeProgram, reportDiagnostics} from '../../utils/compileTs'
 
 import {yatt} from '../../yatt'
 
-import { parse_long_options } from '@yatt/lrxml';
+import { parse_long_options } from '../../deps.ts';
 
 export function runFile(filename: string, config: YattConfig): string {
   const source = readFileSync(filename, {encoding: "utf-8"})
@@ -74,7 +74,7 @@ export function runSource(source: string, config: YattConfig & {filename?: strin
   return CON.buffer;
 }
 
-if (module.id === '.') {
+if (import.meta.main) {
   (async () => {
     let args = process.argv.slice(2)
     const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0

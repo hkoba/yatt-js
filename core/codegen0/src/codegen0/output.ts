@@ -1,6 +1,6 @@
-import {TemplateDeclaration} from '../declaration'
+import {TemplateDeclaration} from '../declaration/index.ts'
 
-import {CGenSession} from './context'
+import {CGenSession} from './context.ts'
 
 export interface TranspileOutput {
   outputText: string;

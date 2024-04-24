@@ -1,6 +1,6 @@
-import { RawPart, AttItem } from '@yatt/lrxml'
+import { RawPart, AttItem } from '../deps.ts'
 
-import { Variable } from './vartype'
+import { Variable } from './vartype.ts'
 
 export type Part = Widget | Action | Entity
 export type PartKind = Part['kind']

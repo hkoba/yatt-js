@@ -1,30 +1,30 @@
-#!/usr/bin/env ts-node
+#!/usr/bin/env -S deno run -A
 
-import {parse_template} from '@yatt/lrxml'
+import {parse_template} from '../../deps.ts'
 
-import {YattConfig, YattParams, isYattParams, yattParams, primaryNS, yattRcFile} from '../../config'
+import {YattConfig, YattParams, isYattParams, yattParams, primaryNS, yattRcFile} from '../../config.ts'
 
 import {
   build_template_declaration
-} from '../../declaration'
+} from '../../declaration/index.ts'
 
-import {srcDir, templatePath, prefixUnderRootDir} from '../../path'
+import {srcDir, templatePath, prefixUnderRootDir} from '../../path.ts'
 
-import {CodeGenContextClass, finalize_codefragment} from '../context'
+import {CodeGenContextClass, finalize_codefragment} from '../context.ts'
 
-import {generate_widget} from '../widget/generate'
+import {generate_widget} from '../widget/generate.ts'
 
-import {generate_entity} from '../entity/generate'
+import {generate_entity} from '../entity/generate.ts'
 
-import {generate_action} from '../action/generate'
+import {generate_action} from '../action/generate.ts'
 
-import {CodeFragment, typeAnnotation} from '../codefragment'
+import {CodeFragment, typeAnnotation} from '../codefragment.ts'
 
-import {TranspileOutput} from '../output'
+import {TranspileOutput} from '../output.ts'
 
-import {builtinMacros} from '../macro/'
+import {builtinMacros} from '../macro/index.ts'
 
-import {list_entity_functions} from './list_entity_functions'
+import {list_entity_functions} from './list_entity_functions.ts'
 
 import {existsSync} from "node:fs"
 import * as Path from "node:path"
@@ -122,11 +122,12 @@ export function generate_module(
   }
 }
 
-if (module.id === '.') {
+if (import.meta.main) {
   (async () => {
-    const { parse_long_options } = await import('@yatt/lrxml')
+    const { parse_long_options } = await import('../../deps.ts')
     const { readFileSync } = await import('node:fs')
     const Path = await import('node:path')
+    const process = await import('node:process')
 
     let args = process.argv.slice(2)
     const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0

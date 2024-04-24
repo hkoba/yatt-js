@@ -1,14 +1,14 @@
-import {Node} from '@yatt/lrxml'
-import {WidgetGenContext} from '../context'
-import {VarScope} from '../varscope'
-import {escapeAsStringLiteral} from '../escape'
+import {Node} from '../../deps.ts'
+import {WidgetGenContext} from '../context.ts'
+import {VarScope} from '../varscope.ts'
+import {escapeAsStringLiteral} from '../escape.ts'
 
-import {generate_element} from './element/generate'
-import {generate_entity} from './entity/generate'
+import {generate_element} from './element/generate.ts'
+import {generate_entity} from './entity/generate.ts'
 
-import {CodeFragment} from '../codefragment'
+import {CodeFragment} from '../codefragment.ts'
 
-import {as_print} from '../template_context/print'
+import {as_print} from '../template_context/print.ts'
 
 export function generate_body(ctx: WidgetGenContext, scope: VarScope,
                               nodeList: Node[]): CodeFragment {

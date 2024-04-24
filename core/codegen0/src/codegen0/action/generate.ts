@@ -1,14 +1,14 @@
-import {Action} from '../../declaration'
+import {Action} from '../../declaration/index.ts'
 
-import {CodeGenContext} from '../context'
+import {CodeGenContext} from '../context.ts'
 
-import {VarScope} from '../varscope'
+import {VarScope} from '../varscope.ts'
 
-import {CodeFragment} from '../codefragment'
+import {CodeFragment} from '../codefragment.ts'
 
-// import {varTypeExpr} from '../widget/vartype'
+// import {varTypeExpr} from '../widget/vartype.ts'
 
-import {generate_argdecls} from '../widget/argdecls'
+import {generate_argdecls} from '../widget/argdecls.ts'
 
 export function generate_action(ctx: CodeGenContext<Action>): CodeFragment {
   let program: CodeFragment = [

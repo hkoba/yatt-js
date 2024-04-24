@@ -1,4 +1,4 @@
-#!/usr/bin/env ts-node
+#!/usr/bin/env -S deno run -A
 
 import * as Path from "node:path"
 

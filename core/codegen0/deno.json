@@ -1,0 +1,5 @@
+{
+  "imports": {
+    "@yatt/lrxml": "../lrxml/src/index.ts"
+  }
+}

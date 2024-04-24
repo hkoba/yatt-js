@@ -1,35 +1,35 @@
-#!/usr/bin/env ts-node
+#!/usr/bin/env -S deno run -A
 
 import {
   parse_multipart, RawPart, AttItem,
   isIdentOnly,
   hasLabel, hasQuotedStringValue
   , hasNestedLabel, hasStringValue, hasNestedTerm
-} from '@yatt/lrxml'
+} from '../deps.ts'
 
-import { yattParams } from '../config'
+import { yattParams } from '../config.ts'
 
 import {
   YattBuildConfig,
   BuilderMap, BuilderContext, BuilderContextClass, BuilderSession,
   DeclarationProcessor
-} from './context'
+} from './context.ts'
 
-import { TaskGraph } from './taskgraph'
+import { TaskGraph } from './taskgraph.ts'
 
 import {
   TemplateDeclaration
   , PartMapType
   , RouteMapType
-} from './types'
+} from './types.ts'
 
-import { PartKind, Part, Widget, makeWidget, Action, Entity } from './part'
+import { PartKind, Part, Widget, makeWidget, Action, Entity } from './part.ts'
 
-import {builtin_vartypemap} from './vartype'
+import {builtin_vartypemap} from './vartype.ts'
 
-import {add_args, ArgAdder} from './addArgs'
+import {add_args, ArgAdder} from './addArgs.ts'
 
-import { BaseProcessor } from './base'
+import { BaseProcessor } from './base.ts'
 
 export class WidgetBuilder implements DeclarationProcessor {
   readonly kind: string = 'widget'
@@ -358,11 +358,12 @@ function location2name(loc: string): string {
   )
 }
 
-if (module.id === ".") {
+if (import.meta.main) {
   (async () => {
+    const process = await import("node:process")
     let [...args] = process.argv.slice(2);
     console.time('load lrxml');
-    const { parse_long_options } = await import('@yatt/lrxml')
+    const { parse_long_options } = await import('../deps.ts')
     console.timeLog('load lrxml');
     const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
     let config = {

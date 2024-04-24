@@ -1,4 +1,4 @@
-#!/usr/bin/env ts-node
+#!/usr/bin/env -S deno run -A
 
 export function commonPrefix(strA: string, strB: string): string {
   let i = 0
@@ -8,7 +8,8 @@ export function commonPrefix(strA: string, strB: string): string {
   return strA.substring(0, i)
 }
 
-if (module.id === ".") {
+if (import.meta.main) {
+  const process = await import("node:process")
   if (process.argv.length < 2) {
     console.error(`Too few arguments!`)
     process.exit(1)

@@ -2,21 +2,21 @@ import {
   ElementNode
   , AttItem, AttElement, AttValue, attValue, isBareLabeledAtt
   , hasQuotedStringValue, isIdentOnly
-} from '@yatt/lrxml'
+} from '../../deps.ts'
 
-import {WidgetGenContext} from '../context'
+import {WidgetGenContext} from '../context.ts'
 
-import {VarScope} from '../varscope'
+import {VarScope} from '../varscope.ts'
 
-import {isError} from '../../utils/isError'
+import {isError} from '../../utils/isError.ts'
 
-import {build_simple_variable} from '../../declaration'
+import {build_simple_variable} from '../../declaration/index.ts'
 
-import {generate_body} from '../widget/body'
+import {generate_body} from '../widget/body.ts'
 
-import {generate_as_cast_to_list} from '../template_context/list'
+import {generate_as_cast_to_list} from '../template_context/list.ts'
 
-import {CodeFragment} from '../codefragment'
+import {CodeFragment} from '../codefragment.ts'
 
 export function macro_foreach(
   ctx: WidgetGenContext, scope: VarScope,

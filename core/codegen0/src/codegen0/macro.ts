@@ -1,10 +1,10 @@
-import {ElementNode} from '@yatt/lrxml'
+import {ElementNode} from '../deps.ts'
 
-import {WidgetGenContext} from './context'
+import {WidgetGenContext} from './context.ts'
 
-import {VarScope} from './varscope'
+import {VarScope} from './varscope.ts'
 
-import {CodeFragment} from './codefragment'
+import {CodeFragment} from './codefragment.ts'
 
 export type CGenMacro = (
   ctx: WidgetGenContext, scope: VarScope, node: ElementNode

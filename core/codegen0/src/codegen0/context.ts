@@ -1,13 +1,13 @@
 import {
   TemplateDeclaration, BuilderSession, Part, Widget, Entity
   , BuilderContextClass
-} from '../declaration/'
+} from '../declaration/index.ts'
 
-export {Part, Widget, Entity} from '../declaration/'
+export type {Part, Widget, Entity} from '../declaration/index.ts'
 
-import {MacroDict} from './macro'
+import {MacroDict} from './macro.ts'
 
-import {primaryNS, entFnPrefix} from '../config'
+import {primaryNS, entFnPrefix} from '../config.ts'
 
 export type CGenSession  = BuilderSession & {
   templateName: string[]
@@ -58,5 +58,5 @@ export class CodeGenContextClass<PartT extends Part, S extends CGenSession = CGe
     }
 }
 
-export {finalize_codefragment} from './codefragment'
+export {finalize_codefragment} from './codefragment.ts'
 

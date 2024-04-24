@@ -1,4 +1,4 @@
 export {
   find_widget
   , find_entity
-} from './find'
+} from './find.ts'

@@ -1,4 +1,4 @@
-#!/usr/bin/env ts-node
+#!/usr/bin/env -S deno run -A
 
 import {readFileSync, existsSync} from 'node:fs'
 
@@ -6,7 +6,7 @@ import {readFileSync, existsSync} from 'node:fs'
 
 type FunctionMG = {name?: string}
 
-import {upward_dirs} from '../../path'
+import {upward_dirs} from '../../path.ts'
 
 export function list_entity_functions(rootName: string): {[k: string]: any} {
 
@@ -46,7 +46,8 @@ function find_file_with_extension(rootName: string, extensions: string[])
   }
 }
 
-if (module.id === '.') {
+if (import.meta.main) {
+  const process = await import("node:process")
   let [fileName] = process.argv.slice(2)
 
   console.log(list_entity_functions(fileName))

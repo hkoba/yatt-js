@@ -1,10 +1,10 @@
-#!/usr/bin/env ts-node
+#!/usr/bin/env -S deno run -A
 
 import * as Path from 'node:path'
 
 import * as Fs from 'node:fs'
 
-import {YattConfig} from '../config'
+import {YattConfig} from '../config.ts'
 
 import {
   Widget,
@@ -13,8 +13,8 @@ import {
   YattBuildConfig,
   build_template_declaration,
   TemplateDeclaration,
-} from '../declaration'
-import { DeclTree } from '../declaration/context'
+} from '../declaration/index.ts'
+import { DeclTree } from '../declaration/context.ts'
 
 //
 // DEBUG=1 src/part-finder/find.ts --libDirs=test/input/ex1/ytmpl  test/input/ex1/public/subgroup1/foo.ytjs foo:bar
@@ -167,15 +167,16 @@ function refresh(
 }
 
 
-if (module.id === ".") {
+if (import.meta.main) {
   (async () => {
+    const process = await import("node:process")
     let [...args] = process.argv.slice(2)
 
     // const Fs = await import("fs")
     // const Path = await import("node:path")
 
-    const {parse_long_options} = await import('@yatt/lrxml')
-    const {build_template_declaration} = await import("../declaration/")
+    const {parse_long_options} = await import('../deps.ts')
+    const {build_template_declaration} = await import("../declaration/index.ts")
 
     const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
     let config: YattConfig & {lookup_only?: string, entity?: boolean} = {

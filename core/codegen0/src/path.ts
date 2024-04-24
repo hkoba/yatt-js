@@ -1,12 +1,15 @@
-#!/usr/bin/env ts-node
+#!/usr/bin/env -S deno run -A
 
 // XXX: Remove node path dependencies
 import path from 'node:path'
-import {strictEqual} from 'assert'
+import {strictEqual} from 'node:assert'
 
-import {YattConfig} from './config'
+import {YattConfig} from './config.ts'
+
+const __dirname = new URL('.', import.meta.url).pathname;
 
 // After transpilation, jsDir will become $base/lib
+
 export const jsDir = __dirname
 // Revert $base/src
 export const srcDir = path.join(path.dirname(jsDir), 'src')
@@ -127,7 +130,8 @@ export function* upward_dirs(
   }
 }
 
-if (module.id === ".") {
+if (import.meta.main) {
+  const process = await import("node:process")
   const [cmd, ...args] = process.argv.slice(2);
   switch (cmd) {
     case "longestPrefixDir":

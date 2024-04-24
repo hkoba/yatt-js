@@ -28,7 +28,6 @@
   },
   "homepage": "https://github.com/hkoba/yatt-js#readme",
   "dependencies": {
-    "@yatt/lrxml": "^0.0.1",
     "source-map": "^0.7.4",
     "typescript": "^4.4.2"
   }

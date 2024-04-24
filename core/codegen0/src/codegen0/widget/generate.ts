@@ -1,11 +1,11 @@
-import {BodyNode} from '@yatt/lrxml'
-import {WidgetGenContext} from '../context'
-import {VarScope} from '../varscope'
+import {BodyNode} from '../../deps.ts'
+import {WidgetGenContext} from '../context.ts'
+import {VarScope} from '../varscope.ts'
 
-import {generate_argdecls} from './argdecls'
-import {generate_body} from './body'
+import {generate_argdecls} from './argdecls.ts'
+import {generate_body} from './body.ts'
 
-import {CodeFragment, joinAsArray, typeAnnotation} from '../codefragment'
+import {CodeFragment, joinAsArray, typeAnnotation} from '../codefragment.ts'
 
 export function generate_widget(ctx: WidgetGenContext, nodeList: BodyNode[])
  : CodeFragment

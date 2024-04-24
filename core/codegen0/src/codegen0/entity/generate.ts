@@ -1,10 +1,10 @@
-import {Entity} from '../../declaration'
+import {Entity} from '../../declaration/index.ts'
 
-import {CodeGenContext} from '../context'
+import {CodeGenContext} from '../context.ts'
 
-import {CodeFragment, joinAsArray} from '../codefragment'
+import {CodeFragment, joinAsArray} from '../codefragment.ts'
 
-import {varTypeExpr} from '../widget/vartype'
+import {varTypeExpr} from '../widget/vartype.ts'
 
 export function generate_entity(ctx: CodeGenContext<Entity>): CodeFragment {
   let program: CodeFragment = [

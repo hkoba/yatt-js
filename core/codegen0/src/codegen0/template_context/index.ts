@@ -1,6 +1,6 @@
-import {Node} from '@yatt/lrxml'
+import {Node} from '../../deps.ts'
 
-import {CodeFragment} from '../codefragment'
+import {CodeFragment} from '../codefragment.ts'
 
 export {CodeFragment}
 

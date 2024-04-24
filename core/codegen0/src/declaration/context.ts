@@ -2,15 +2,15 @@ import {
   ParserSession,
   ScanningContext,
   AttItem
-} from '@yatt/lrxml'
+} from '../deps.ts'
 
-import {YattParams, YattConfig} from '../config'
+import {YattParams, YattConfig} from '../config.ts'
 
-import { Part } from './part'
+import { Part } from './part.ts'
 
-import { VarTypeMap } from './vartype'
+import { VarTypeMap } from './vartype.ts'
 
-import { TemplateDeclaration } from './types'
+import { TemplateDeclaration } from './types.ts'
 
 export type YattBuildConfig = YattConfig & {
   builders?: BuilderMap

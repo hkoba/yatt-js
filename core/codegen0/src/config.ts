@@ -1,10 +1,10 @@
-import {LrxmlParams, lrxmlParams, IsLrxmlParams} from '@yatt/lrxml'
+import {LrxmlParams, lrxmlParams, IsLrxmlParams} from './deps.ts'
 
 export const yattRcFile = ".htyattrc"
 
-import {YattProjectParams, applyProjectStyle} from "./project/layout"
+import {YattProjectParams, applyProjectStyle} from "./project/layout.ts"
 
-import {CGenMacro} from "./codegen0/macro"
+import {CGenMacro} from "./codegen0/macro.ts"
 
 export type YattParams = LrxmlParams & YattProjectParams & {
   projectStyle?: string

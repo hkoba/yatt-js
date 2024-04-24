@@ -1,32 +1,32 @@
-#!/usr/bin/env ts-node
+#!/usr/bin/env -S deno run -A
 
-import {parse_template} from '@yatt/lrxml'
+import {parse_template} from '../../deps.ts'
 
-import {CodeGenContextClass, CGenSession, finalize_codefragment} from '../context'
+import {CodeGenContextClass, CGenSession, finalize_codefragment} from '../context.ts'
 import {
   build_template_declaration, TemplateDeclaration
   , BuilderContextClass
   , YattBuildConfig
   // , Widget, Entity
-} from '../../declaration'
-import {generate_widget} from '../widget/generate'
+} from '../../declaration/index.ts'
+import {generate_widget} from '../widget/generate.ts'
 
-import {generate_entity} from '../entity/generate'
+import {generate_entity} from '../entity/generate.ts'
 
-import {generate_action} from '../action/generate'
+import {generate_action} from '../action/generate.ts'
 
-import {yattRcFile} from '../../config'
+import {yattRcFile} from '../../config.ts'
 
-import {srcDir, templatePath} from '../../path'
+import {srcDir, templatePath} from '../../path.ts'
 
-import {CGenMacro} from '../macro'
-import {builtinMacros} from '../macro/'
+import {CGenMacro} from '../macro.ts'
+import {builtinMacros} from '../macro/index.ts'
 
-import {CodeFragment} from '../codefragment'
+import {CodeFragment} from '../codefragment.ts'
 
-import {TranspileOutput} from '../output'
+import {TranspileOutput} from '../output.ts'
 
-import {list_entity_functions} from './list_entity_functions'
+import {list_entity_functions} from './list_entity_functions.ts'
 
 import * as Path from 'node:path'
 import {statSync} from 'node:fs'
@@ -119,10 +119,11 @@ export function generate_namespace_from_template(
   ), session};
 }
 
-if (module.id === '.') {
+if (import.meta.main) {
   (async () => {
-    const { parse_long_options } = await import('@yatt/lrxml')
+    const { parse_long_options } = await import('../../deps.ts')
     const { readFileSync } = await import('node:fs')
+    const process = await import("node:process")
 
     let args = process.argv.slice(2)
     const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0

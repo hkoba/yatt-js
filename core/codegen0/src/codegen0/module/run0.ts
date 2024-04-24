@@ -1,17 +1,17 @@
-#!/usr/bin/env ts-node
+#!/usr/bin/env -S deno run -A
 
-import {generate_module} from './generate'
+import {generate_module} from './generate.ts'
 
-import {YattConfig} from '../../config'
+import {YattConfig} from '../../config.ts'
 
 // XXX: Remove node path dependencies
 import {readFileSync} from 'node:fs'
 
-import {compile, makeProgram, reportDiagnostics} from '../../utils/compileTs'
+import {compile, makeProgram, reportDiagnostics} from '../../utils/compileTs.ts'
 
-import {yatt} from '../../yatt'
+import {yatt} from '../../yatt.ts'
 
-import { parse_long_options } from '@yatt/lrxml';
+import { parse_long_options } from '../../deps.ts';
 
 export function runFile(filename: string, config: YattConfig): string {
   const source = readFileSync(filename, {encoding: "utf-8"})
@@ -56,8 +56,9 @@ export function runSource(source: string, config: YattConfig & {filename: string
   return CON.buffer;
 }
 
-if (module.id === '.') {
+if (import.meta.main) {
   (async () => {
+    const process = await import("node:process")
     let args = process.argv.slice(2)
     const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
     let config = {

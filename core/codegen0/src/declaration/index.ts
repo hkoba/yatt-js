@@ -2,24 +2,31 @@ export {
   build_template_declaration,
   declarationBuilderSession,
   builtin_builders
-} from './createPart'
+} from './createPart.ts'
 
-export {
+export type {
   Part, Widget, makeWidget, Action, Entity
-} from './part'
+} from './part.ts'
 
-export {
+export type {
   VarTypeSpec, Variable, WidgetVar, DelegateVar, DefaultFlag
-  , build_simple_variable
-} from './vartype'
+} from './vartype.ts'
 
 export {
+  build_simple_variable
+} from './vartype.ts'
+
+export {BuilderContextClass} from './context.ts'
+export type {
   YattBuildConfig,
-  BuilderContext, BuilderContextClass, BuilderSession,
-  BuilderMap, DeclarationProcessor
-} from './context'
+  BuilderContext,
+  BuilderSession,
+  BuilderMap,
+  DeclarationProcessor
+} from './context.ts'
 
-export {
+export type {
   TemplateDeclaration
   , PartMapType, RouteMapType
-} from './types'
+} from './types.ts'
+

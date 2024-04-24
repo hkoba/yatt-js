@@ -1,13 +1,13 @@
-import {AttItem, isBareLabeledAtt, isIdentOnly, hasLabel, hasQuotedStringValue} from '@yatt/lrxml'
+import {AttItem, isBareLabeledAtt, isIdentOnly, hasLabel, hasQuotedStringValue} from '../deps.ts'
 
-import { BuilderContext } from './context'
+import { BuilderContext } from './context.ts'
 
-import {Widget, Part, makeWidget} from './part'
+import {Widget, Part, makeWidget} from './part.ts'
 
 import {
   Variable, build_simple_variable
   , VarTypeSpec, DefaultFlag
-} from './vartype'
+} from './vartype.ts'
 
 export type ArgAdder = {
   name: string, dep: string, fun: (widget: Widget) => ArgAdder | undefined

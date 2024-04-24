@@ -1,12 +1,12 @@
-import { Node } from '@yatt/lrxml'
-import {WidgetGenContext, Widget} from '../../context'
-import {Variable, TemplateDeclaration} from '../../../declaration'
-import {VarScope} from '../../varscope'
-import {generate_putargs} from './putargs'
+import { Node } from '../../../deps.ts'
+import {WidgetGenContext, Widget} from '../../context.ts'
+import {Variable, TemplateDeclaration} from '../../../declaration/index.ts'
+import {VarScope} from '../../varscope.ts'
+import {generate_putargs} from './putargs.ts'
 
-import {CodeFragment, joinAsArray} from '../../codefragment'
+import {CodeFragment, joinAsArray} from '../../codefragment.ts'
 
-import {find_widget} from '../../../part-finder'
+import {find_widget} from '../../../part-finder/index.ts'
 
 export function generate_element(
   ctx: WidgetGenContext, scope: VarScope, node: Node & {kind: 'element'}

@@ -1,11 +1,11 @@
-import {AttItem} from '@yatt/lrxml'
-import {Part, Widget, makeWidget} from './part'
+import {AttItem} from '../deps.ts'
+import {Part, Widget, makeWidget} from './part.ts'
 
-import {BuilderContext} from './context'
+import {BuilderContext} from './context.ts'
 
-import {build_delegate_variable_adder} from './delegate'
+import {build_delegate_variable_adder} from './delegate.ts'
 
-import {add_args, ArgAdder} from './addArgs'
+import {add_args, ArgAdder} from './addArgs.ts'
 
 export type VarTypeMap = {
   simple: Map<string, SimpleVariableBuilder>;

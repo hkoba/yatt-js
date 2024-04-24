@@ -1,4 +1,5 @@
-import { PartBase, PartKind, Part, Widget, Action, Entity } from './part'
+import type { PartBase, PartKind, Part, Widget, Action, Entity } from './part.ts'
+export type { PartBase, PartKind, Part, Widget, Action, Entity } from './part.ts'
 
 export type PartType = Widget | Action | Entity
 
@@ -37,7 +38,7 @@ export class TemplateDeclaration {
 
 }
 
-export interface PartMapType {
+export type PartMapType = {
   widget:  Map<string, Widget>;
   action:  Map<string, Action>;
   entity:  Map<string, Entity>;

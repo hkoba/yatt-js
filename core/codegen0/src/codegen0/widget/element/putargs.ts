@@ -1,14 +1,14 @@
 import {
   Node, AttItem, isIdentOnly, isBareLabeledAtt, hasStringValue
-} from '@yatt/lrxml'
-import {WidgetGenContext, Widget} from '../../context'
-import {VarScope} from '../../varscope'
-import {generate_argdecls} from '../argdecls'
-import {generate_body} from '../body'
+} from '../../../deps.ts'
+import {WidgetGenContext, Widget} from '../../context.ts'
+import {VarScope} from '../../varscope.ts'
+import {generate_argdecls} from '../argdecls.ts'
+import {generate_body} from '../body.ts'
 
-import {CodeFragment, joinAsArray} from '../../codefragment'
+import {CodeFragment, joinAsArray} from '../../codefragment.ts'
 
-import {generate_as_cast_to} from '../../template_context/cast'
+import {generate_as_cast_to} from '../../template_context/cast.ts'
 
 export function generate_putargs(
   ctx: WidgetGenContext, scope: VarScope, node: Node & {kind: 'element'}

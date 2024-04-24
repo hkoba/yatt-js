@@ -1,11 +1,11 @@
-#!/usr/bin/env ts-node
+#!/usr/bin/env -S deno run -A
 
 //// ./build.ts --outDir=example/dist core/lrxml/test/input/t00[^25]*
 
-import {YattConfig} from '../config'
-import {longestPrefixDir, outFileName} from '../path'
-import {generate_namespace} from './namespace/generate'
-import {generate_module} from './module/generate'
+import {YattConfig} from '../config.ts'
+import {longestPrefixDir, outFileName} from '../path.ts'
+import {generate_namespace} from './namespace/generate.ts'
+import {generate_module} from './module/generate.ts'
 
 import {readFileSync, writeFileSync} from 'node:fs'
 import * as Path from 'node:path'
@@ -34,9 +34,10 @@ export function build(fileList: string[], config: YattConfig) {
   }
 }
 
-if (module.id === ".") {
+if (import.meta.main) {
   (async () => {
-    const { parse_long_options } = await import('@yatt/lrxml')
+    const { parse_long_options } = await import('../deps.ts')
+    const process = await import("node:process")
 
     let args = process.argv.slice(2)
     const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0

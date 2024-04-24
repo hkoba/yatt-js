@@ -1,6 +1,6 @@
-import {CodeGenContext, Part} from '../context'
+import {CodeGenContext, Part} from '../context.ts'
 
-import {CodeFragment, Argument, Statement} from './index'
+import {CodeFragment, Argument, Statement} from './index.ts'
 
 export function as_print<T extends Part>(ctx: CodeGenContext<T>, frag: Argument | Statement): CodeFragment {
   switch (frag.kind) {

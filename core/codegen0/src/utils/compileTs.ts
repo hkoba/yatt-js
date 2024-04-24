@@ -4,7 +4,7 @@ export {Module}
 
 import ts = require('typescript')
 
-import {extract_line, extract_prefix_spec} from '@yatt/lrxml'
+import {extract_line, extract_prefix_spec} from '../deps.ts'
 
 export function compile(script: string, filename: string): Module {
   type compiler = (this: Module, src: string, id: string) => any;

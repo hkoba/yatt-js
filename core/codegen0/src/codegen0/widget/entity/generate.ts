@@ -1,12 +1,12 @@
-import {Node, EntPathItem, EntTerm, isVarOrCall} from '@yatt/lrxml'
-import {CodeGenContext, Part} from '../../context'
-import {VarScope} from '../../varscope'
-import {escapeAsStringLiteral} from '../../escape'
+import {Node, EntPathItem, EntTerm, isVarOrCall} from '../../../deps.ts'
+import {CodeGenContext, Part} from '../../context.ts'
+import {VarScope} from '../../varscope.ts'
+import {escapeAsStringLiteral} from '../../escape.ts'
 
-import {CodeFragment, joinAsArray} from '../../codefragment'
-import type {Argument} from '../../template_context/'
+import {CodeFragment, joinAsArray} from '../../codefragment.ts'
+import type {Argument} from '../../template_context/index.ts'
 
-import {find_entity} from '../../../part-finder'
+import {find_entity} from '../../../part-finder/index.ts'
 
 export function generate_entity<T extends Part>(
   ctx: CodeGenContext<T>, scope: VarScope, node: Node & {kind: 'entity'},

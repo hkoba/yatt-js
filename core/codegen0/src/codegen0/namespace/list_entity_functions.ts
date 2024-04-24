@@ -1,4 +1,4 @@
-#!/usr/bin/env ts-node
+#!/usr/bin/env -S deno run -A
 
 import {readFileSync} from 'node:fs'
 
@@ -30,7 +30,8 @@ export function list_entity_functions(fileName: string, nsName: string): {[k: st
   return dict
 }
 
-if (module.id === '.') {
+if (import.meta.main) {
+  const process = await import("node:process")
   let [fileName, nsName] = process.argv.slice(2)
   console.log(list_entity_functions(fileName, nsName ?? '$yatt'))
 }

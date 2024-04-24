@@ -1,14 +1,14 @@
-import {Term} from '@yatt/lrxml'
+import {Term} from '../../deps.ts'
 
-import {CodeGenContext, Part} from '../context'
-import {VarScope} from '../varscope'
+import {CodeGenContext, Part} from '../context.ts'
+import {VarScope} from '../varscope.ts'
 
-import {CodeFragment} from '../codefragment'
+import {CodeFragment} from '../codefragment.ts'
 
-import {Variable} from '../../declaration/vartype'
+import {Variable} from '../../declaration/vartype.ts'
 
-import {generate_as_cast_to_text} from './text'
-import {generate_as_cast_to_list} from './list'
+import {generate_as_cast_to_text} from './text.ts'
+import {generate_as_cast_to_list} from './list.ts'
 
 export function generate_as_cast_to<T extends Part>(
   ctx: CodeGenContext<T>, scope: VarScope, variable: Variable, term: Term

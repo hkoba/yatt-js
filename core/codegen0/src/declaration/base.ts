@@ -1,6 +1,6 @@
-import { AttItem, hasQuotedStringValue, isBareLabeledAtt } from '@yatt/lrxml'
+import { AttItem, hasQuotedStringValue, isBareLabeledAtt } from '../deps.ts'
 
-import { DeclarationProcessor, BuilderContext } from './context'
+import { DeclarationProcessor, BuilderContext } from './context.ts'
 
 export class BaseProcessor implements DeclarationProcessor {
   readonly kind = 'base'
