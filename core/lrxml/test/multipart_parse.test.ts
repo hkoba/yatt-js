@@ -1,6 +1,7 @@
 #!/usr/bin/env -S deno run -A
 
-import {assertEquals} from 'https://deno.land/std/assert/mod.ts'
+import {test} from "@cross/test"
+import {assertEquals} from '@std/assert'
 
 import {parse_multipart, AttItem, hasLabel, isIdentOnly} from '../src/index.ts'
 
@@ -33,13 +34,13 @@ import {parse_multipart, AttItem, hasLabel, isIdentOnly} from '../src/index.ts'
     })
   };
 
-  Deno.test("widget declaration", () => {
+  test("widget declaration", () => {
     assertEquals(it(`<!yatt:widget foo bar='value/0'>
 `), [
   {kind: "widget", attlist: ['foo', ['bar', 'value/0']]}
 ])})
 
-  Deno.test("widget call, declaration and entity reference", () => {
+  test("widget call, declaration and entity reference", () => {
     assertEquals(it(`<yatt:foo x=3 y="8"/>
 
 <!yatt:widget foo x y="?7">
@@ -51,7 +52,7 @@ import {parse_multipart, AttItem, hasLabel, isIdentOnly} from '../src/index.ts'
   {kind: "widget", attlist: ['foo', 'x', ['y', '?7']]},
 ])})
 
-  Deno.test("widget declaration with bracket quote", () => {
+  test("widget declaration with bracket quote", () => {
     assertEquals(it(`<!yatt:widget main title>
 
 <!yatt:widget container main=[delegate]>

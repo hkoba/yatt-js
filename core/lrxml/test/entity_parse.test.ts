@@ -1,6 +1,7 @@
 #!/usr/bin/env -S deno run -A
 
-import {assertEquals} from 'https://deno.land/std/assert/mod.ts'
+import {test as cross_test} from "@cross/test"
+import {assertEquals} from '@std/assert'
 
 import {parserContext} from '../src/context.ts'
 
@@ -10,7 +11,7 @@ import {
 
 {
   const test = (source: string, expect: any) => {
-    Deno.test(source, () => {
+    cross_test(source, () => {
       let ctx = parserContext({
         source, config: {}
       })

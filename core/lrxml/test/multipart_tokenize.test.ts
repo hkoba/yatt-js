@@ -1,6 +1,7 @@
 #!/usr/bin/env -S deno run -A
 
-import {assertEquals} from 'https://deno.land/std/assert/mod.ts'
+import {test} from "@cross/test"
+import {assertEquals} from '@std/assert'
 
 import { range_text, tokenize_multipart } from '../src/index.ts'
 
@@ -22,12 +23,12 @@ const it = (source: string) => {
   });
 }
 
-Deno.test("Empty results empty", () => {
+test("Empty results empty", () => {
   assertEquals(it('')
     , []
   )})
 
-Deno.test("decl begin, end and a text", () => {
+test("decl begin, end and a text", () => {
   assertEquals(it(`<!yatt:foo>
 AEIOU
 `), [
@@ -36,7 +37,7 @@ AEIOU
   {kind: "text", text: "AEIOU\n", line: 2}
 ])})
 
-Deno.test("decls with arguments", () => {
+test("decls with arguments", () => {
   assertEquals(it(`<!yatt:foo bar x=3 y="8" z='9'>\n`), [
     {kind: "decl_begin", text: "<!yatt:foo", line: 1},
     {kind: "identplus", text: "bar", line: 1},
@@ -52,7 +53,7 @@ Deno.test("decls with arguments", () => {
     {kind: "decl_end", text: ">\n", line: 1},
   ])})
 
-Deno.test("yatt comments and decls", () => {
+test("yatt comments and decls", () => {
   assertEquals(it(`<!--#yatt
 
   <!yatt:foo>
@@ -75,7 +76,7 @@ Deno.test("yatt comments and decls", () => {
   `}
   ])})
 
-Deno.test("more complex example", () => {
+test("more complex example", () => {
   assertEquals(it(`<!yatt:widget foo>
 foooooooooooo
 ooooooooooooo

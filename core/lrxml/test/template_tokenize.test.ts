@@ -4,7 +4,8 @@
 // * enable 'esModuleInterop' flags
 // * prepare tsconfig.build.json and add rootDir: src, exclude: ["test"]
 
-import {assertEquals} from 'https://deno.land/std/assert/mod.ts'
+import {test} from "@cross/test"
+import {assertEquals} from '@std/assert'
 
 import { range_text, hasLabel, parse_multipart, tokenize } from '../src/index.ts'
 
@@ -42,11 +43,11 @@ const it = (source: string) => {
   })
 }
 
-Deno.test("Empty string results empty tokens", () => {
+test("Empty string results empty tokens", () => {
   assertEquals(it(``), [])
 })
 
-Deno.test("A declaration with simple names and its body with entity references", () => {
+test("A declaration with simple names and its body with entity references", () => {
   assertEquals(it(`<!yatt:foo bar x y>
 <h2>&yatt:x;</h2>
 
@@ -74,7 +75,7 @@ Deno.test("A declaration with simple names and its body with entity references",
   }
 ])})
 
-Deno.test("A declaration with name=value pair list", () => {
+test("A declaration with name=value pair list", () => {
   assertEquals(it(`<!yatt:foo bar x=3 y="aaa" z='bbb'>
 content
 `), [

@@ -1,6 +1,7 @@
 #!/usr/bin/env -S deno run -A
 
-import {assertEquals} from 'https://deno.land/std/assert/mod.ts'
+import {test} from "@cross/test"
+import {assertEquals} from '@std/assert'
 
 import {parse_multipart, parse_template, Node, Text} from '../src/index.ts'
 
@@ -51,7 +52,7 @@ import type {AttItem} from '../src/index.ts'
     })
   };
 
-  Deno.test("widget call", () => {
+  test("widget call", () => {
     const res = it(`<yatt:foo x y=3>
 <:yatt:bar>aa</:yatt:bar>
 aiueo
