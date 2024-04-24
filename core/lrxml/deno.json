@@ -1,5 +1,9 @@
 {
+  "name": "@yatt/lrxml",
+  "version": "0.0.1",
+  "exports": "./src/index.ts",
   "imports": {
+    "@yatt/lrxml": "core/lrxml/src/index.ts",
     "@cross/test": "jsr:@cross/test@^0.0.9",
     "@std/assert": "jsr:@std/assert@^0.223.0"
   }
