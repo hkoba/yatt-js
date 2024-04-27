@@ -1,6 +1,6 @@
 import type {Node, AnonNode} from '../deps.ts'
 
-import {SourceMapGenerator} from 'source-map'
+import {SourceMapGenerator} from 'npm:source-map'
 
 import {count_newlines} from '../deps.ts'
 
