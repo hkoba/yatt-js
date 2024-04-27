@@ -11,4 +11,4 @@ jobs:
         with:
           deno-version: v1.x # Uses latest deno version 1 
       - run: deno add @cross/test @std/assert # Installs dependencies from jsr.io
-      - run: deno test  # Runs tests
+      - run: deno test --allow-read # Runs tests
