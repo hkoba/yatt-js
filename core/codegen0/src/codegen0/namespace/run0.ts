@@ -1,14 +1,16 @@
 #!/usr/bin/env -S deno run -A
 
-import {generate_namespace} from './generate'
+import {generate_namespace} from './generate.ts'
 
-import {YattConfig} from '../../config'
+import {YattConfig} from '../../config.ts'
 
 import {readFileSync} from 'node:fs'
 
-import {compile, makeProgram, reportDiagnostics} from '../../utils/compileTs'
+import process from 'node:process'
 
-import {yatt} from '../../yatt'
+import {compile, makeProgram, reportDiagnostics} from '../../utils/compileTs.ts'
+
+import {yatt} from '../../yatt.ts'
 
 import { parse_long_options } from '../../deps.ts';
 

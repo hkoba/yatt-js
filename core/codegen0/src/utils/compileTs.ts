@@ -1,8 +1,9 @@
-import Module = require('node:module');
+
+import Module from 'node:module';
 // Use this style because class Module is exporeted via 'export ='
 export {Module}
 
-import ts = require('typescript')
+import ts from 'npm:typescript'
 
 import {extract_line, extract_prefix_spec} from '../deps.ts'
 

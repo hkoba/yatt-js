@@ -7,6 +7,8 @@ import {YattConfig} from '../../config.ts'
 // XXX: Remove node path dependencies
 import {readFileSync} from 'node:fs'
 
+import process from 'node:process'
+
 import {compile, makeProgram, reportDiagnostics} from '../../utils/compileTs.ts'
 
 import {yatt} from '../../yatt.ts'
@@ -58,7 +60,6 @@ export function runSource(source: string, config: YattConfig & {filename: string
 
 if (import.meta.main) {
   (async () => {
-    const process = await import("node:process")
     let args = process.argv.slice(2)
     const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
     let config = {

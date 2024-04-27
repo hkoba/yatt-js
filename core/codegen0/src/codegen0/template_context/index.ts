@@ -1,8 +1,8 @@
-import {Node} from '../../deps.ts'
+import type {Node} from '../../deps.ts'
 
-import {CodeFragment} from '../codefragment.ts'
+import type {CodeFragment} from '../codefragment.ts'
 
-export {CodeFragment}
+export type {CodeFragment}
 
 export type Argument =
   {kind: 'argument', items: CodeFragment, source?: Node, need_runtime_escaping?: boolean}
