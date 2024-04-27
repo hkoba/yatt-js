@@ -1,21 +1,22 @@
-#!/usr/bin/env ts-node
+#!/usr/bin/env -S deno run -A
 
-import tap from 'tap';
+import {test} from "@cross/test"
+import {assertEquals} from '@std/assert'
 
-import {longestPrefixDir, templatePath} from '../src/path'
+import {longestPrefixDir, templatePath} from '../src/path.ts'
 
-{
-  tap.same(templatePath('foo/bar/baz.js'), ['baz']);
-  tap.same(templatePath('foo/bar/baz.js', 'foo/'), ['bar', 'baz']);
+test("templatePath", () => {
+  assertEquals(templatePath('foo/bar/baz.js'), ['baz']);
+  assertEquals(templatePath('foo/bar/baz.js', 'foo/'), ['bar', 'baz']);
 
-  tap.same(templatePath('/tmp/zsh3HWHBX'), ['zsh3HWHBX']);
-  tap.same(templatePath('/usr/src/foo/bar.js', '/usr/src/'), ['foo', 'bar']);
-}
+  assertEquals(templatePath('/tmp/zsh3HWHBX'), ['zsh3HWHBX']);
+  assertEquals(templatePath('/usr/src/foo/bar.js', '/usr/src/'), ['foo', 'bar']);
+})
 
-{
-  tap.same(longestPrefixDir(['foo.js', 'foo.js']), '');
-  tap.same(longestPrefixDir(['foo.js', 'bar.js']), '');
+test("longestPrefixDir", () => {
+  assertEquals(longestPrefixDir(['foo.js', 'foo.js']), '');
+  assertEquals(longestPrefixDir(['foo.js', 'bar.js']), '');
 
-  tap.same(longestPrefixDir(['foo/bar/baz.js', 'foo/bar/qux.js']), 'foo/bar/');
-  tap.same(longestPrefixDir(['foo/bar/baz.js', 'foo/qux.js']), 'foo/');
-}
+  assertEquals(longestPrefixDir(['foo/bar/baz.js', 'foo/bar/qux.js']), 'foo/bar/');
+  assertEquals(longestPrefixDir(['foo/bar/baz.js', 'foo/qux.js']), 'foo/');
+})
