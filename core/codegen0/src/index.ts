@@ -1,13 +1,13 @@
-export * from './config'
+export * from './config.ts'
 
-export * from './declaration'
+export * from './declaration/index.ts'
 
-export * from './codegen0'
+export * from './codegen0/index.ts'
 
-export * from './utils/compileTs'
+export * from './utils/compileTs.ts'
 
-export * from './yatt'
+export * from './yatt.ts'
 
-export * as path from './path'
+export * as path from './path.ts'
 
-export * from './project/layout'
+export * from './project/layout.ts'
