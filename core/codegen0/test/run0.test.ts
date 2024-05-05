@@ -18,7 +18,7 @@ import {rootname} from '../src/path.ts'
     const testFile = (filename: string, expect: string) =>
       assertEquals(runFileNS(dir + filename, {
         connectionTypeName: 'yatt.runtime.Connection',
-        debug: {codegen: parseInt(process.env['DEBUG_YATT_CODEGEN'] ?? '', 0)}
+        debug: {codegen: parseInt(process.env['DEBUG_YATT_CODEGEN'] ?? '', 10) || 0}
       }), expect, filename);
     
     testFile("widget.ytjs", `<h2>3</h2>
@@ -34,7 +34,7 @@ aaa
     const testFile = (filename: string, expect: string) =>
       assertEquals(runFileMod(dir + filename, {
         connectionTypeName: 'yatt.runtime.Connection',
-        debug: {codegen: parseInt(process.env['DEBUG_YATT_CODEGEN'] ?? '', 0)}
+        debug: {codegen: parseInt(process.env['DEBUG_YATT_CODEGEN'] ?? '', 10) || 0}
       }), expect, filename);
     
     testFile("widget.ytjs", `<h2>3</h2>
