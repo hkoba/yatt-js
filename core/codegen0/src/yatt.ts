@@ -1,5 +1,3 @@
-#!/usr/bin/env -S deno run -A
-
 export namespace yatt {}
 
 export namespace yatt.runtime {
