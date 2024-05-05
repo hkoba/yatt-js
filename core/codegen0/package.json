@@ -7,9 +7,8 @@
     "yatt-js-lint": "dist/bin/yatt-js-lint.js"
   },
   "devDependencies": {
-    "@types/tap": "^15.0.2",
-    "tap": "^15.2.3",
-    "ts-node": "^10.2.1"
+    "@cross/test": "npm:@jsr/cross__test",
+    "@std/assert": "npm:@jsr/std__assert"
   },
   "scripts": {
     "b": "tsc -p tsconfig.build.json",

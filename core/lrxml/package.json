@@ -14,18 +14,9 @@
   },
   "author": "buribullet@gmail.com",
   "license": "MIT",
-  "devDependencies": {
-    "@rollup/plugin-commonjs": "^19.0.0",
-    "@rollup/plugin-node-resolve": "^13.0.0",
-    "@rollup/plugin-typescript": "^8.2.1",
-    "@types/tap": "^15.0.2",
-    "dts-bundle-generator": "^7.2.0",
-    "magic-string": "^0.25.7",
-    "rollup": "^2.52.1",
-    "rollup-plugin-preserve-shebangs": "^0.2.0",
-    "tap": "^15.2.3",
-    "ts-node": "^10.0.0",
-    "tslib": "^2.5.0",
-    "typescript": "^4.3.4"
-  }
+  "devDependencies": { 
+    "@cross/test": "npm:@jsr/cross__test",
+    "@std/assert": "npm:@jsr/std__assert" 
+  },
+  "dependencies": {}
 }
