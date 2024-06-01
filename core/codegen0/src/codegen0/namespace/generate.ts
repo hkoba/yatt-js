@@ -6,7 +6,6 @@ import {CodeGenContextClass, type CGenSession, finalize_codefragment} from '../c
 import {
   build_template_declaration, type TemplateDeclaration
   , BuilderContextClass
-  , type YattBuildConfig
   // , Widget, Entity
 } from '../../declaration/index.ts'
 import {generate_widget} from '../widget/generate.ts'
@@ -15,11 +14,14 @@ import {generate_entity} from '../entity/generate.ts'
 
 import {generate_action} from '../action/generate.ts'
 
-import {yattRcFile} from '../../config.ts'
+import {
+  yattRcFile,
+  type YattConfig, type YattParams,
+  isYattParams, yattParams
+} from '../../config.ts'
 
 import {srcDir, templatePath} from '../../path.ts'
 
-import type {CGenMacro} from '../macro.ts'
 import {builtinMacros} from '../macro/index.ts'
 
 import type {CodeFragment} from '../codefragment.ts'
@@ -35,11 +37,11 @@ export const DEFAULT_NAMESPACE = '$tmpl'
 
 export function generate_namespace(
   filename: string,
-  source: string, config: YattBuildConfig & {
-    macro?: Partial<CGenMacro>,
-  }
+  source: string, origConfig: YattConfig | YattParams
 ): TranspileOutput
 {
+
+  const config = isYattParams(origConfig) ? origConfig : yattParams(origConfig)
 
   const rootDir = Path.dirname(Path.dirname(Path.resolve(filename)))
   const entFnFile = `${rootDir}/root/${yattRcFile}.ts`
@@ -79,8 +81,13 @@ export function generate_namespace_from_template(
 {
   const program: CodeFragment[] = []
 
+  const config = session.params
+  const ext = config.genFileSuffix ?? "";
+
   if (session.params.exportNamespace) {
-    program.push(`import {yatt} from '${srcDir}/yatt'\n`);
+    program.push(`import * as runtime from '${srcDir}/yatt/runtime${ext}'\n`);
+    program.push(`import type {Connection} from '${srcDir}/yatt/runtime${ext}'\n`);
+    program.push(`export const yatt = {runtime}\n`);
     program.push(`export `);
   }
 
@@ -128,7 +135,7 @@ if (import.meta.main) {
 
     const args = process.argv.slice(2)
     const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
-    const config: YattBuildConfig & {
+    const config: (YattConfig | YattParams) & {
       sourcemap?: boolean, eachMapping?: boolean
     } = {
       debug: { declaration: debugLevel },

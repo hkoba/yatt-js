@@ -17,7 +17,7 @@ import {rootname} from '../src/path.ts'
   test(`namespace`, () => {
     const testFile = (filename: string, expect: string) =>
       assertEquals(runFileNS(dir + filename, {
-        connectionTypeName: 'yatt.runtime.Connection',
+        connectionTypeName: 'Connection',
         genFileSuffix: '',
         debug: {codegen: parseInt(process.env['DEBUG_YATT_CODEGEN'] ?? '', 10) || 0}
       }), expect, filename);

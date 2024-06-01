@@ -10,7 +10,7 @@ import process from 'node:process'
 
 import {compile, makeProgram, reportDiagnostics} from '../../utils/compileTs.ts'
 
-import {yatt} from '../../yatt.ts'
+import * as yatt from '../../yatt.ts'
 
 import { parse_long_options } from '../../deps.ts';
 

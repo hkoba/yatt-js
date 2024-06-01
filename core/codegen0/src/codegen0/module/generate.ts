@@ -66,9 +66,9 @@ export function generate_module(
   const rootPrefix = prefixUnderRootDir(filename, config.yattRoot)
   // XXX: yatt => yatt-runtime
   if (existsSync(`${config.yattRoot}/yatt.ts`)) {
-    program.push(`import {yatt} from '${rootPrefix}yatt${ext}'\n`);
+    program.push(`import * as yatt from '${rootPrefix}yatt${ext}'\n`);
   } else {
-    program.push(`import {yatt} from '${srcDir}/yatt${ext}'\n`);
+    program.push(`import * as yatt from '${srcDir}/yatt${ext}'\n`);
   }
 
   if (Object.keys(entFns).length) {
