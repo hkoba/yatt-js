@@ -1,1 +1,3 @@
-export * from '@yatt/lrxml'
+// XXX: export * from '@yatt/lrxml'
+// Workaround for bun
+export * from '../../lrxml/src/index.ts'
