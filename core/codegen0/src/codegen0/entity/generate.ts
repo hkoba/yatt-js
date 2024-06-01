@@ -1,13 +1,13 @@
-import {Entity} from '../../declaration/index.ts'
+import type {Entity} from '../../declaration/index.ts'
 
-import {CodeGenContext} from '../context.ts'
+import type {CodeGenContext} from '../context.ts'
 
-import {CodeFragment, joinAsArray} from '../codefragment.ts'
+import {type CodeFragment, joinAsArray} from '../codefragment.ts'
 
 import {varTypeExpr} from '../widget/vartype.ts'
 
 export function generate_entity(ctx: CodeGenContext<Entity>): CodeFragment {
-  let program: CodeFragment = [
+  const program: CodeFragment = [
     `export function `,
     {kind: 'name', code: ctx.part.name, source: ctx.part.nameNode},
   ]
@@ -32,7 +32,7 @@ export function generate_entity_argdecls(
   entityDecl: Entity
 ): CodeFragment[] {
 
-  let args: CodeFragment[] = []
+  const args: CodeFragment[] = []
 
   for (const [name, spec] of entityDecl.argMap.entries()) {
     const label = spec.attItem?.label

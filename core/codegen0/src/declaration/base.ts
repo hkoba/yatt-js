@@ -1,6 +1,6 @@
-import { AttItem, hasQuotedStringValue, isBareLabeledAtt } from '../deps.ts'
+import { type AttItem, hasQuotedStringValue, isBareLabeledAtt } from '../deps.ts'
 
-import { DeclarationProcessor, BuilderContext } from './context.ts'
+import { DeclarationProcessor, type BuilderContext } from './context.ts'
 
 export class BaseProcessor implements DeclarationProcessor {
   readonly kind = 'base'

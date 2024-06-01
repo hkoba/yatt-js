@@ -1,16 +1,16 @@
 import {
-  ParserSession,
-  ScanningContext,
-  AttItem
+  type ParserSession,
+  type AttItem,
+  ScanningContext
 } from '../deps.ts'
 
-import {YattParams, YattConfig} from '../config.ts'
+import type {YattParams, YattConfig} from '../config.ts'
 
-import { Part } from './part.ts'
+import type { Part } from './part.ts'
 
-import { VarTypeMap } from './vartype.ts'
+import type { VarTypeMap } from './vartype.ts'
 
-import { TemplateDeclaration } from './types.ts'
+import type { TemplateDeclaration } from './types.ts'
 
 export type YattBuildConfig = YattConfig & {
   builders?: BuilderMap
@@ -67,7 +67,7 @@ export class BuilderContextClass<S extends BuilderSession> extends ScanningConte
     if (! this.stash.has(key)) {
       this.stash.set(key, [value])
     } else {
-      let entry = this.stash.get(key);
+      const entry = this.stash.get(key);
       entry.push(value)
       this.stash.set(key, entry)
     }

@@ -2,7 +2,7 @@
 
 import {parse_template} from '../../deps.ts'
 
-import {YattConfig, YattParams, isYattParams, yattParams, primaryNS, yattRcFile} from '../../config.ts'
+import {type YattConfig, type YattParams, isYattParams, yattParams, primaryNS, yattRcFile} from '../../config.ts'
 
 import {
   build_template_declaration
@@ -18,9 +18,9 @@ import {generate_entity} from '../entity/generate.ts'
 
 import {generate_action} from '../action/generate.ts'
 
-import {CodeFragment, typeAnnotation} from '../codefragment.ts'
+import {type CodeFragment, typeAnnotation} from '../codefragment.ts'
 
-import {TranspileOutput} from '../output.ts'
+import type {TranspileOutput} from '../output.ts'
 
 import {builtinMacros} from '../macro/index.ts'
 
@@ -59,7 +59,7 @@ export function generate_module(
     ...builderSession
   }
 
-  let program: CodeFragment[] = []
+  const program: CodeFragment[] = []
 
   const rootPrefix = prefixUnderRootDir(filename, config.yattRoot)
   // XXX: yatt => yatt-runtime
@@ -82,20 +82,20 @@ export function generate_module(
   for (const part of template) {
     switch (part.kind) {
       case "action": {
-        let ctx = new CodeGenContextClass(template, part, session);
+        const ctx = new CodeGenContextClass(template, part, session);
         program.push(generate_action(ctx))
         break
       }
       case "entity": {
-        let ctx = new CodeGenContextClass(template, part, session);
+        const ctx = new CodeGenContextClass(template, part, session);
         program.push(generate_entity(ctx))
         break
       }
       case "widget": {
         if (part.raw_part == null)
           continue;
-        let ctx = new CodeGenContextClass(template, part, session);
-        let ast = parse_template(session, part.raw_part)
+        const ctx = new CodeGenContextClass(template, part, session);
+        const ast = parse_template(session, part.raw_part)
         program.push(generate_widget(ctx, ast))
         break
       }
@@ -129,13 +129,13 @@ if (import.meta.main) {
     const Path = await import('node:path')
     const process = await import('node:process')
 
-    let args = process.argv.slice(2)
+    const args = process.argv.slice(2)
     const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
-    let config = {debug: { declaration: debugLevel }}
+    const config = {debug: { declaration: debugLevel }}
     parse_long_options(args, {target: config})
 
     for (const filename of args) {
-      let source = readFileSync(filename, {encoding: "utf-8"})
+      const source = readFileSync(filename, {encoding: "utf-8"})
       const output = generate_module(Path.resolve(filename), source, config)
       process.stdout.write(output.outputText + '\n');
     }

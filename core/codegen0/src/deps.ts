@@ -1,1 +1,1 @@
-export * from '../../lrxml/src/index.ts'
+export * from '@yatt/lrxml'

@@ -1,12 +1,12 @@
-import {AttItem, isBareLabeledAtt, isIdentOnly, hasLabel, hasQuotedStringValue} from '../deps.ts'
+import {type AttItem, isBareLabeledAtt, isIdentOnly, hasLabel, hasQuotedStringValue} from '../deps.ts'
 
-import { BuilderContext } from './context.ts'
+import type { BuilderContext } from './context.ts'
 
-import {Widget, Part, makeWidget} from './part.ts'
+import {type Widget, type Part, makeWidget} from './part.ts'
 
 import {
-  Variable, build_simple_variable
-  , VarTypeSpec, DefaultFlag
+  type Variable, build_simple_variable
+  , type VarTypeSpec, type DefaultFlag
 } from './vartype.ts'
 
 export type ArgAdder = {
@@ -14,16 +14,16 @@ export type ArgAdder = {
 }
 
 export function parse_arg_spec(
-  ctx: BuilderContext, str: string, defaultType: string
+  _ctx: BuilderContext, str: string, defaultType: string
 ): VarTypeSpec {
   // XXX: typescript type extension
-  let match = /([\/\|\?!])/.exec(str)
+  const match = /([\/\|\?!])/.exec(str)
   if (match == null) {
     return { typeName: defaultType }
   } else {
-    let typeName = match.index ? str.substring(0, match.index) : defaultType;
-    let dflag = match[0]
-    let defaultValue = str.substring(match.index + 1);
+    const typeName = match.index ? str.substring(0, match.index) : defaultType;
+    const dflag = match[0]
+    const defaultValue = str.substring(match.index + 1);
     return { typeName, defaultSpec: [dflag as DefaultFlag, defaultValue] }
   }
 }
@@ -32,7 +32,7 @@ export function add_args(
   ctx: BuilderContext, part: Part, attlist: AttItem[]
 ): ArgAdder | undefined {
 
-  let gen = (function* () {
+  const gen = (function* () {
     for (const v of attlist) {
       yield v
     }
@@ -51,15 +51,15 @@ export function add_args_cont(
     }
     if (isBareLabeledAtt(att)) {
       //: name = SOMETHING
-      let name = att.label.value
+      const name = att.label.value
       if (att.kind === "bare" || att.kind === "sq" || att.kind === "dq"
           || att.kind === "identplus") {
         //: name="type?default"
         if (ctx.debug) {
           console.log(`kind ${att.kind}: ${name} = ${att.value}`)
         }
-        let spec = parse_arg_spec(ctx, att.value, "text")
-        let v = build_simple_variable(ctx, name, spec, {
+        const spec = parse_arg_spec(ctx, att.value, "text")
+        const v = build_simple_variable(ctx, name, spec, {
           attItem: att, argNo: part.argMap.size
         })
         part.argMap.set(name, v)
@@ -69,13 +69,13 @@ export function add_args_cont(
         if (att.value.length === 0) {
           ctx.token_error(att, `Empty arg declaration`)
         }
-        let attlist = ctx.copy_array(att.value)
+        const attlist = ctx.copy_array(att.value)
         //: attlist is [code x y z], [delegate x y z], [delegate:foo x y]
-        let fst = attlist.shift()!
+        const fst = attlist.shift()!
         //: fst is code, delegate (or "code", "delegate")
         if (isIdentOnly(fst)
             || !hasLabel(fst) && hasQuotedStringValue(fst)) {
-          let [givenTypeName, ...restName] = fst.value.split(/:/)
+          const [givenTypeName, ...restName] = fst.value.split(/:/)
 
           const rec = ctx.session.varTypeMap.nested.get(givenTypeName)
           if (rec == null) {
@@ -83,7 +83,7 @@ export function add_args_cont(
           }
           if (rec.kind === "callable") {
             //: name=[code]
-            let v = rec.fun(ctx, att, part.argMap.size, name, attlist);
+            const v = rec.fun(ctx, att, part.argMap.size, name, attlist);
             part.argMap.set(name, v)
           }
           else if (rec.kind === "delayed") {
@@ -107,8 +107,8 @@ export function add_args_cont(
     }
     else if (isIdentOnly(att)) {
       //: nameOnly
-      let name = att.value
-      let v = build_simple_variable(ctx, name, {typeName: "text"}, {
+      const name = att.value
+      const v = build_simple_variable(ctx, name, {typeName: "text"}, {
         attItem: att, argNo: part.argMap.size
       })
       part.argMap.set(name, v)

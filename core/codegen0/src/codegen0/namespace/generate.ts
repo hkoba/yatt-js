@@ -2,11 +2,11 @@
 
 import {parse_template} from '../../deps.ts'
 
-import {CodeGenContextClass, CGenSession, finalize_codefragment} from '../context.ts'
+import {CodeGenContextClass, type CGenSession, finalize_codefragment} from '../context.ts'
 import {
-  build_template_declaration, TemplateDeclaration
+  build_template_declaration, type TemplateDeclaration
   , BuilderContextClass
-  , YattBuildConfig
+  , type YattBuildConfig
   // , Widget, Entity
 } from '../../declaration/index.ts'
 import {generate_widget} from '../widget/generate.ts'
@@ -19,12 +19,12 @@ import {yattRcFile} from '../../config.ts'
 
 import {srcDir, templatePath} from '../../path.ts'
 
-import {CGenMacro} from '../macro.ts'
+import type {CGenMacro} from '../macro.ts'
 import {builtinMacros} from '../macro/index.ts'
 
-import {CodeFragment} from '../codefragment.ts'
+import type {CodeFragment} from '../codefragment.ts'
 
-import {TranspileOutput} from '../output.ts'
+import type {TranspileOutput} from '../output.ts'
 
 import {list_entity_functions} from './list_entity_functions.ts'
 
@@ -77,7 +77,7 @@ export function generate_namespace_from_template(
   template: TemplateDeclaration, session: CGenSession
 ): {outputText: string, session: CGenSession}
 {
-  let program: CodeFragment[] = []
+  const program: CodeFragment[] = []
 
   if (session.params.exportNamespace) {
     program.push(`import {yatt} from '${srcDir}/yatt'\n`);
@@ -91,20 +91,20 @@ export function generate_namespace_from_template(
   for (const part of template) {
     switch (part.kind) {
       case "action": {
-        let ctx = new CodeGenContextClass(template, part, session);
+        const ctx = new CodeGenContextClass(template, part, session);
         program.push(generate_action(ctx))
         break
       }
       case "entity": {
-        let ctx = new CodeGenContextClass(template, part, session);
+        const ctx = new CodeGenContextClass(template, part, session);
         program.push(generate_entity(ctx))
         break
       }
       case "widget": {
         if (part.raw_part == null)
           continue;
-        let ctx = new CodeGenContextClass(template, part, session, {hasThis: true});
-        let ast = parse_template(session, part.raw_part)
+        const ctx = new CodeGenContextClass(template, part, session, {hasThis: true});
+        const ast = parse_template(session, part.raw_part)
         program.push(generate_widget(ctx, ast))
       }
     }
@@ -112,7 +112,8 @@ export function generate_namespace_from_template(
 
   program.push('}\n')
 
-  let fileCtx = new BuilderContextClass(session)
+  // XXX
+  const _fileCtx = new BuilderContextClass(session)
 
   return {...finalize_codefragment(
     session.source, session.filename ?? '', program, {}
@@ -125,9 +126,9 @@ if (import.meta.main) {
     const { readFileSync } = await import('node:fs')
     const process = await import("node:process")
 
-    let args = process.argv.slice(2)
+    const args = process.argv.slice(2)
     const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
-    let config: YattBuildConfig & {
+    const config: YattBuildConfig & {
       sourcemap?: boolean, eachMapping?: boolean
     } = {
       debug: { declaration: debugLevel },
@@ -138,7 +139,7 @@ if (import.meta.main) {
     const cm = config.sourcemap ? (await import('npm:source-map')).SourceMapConsumer : null
 
     for (const filename of args) {
-      let source = readFileSync(filename, {encoding: "utf-8"})
+      const source = readFileSync(filename, {encoding: "utf-8"})
       const output = generate_namespace(filename, source, config)
       if (cm && output.sourceMapText) {
 

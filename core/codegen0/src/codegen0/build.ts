@@ -2,7 +2,7 @@
 
 //// ./build.ts --outDir=example/dist core/lrxml/test/input/t00[^25]*
 
-import {YattConfig} from '../config.ts'
+import type {YattConfig} from '../config.ts'
 import {longestPrefixDir, outFileName} from '../path.ts'
 import {generate_namespace} from './namespace/generate.ts'
 import {generate_module} from './module/generate.ts'
@@ -39,9 +39,9 @@ if (import.meta.main) {
     const { parse_long_options } = await import('../deps.ts')
     const process = await import("node:process")
 
-    let args = process.argv.slice(2)
+    const args = process.argv.slice(2)
     const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
-    let config = {
+    const config = {
       debug: { declaration: debugLevel },
       // ext: 'ytjs',
     }

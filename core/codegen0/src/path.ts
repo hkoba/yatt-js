@@ -4,7 +4,7 @@
 import path from 'node:path'
 import {strictEqual} from 'node:assert'
 
-import {YattConfig} from './config.ts'
+import type {YattConfig} from './config.ts'
 
 const __dirname = new URL('.', import.meta.url).pathname;
 
@@ -81,7 +81,7 @@ export function longestPrefixDir(fileList: string[]): string | undefined {
   return prefix;
 
   function normalizeDir(fn: string): string {
-    let prefix = path.dirname(fn)
+    const prefix = path.dirname(fn)
     if (prefix === "." && !fn.startsWith('./')) {
       return ""
     } else {

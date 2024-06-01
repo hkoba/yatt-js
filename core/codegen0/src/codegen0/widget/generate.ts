@@ -1,16 +1,16 @@
-import {BodyNode} from '../../deps.ts'
-import {WidgetGenContext} from '../context.ts'
+import type {BodyNode} from '../../deps.ts'
+import type {WidgetGenContext} from '../context.ts'
 import {VarScope} from '../varscope.ts'
 
 import {generate_argdecls} from './argdecls.ts'
 import {generate_body} from './body.ts'
 
-import {CodeFragment, joinAsArray, typeAnnotation} from '../codefragment.ts'
+import {type CodeFragment, joinAsArray, typeAnnotation} from '../codefragment.ts'
 
 export function generate_widget(ctx: WidgetGenContext, nodeList: BodyNode[])
  : CodeFragment
 {
-  let program: CodeFragment = [
+  const program: CodeFragment = [
     `export function render_`,
     {kind: 'name', code: ctx.part.name, source: ctx.part.nameNode},
     ` `

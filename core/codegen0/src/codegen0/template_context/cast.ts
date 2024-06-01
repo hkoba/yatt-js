@@ -1,11 +1,11 @@
-import {Term} from '../../deps.ts'
+import type {Term} from '../../deps.ts'
 
-import {CodeGenContext, Part} from '../context.ts'
-import {VarScope} from '../varscope.ts'
+import type {CodeGenContext, Part} from '../context.ts'
+import type {VarScope} from '../varscope.ts'
 
-import {CodeFragment} from '../codefragment.ts'
+import type {CodeFragment} from '../codefragment.ts'
 
-import {Variable} from '../../declaration/vartype.ts'
+import type {Variable} from '../../declaration/vartype.ts'
 
 import {generate_as_cast_to_text} from './text.ts'
 import {generate_as_cast_to_list} from './list.ts'
@@ -23,8 +23,10 @@ export function generate_as_cast_to<T extends Part>(
     }
     case 'html':
     case 'scalar':
-    case 'widget':
-      ctx.NIMPL(term)
+    case 'widget': {
+      ctx.NIMPL(term);
+      break; /* not reached */
+    }
     default:
       ctx.NIMPL(term)
   }

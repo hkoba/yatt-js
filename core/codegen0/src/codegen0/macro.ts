@@ -1,10 +1,10 @@
-import {ElementNode} from '../deps.ts'
+import type {ElementNode} from '../deps.ts'
 
-import {WidgetGenContext} from './context.ts'
+import type {WidgetGenContext} from './context.ts'
 
-import {VarScope} from './varscope.ts'
+import type {VarScope} from './varscope.ts'
 
-import {CodeFragment} from './codefragment.ts'
+import type {CodeFragment} from './codefragment.ts'
 
 export type CGenMacro = (
   ctx: WidgetGenContext, scope: VarScope, node: ElementNode

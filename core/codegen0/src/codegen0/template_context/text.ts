@@ -1,10 +1,10 @@
 import {
-  Term, hasQuotedStringValue, isIdentOnly
+  type Term, hasQuotedStringValue
 } from '../../deps.ts'
-import {CodeGenContext, Part} from '../context.ts'
-import {VarScope} from '../varscope.ts'
+import type {CodeGenContext, Part} from '../context.ts'
+import type {VarScope} from '../varscope.ts'
 
-import {CodeFragment, joinAsArray} from '../codefragment.ts'
+import {type CodeFragment, joinAsArray} from '../codefragment.ts'
 
 import {escapeAsStringLiteral} from '../escape.ts'
 

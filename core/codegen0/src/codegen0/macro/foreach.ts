@@ -1,10 +1,10 @@
 import {
-  ElementNode
-  , AttItem, AttElement, AttValue, attValue, isBareLabeledAtt
-  , hasQuotedStringValue, isIdentOnly
+  type ElementNode
+  , type AttItem, type AttElement, type AttValue, attValue, isBareLabeledAtt
+  , type hasQuotedStringValue, type isIdentOnly
 } from '../../deps.ts'
 
-import {WidgetGenContext} from '../context.ts'
+import type {WidgetGenContext} from '../context.ts'
 
 import {VarScope} from '../varscope.ts'
 
@@ -16,7 +16,7 @@ import {generate_body} from '../widget/body.ts'
 
 import {generate_as_cast_to_list} from '../template_context/list.ts'
 
-import {CodeFragment} from '../codefragment.ts'
+import type {CodeFragment} from '../codefragment.ts'
 
 export function macro_foreach(
   ctx: WidgetGenContext, scope: VarScope,
@@ -41,7 +41,7 @@ export function macro_foreach(
   if (list == null)
     ctx.token_error(node, `no list= is given`)
 
-  let listExpr = generate_as_cast_to_list(ctx, scope, list)
+  const listExpr = generate_as_cast_to_list(ctx, scope, list)
 
   if (node.children == null)
     ctx.token_error(node, `BUG?: foreach body is empty!`)

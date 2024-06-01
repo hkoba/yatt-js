@@ -12,7 +12,7 @@ export function list_entity_functions(rootName: string): {[k: string]: any} {
 
   const funcRe = /^export (?:declare )?function (?<name>\w+)\(this: Connection,/mg
 
-  let dict: {[k: string]: any} = {}
+  const dict: {[k: string]: any} = {}
 
   const fileName = find_file_with_extension(rootName, ['d.ts', 'ts']);
   if (fileName == null) {
@@ -24,7 +24,7 @@ export function list_entity_functions(rootName: string): {[k: string]: any} {
 
   const source = readFileSync(fileName, {encoding: 'utf-8'})
   let m
-  while (m = funcRe.exec(source)) {
+  while ((m = funcRe.exec(source))) {
     const mg = m.groups as FunctionMG
     if (! mg.name)
       continue
@@ -48,7 +48,7 @@ function find_file_with_extension(rootName: string, extensions: string[])
 
 if (import.meta.main) {
   const process = await import("node:process")
-  let [fileName] = process.argv.slice(2)
+  const [fileName] = process.argv.slice(2)
 
   console.log(list_entity_functions(fileName))
 }

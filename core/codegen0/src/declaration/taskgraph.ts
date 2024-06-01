@@ -18,15 +18,15 @@ export class TaskGraph<Product> {
   do_all(finder: (depName: string) => [boolean, Product] | undefined): void {
     while (this.productMap.size) {
       if (this.debug >= 2) {
-        let widgetNames = Array.from(this.productMap.keys()).join(", ");
+        const widgetNames = Array.from(this.productMap.keys()).join(", ");
         console.log(`delayed widgets: ${widgetNames}`)
       }
-      let sz = this.productMap.size
+      const sz = this.productMap.size
       // 一つの widget が複数の delegate 引数宣言を持つことは普通に有る
       // 全ての delegate 引数宣言が解決しないと、その widget を delegate として使う他の widget の引数確定が始められない
       //
       for (const [dep, taskList] of this.delayedBy) {
-        let path = dep.split(":");
+        const path = dep.split(":");
         if (path.length === 1) {
           if (this.debug >= 2) {
             console.log(`Checking dependency for ${dep}`)
@@ -34,7 +34,7 @@ export class TaskGraph<Product> {
           const found = finder(dep)
           if (found) {
             const [inSameTemplate, widget] = found
-            let notDelayed = !this.productMap.has(dep)
+            const notDelayed = !this.productMap.has(dep)
             if (this.debug >= 2) {
               console.log(`-> name only. In same template? ${inSameTemplate}, Not delayed? ${notDelayed}`)
             }
@@ -54,7 +54,7 @@ export class TaskGraph<Product> {
                   if (this.debug >= 2) {
                     console.log(`Running task: ${task}`)
                   }
-                  let cont = task.fun(widget)
+                  const cont = task.fun(widget)
                   if (! cont) {
                     if (this.debug >= 2) {
                       console.log(`Task completed, deleting: ${task.name}`)
@@ -83,7 +83,7 @@ export class TaskGraph<Product> {
         }
       }
       if (this.productMap.size === sz) {
-        let widgetNames = Array.from(this.productMap.keys()).join(", ");
+        const widgetNames = Array.from(this.productMap.keys()).join(", ");
         console.log(`Remaining delayed widgets: ${widgetNames}`)
         throw new Error(`Can't resolve delegates`)
       }

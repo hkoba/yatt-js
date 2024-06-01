@@ -12,15 +12,15 @@ export function list_entity_functions(fileName: string, nsName: string): {[k: st
 
   const funcRe = /^[ \t]*export[ \t]+(?:async[ \t]+)?function[ \t]+(?<name>\w+)/mg
 
-  let dict: {[k: string]: any} = {}
+  const dict: {[k: string]: any} = {}
   const script = readFileSync(fileName, {encoding: 'utf-8'})
   let m
-  while (m = re.exec(script)) {
+  while ((m = re.exec(script))) {
     const mg = m.groups as NamespaceMG
     if (! mg.body)
       continue
     let f
-    while (f = funcRe.exec(mg.body)) {
+    while ((f = funcRe.exec(mg.body))) {
       const fn = f.groups as FunctionMG
       if (! fn.name)
         continue
@@ -32,6 +32,6 @@ export function list_entity_functions(fileName: string, nsName: string): {[k: st
 
 if (import.meta.main) {
   const process = await import("node:process")
-  let [fileName, nsName] = process.argv.slice(2)
+  const [fileName, nsName] = process.argv.slice(2)
   console.log(list_entity_functions(fileName, nsName ?? '$yatt'))
 }

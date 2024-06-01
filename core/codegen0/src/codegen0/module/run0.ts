@@ -2,7 +2,7 @@
 
 import {generate_module} from './generate.ts'
 
-import {YattConfig} from '../../config.ts'
+import type {YattConfig} from '../../config.ts'
 
 // XXX: Remove node path dependencies
 import {readFileSync} from 'node:fs'
@@ -27,7 +27,7 @@ export function runSource(source: string, config: YattConfig & {filename: string
 
   const output = generate_module(config.filename, source, config)
 
-  let {program: _program, outputMap, diagnostics} = makeProgram(output.outputText)
+  const {program: _program, outputMap, diagnostics} = makeProgram(output.outputText)
 
   if (diagnostics && diagnostics.length > 0) {
     reportDiagnostics(output.outputText, diagnostics);
@@ -43,7 +43,7 @@ export function runSource(source: string, config: YattConfig & {filename: string
     throw new Error(`Can\'t find render_ in ${config.filename}`);
   }
 
-  let CON = {
+  const CON = {
     buffer: "",
     append(str: string) {
       this.buffer += str;
@@ -60,9 +60,9 @@ export function runSource(source: string, config: YattConfig & {filename: string
 
 if (import.meta.main) {
   (async () => {
-    let args = process.argv.slice(2)
+    const args = process.argv.slice(2)
     const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
-    let config = {
+    const config = {
       debug: { declaration: debugLevel },
       // ext: 'ytjs',
     }

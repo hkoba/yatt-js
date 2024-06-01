@@ -1,11 +1,11 @@
-import {AttItem} from '../deps.ts'
-import {Part, Widget, makeWidget} from './part.ts'
+import type {AttItem} from '../deps.ts'
+import {type Part, type Widget, makeWidget} from './part.ts'
 
-import {BuilderContext} from './context.ts'
+import type {BuilderContext} from './context.ts'
 
 import {build_delegate_variable_adder} from './delegate.ts'
 
-import {add_args, ArgAdder} from './addArgs.ts'
+import {add_args, type ArgAdder} from './addArgs.ts'
 
 export type VarTypeMap = {
   simple: Map<string, SimpleVariableBuilder>;
@@ -74,7 +74,7 @@ export type VarTypeSpec = {
 }
 
 export function builtin_vartypemap(): VarTypeMap {
-  let tm: VarTypeMap = {simple: new Map, nested: new Map};
+  const tm: VarTypeMap = {simple: new Map, nested: new Map};
   const simple = (typeName: SimpleVar['typeName'], is_escaped: boolean): {
     kind: "simple", typeName: SimpleVar['typeName'],
     is_escaped: boolean, is_callable: false
@@ -111,8 +111,8 @@ export function build_simple_variable(
   {attItem, argNo}: {attItem?: AttItem, argNo?: number}
 ): SimpleVar
 {
-  let givenTypeName = spec.typeName;
-  let defaultSpec = spec.defaultSpec;
+  const givenTypeName = spec.typeName;
+  const defaultSpec = spec.defaultSpec;
   const is_body_argument = ctx.is_body_argument(varName);
 
   const rec = ctx.session.varTypeMap.simple.get(givenTypeName)
@@ -134,7 +134,7 @@ function build_widget_varialbe(
   ctx: BuilderContext, att: AttItem, argNo: number
   , varName: string, attlist: AttItem[]
 ): WidgetVar {
-  let widget: Widget = makeWidget(varName, false)
+  const widget: Widget = makeWidget(varName, false)
   add_args(ctx, widget, attlist) // XXX: ここで delegate は禁止よね
   return {
     typeName: "widget", widget,

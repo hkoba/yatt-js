@@ -2,7 +2,7 @@
 
 //// ./build.ts --outDir=example/dist core/lrxml/test/input/t00[^25]*
 
-import {YattConfig} from '../../config.ts'
+import type {YattConfig} from '../../config.ts'
 
 import {generate_namespace} from './generate.ts'
 
@@ -37,8 +37,8 @@ export function build_namespace(fileList: string[], config: YattConfig): void {
   }
 
   if (outDir != null && ! config.noEmit) {
-    let outFn = `${outDir}/yatt.ts`
-    let filename = `${srcDir}/yatt.ts`
+    const outFn = `${outDir}/yatt.ts`
+    const filename = `${srcDir}/yatt.ts`
     console.log(`srcDir = ${srcDir}`)
     console.log(`Generating ${outFn} from ${filename}`)
     let source = readFileSync(filename, {encoding: 'utf-8'}).
@@ -54,9 +54,9 @@ if (import.meta.main) {
     const { parse_long_options } = await import('../../deps.ts')
     const process = await import("node:process")
 
-    let args = process.argv.slice(2)
+    const args = process.argv.slice(2)
     const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
-    let config = {
+    const config = {
       debug: { declaration: debugLevel },
       // ext: 'ytjs',
     }

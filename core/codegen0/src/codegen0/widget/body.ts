@@ -1,12 +1,12 @@
-import {Node} from '../../deps.ts'
-import {WidgetGenContext} from '../context.ts'
-import {VarScope} from '../varscope.ts'
+import type {Node} from '../../deps.ts'
+import type {WidgetGenContext} from '../context.ts'
+import type {VarScope} from '../varscope.ts'
 import {escapeAsStringLiteral} from '../escape.ts'
 
 import {generate_element} from './element/generate.ts'
 import {generate_entity} from './entity/generate.ts'
 
-import {CodeFragment} from '../codefragment.ts'
+import type {CodeFragment} from '../codefragment.ts'
 
 import {as_print} from '../template_context/print.ts'
 
@@ -18,8 +18,10 @@ export function generate_body(ctx: WidgetGenContext, scope: VarScope,
       case "comment":
         break;
       case "attelem":
-      case "lcmsg":
+      case "lcmsg": {
         ctx.NIMPL(node);
+        break;
+      }
       case "pi": {
         const inner = ctx.range_text(node.innerRange)
         let match

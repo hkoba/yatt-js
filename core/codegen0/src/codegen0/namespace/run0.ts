@@ -2,7 +2,7 @@
 
 import {generate_namespace} from './generate.ts'
 
-import {YattConfig} from '../../config.ts'
+import type {YattConfig} from '../../config.ts'
 
 import {readFileSync} from 'node:fs'
 
@@ -32,7 +32,7 @@ export function runSource(source: string, config: YattConfig & {filename?: strin
     console.log(output.outputText)
   }
 
-  let {program: _program, outputMap, diagnostics} = makeProgram(output.outputText)
+  const {program: _program, outputMap, diagnostics} = makeProgram(output.outputText)
 
   if (diagnostics && diagnostics.length > 0) {
     reportDiagnostics(output.outputText, diagnostics);
@@ -57,7 +57,7 @@ export function runSource(source: string, config: YattConfig & {filename?: strin
     throw new Error(`Can\'t find render_ in ${rootNS}.${fileNS}`);
   }
 
-  let CON = {
+  const CON = {
     buffer: "",
     append(str: string) {
       this.buffer += str;
@@ -78,9 +78,9 @@ export function runSource(source: string, config: YattConfig & {filename?: strin
 
 if (import.meta.main) {
   (async () => {
-    let args = process.argv.slice(2)
+    const args = process.argv.slice(2)
     const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
-    let config = {
+    const config = {
       debug: { declaration: debugLevel },
       // ext: 'ytjs',
     }
@@ -93,7 +93,7 @@ if (import.meta.main) {
       process.exit(1)
     }
 
-    let output = runFile(filename, config)
+    const output = runFile(filename, config)
     process.stdout.write(`\n=== output ====\n`);
     process.stdout.write(output);
   })()

@@ -1,8 +1,8 @@
-import {CodeGenContext, Part} from '../context.ts'
-import {VarScope} from '../varscope.ts'
+import type {CodeGenContext, Part} from '../context.ts'
+import type {VarScope} from '../varscope.ts'
 import {varTypeExpr} from './vartype.ts'
 
-import {CodeFragment, joinAsArray} from '../codefragment.ts'
+import {type CodeFragment, joinAsArray} from '../codefragment.ts'
 
 export function generate_argdecls<T extends Part>(
   ctx: CodeGenContext<T>, _scope: VarScope, widget: T

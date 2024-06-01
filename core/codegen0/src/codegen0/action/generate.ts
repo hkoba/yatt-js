@@ -1,17 +1,17 @@
-import {Action} from '../../declaration/index.ts'
+import type {Action} from '../../declaration/index.ts'
 
-import {CodeGenContext} from '../context.ts'
+import type {CodeGenContext} from '../context.ts'
 
 import {VarScope} from '../varscope.ts'
 
-import {CodeFragment} from '../codefragment.ts'
+import type {CodeFragment} from '../codefragment.ts'
 
 // import {varTypeExpr} from '../widget/vartype.ts'
 
 import {generate_argdecls} from '../widget/argdecls.ts'
 
 export function generate_action(ctx: CodeGenContext<Action>): CodeFragment {
-  let program: CodeFragment = [
+  const program: CodeFragment = [
     `export function do_`,
     {kind: 'name', code: ctx.part.name, source: ctx.part.nameNode},
     ` `

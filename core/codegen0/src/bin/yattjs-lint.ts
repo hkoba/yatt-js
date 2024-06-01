@@ -1,7 +1,7 @@
 #!/usr/bin/env -S deno run -A
 
 import {TokenError} from '../deps.ts'
-import {YattConfig} from '../config.ts'
+import type {YattConfig} from '../config.ts'
 import {longestPrefixDir} from '../path.ts'
 import {generate_namespace} from '../codegen0/namespace/generate.ts'
 import {generate_module} from '../codegen0/module/generate.ts'
@@ -57,9 +57,9 @@ export function lint(fileList: string[], config: YattConfig) {
 
 
 const process = await import("node:process")
-let args = process.argv.slice(2)
+const args = process.argv.slice(2)
 const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
-let config = {
+const config = {
   debug: { declaration: debugLevel },
   // ext: 'ytjs',
 }

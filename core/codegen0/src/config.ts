@@ -1,10 +1,10 @@
-import {LrxmlParams, lrxmlParams, IsLrxmlParams} from './deps.ts'
+import {type LrxmlParams, lrxmlParams, IsLrxmlParams} from './deps.ts'
 
 export const yattRcFile = ".htyattrc"
 
-import {YattProjectParams, applyProjectStyle} from "./project/layout.ts"
+import {type YattProjectParams, applyProjectStyle} from "./project/layout.ts"
 
-import {CGenMacro} from "./codegen0/macro.ts"
+import type {CGenMacro} from "./codegen0/macro.ts"
 
 export type YattParams = LrxmlParams & YattProjectParams & {
   projectStyle?: string
@@ -47,7 +47,7 @@ export function yattParams(
   config: YattConfig
 ): YattParams {
   const lrxmlDefault = lrxmlParams(config)
-  let {
+  const {
     yattRoot, documentRoot, libDirs, outDir, linkDir,
     yattSrcPrefix, projectStyle,
     lookup_subdirectory_first = false,

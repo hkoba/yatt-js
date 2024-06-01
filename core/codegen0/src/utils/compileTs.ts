@@ -9,7 +9,7 @@ import {extract_line, extract_prefix_spec} from '../deps.ts'
 
 export function compile(script: string, filename: string): Module {
   type compiler = (this: Module, src: string, id: string) => any;
-  let m = new Module(filename);
+  const m = new Module(filename);
   const compile: compiler = (m as unknown as Module & {_compile: compiler})._compile;
   compile.apply(m as unknown as Module, [script, filename])
   return m as unknown as Module;
@@ -46,9 +46,9 @@ export function makeProgram(input: string, transpileOptions: ts.TranspileOptions
     sourceFile.moduleName = transpileOptions.moduleName
   }
 
-  let outputMap = new Map;
+  const outputMap = new Map;
   let sourceMapText: string | undefined;
-  let diagnostics: [string, ts.Diagnostic][] = []
+  const diagnostics: [string, ts.Diagnostic][] = []
 
   const compilerHost = ts.createCompilerHost(options, true)
   const origGetSourceFile = compilerHost.getSourceFile

@@ -1,18 +1,17 @@
 import {
-  Term, hasQuotedStringValue, isIdentOnly
+  type Term, hasQuotedStringValue, isIdentOnly
 } from '../../deps.ts'
 
-import {CodeGenContext, Part} from '../context.ts'
-import {VarScope} from '../varscope.ts'
+import type {CodeGenContext, Part} from '../context.ts'
+import type {VarScope} from '../varscope.ts'
 
-import {CodeFragment} from '../codefragment.ts'
+import type {CodeFragment} from '../codefragment.ts'
 
 import {generate_entity} from '../widget/entity/generate.ts'
 
 export function generate_as_cast_to_list<T extends Part>(
   ctx: CodeGenContext<T>, scope: VarScope, term: Term
 ): CodeFragment {
-  const program: CodeFragment = []
 
   if (hasQuotedStringValue(term)) {
     let hasCommas = false;
@@ -37,5 +36,4 @@ export function generate_as_cast_to_list<T extends Part>(
     ctx.NIMPL(term)
   }
 
-  return program
 }

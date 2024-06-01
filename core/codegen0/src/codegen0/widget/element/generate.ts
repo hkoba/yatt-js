@@ -1,10 +1,10 @@
-import { Node } from '../../../deps.ts'
-import {WidgetGenContext, Widget} from '../../context.ts'
-import {Variable, TemplateDeclaration} from '../../../declaration/index.ts'
-import {VarScope} from '../../varscope.ts'
+import type { Node } from '../../../deps.ts'
+import type {WidgetGenContext, Widget} from '../../context.ts'
+import type {Variable, TemplateDeclaration} from '../../../declaration/index.ts'
+import type {VarScope} from '../../varscope.ts'
 import {generate_putargs} from './putargs.ts'
 
-import {CodeFragment, joinAsArray} from '../../codefragment.ts'
+import {type CodeFragment, joinAsArray} from '../../codefragment.ts'
 
 import {find_widget} from '../../../part-finder/index.ts'
 
@@ -24,7 +24,7 @@ export function generate_element(
 
   let callExpr: string | undefined
   let calleeWidget: Widget | undefined
-  let implicitArgs = ['CON'];
+  const implicitArgs = ['CON'];
 
   const callable_var = find_callable_var(scope, wname);
 

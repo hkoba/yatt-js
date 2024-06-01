@@ -1,6 +1,6 @@
-import { RawPart, AttItem } from '../deps.ts'
+import type { RawPart, AttItem } from '../deps.ts'
 
-import { Variable } from './vartype.ts'
+import type { Variable } from './vartype.ts'
 
 export type Part = Widget | Action | Entity
 export type PartKind = Part['kind']

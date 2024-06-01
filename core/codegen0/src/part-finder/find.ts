@@ -4,17 +4,18 @@ import * as Path from 'node:path'
 
 import * as Fs from 'node:fs'
 
-import {YattConfig} from '../config.ts'
+import type {YattConfig} from '../config.ts'
 
 import {
-  Widget,
-  Entity,
-  BuilderSession,
-  YattBuildConfig,
+  type Widget,
+  type Entity,
+  type BuilderSession,
+  type YattBuildConfig,
+  type TemplateDeclaration,
   build_template_declaration,
-  TemplateDeclaration,
 } from '../declaration/index.ts'
-import { DeclTree } from '../declaration/context.ts'
+
+import type { DeclTree } from '../declaration/context.ts'
 
 //
 // DEBUG=1 src/part-finder/find.ts --libDirs=test/input/ex1/ytmpl  test/input/ex1/public/subgroup1/foo.ytjs foo:bar
@@ -170,7 +171,7 @@ function refresh(
 if (import.meta.main) {
   (async () => {
     const process = await import("node:process")
-    let [...args] = process.argv.slice(2)
+    const [...args] = process.argv.slice(2)
 
     // const Fs = await import("fs")
     // const Path = await import("node:path")
@@ -179,7 +180,7 @@ if (import.meta.main) {
     const {build_template_declaration} = await import("../declaration/index.ts")
 
     const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
-    let config: YattConfig & {lookup_only?: string, entity?: boolean} = {
+    const config: YattConfig & {lookup_only?: string, entity?: boolean} = {
       debug: {
         declaration: debugLevel
       }

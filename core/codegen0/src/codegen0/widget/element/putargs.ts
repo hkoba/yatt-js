@@ -1,12 +1,12 @@
 import {
-  Node, AttItem, isIdentOnly, isBareLabeledAtt, hasStringValue
+  type Node, type AttItem, isIdentOnly, isBareLabeledAtt, hasStringValue
 } from '../../../deps.ts'
-import {WidgetGenContext, Widget} from '../../context.ts'
-import {VarScope} from '../../varscope.ts'
+import type {WidgetGenContext, Widget} from '../../context.ts'
+import type {VarScope} from '../../varscope.ts'
 import {generate_argdecls} from '../argdecls.ts'
 import {generate_body} from '../body.ts'
 
-import {CodeFragment, joinAsArray} from '../../codefragment.ts'
+import {type CodeFragment, joinAsArray} from '../../codefragment.ts'
 
 import {generate_as_cast_to} from '../../template_context/cast.ts'
 

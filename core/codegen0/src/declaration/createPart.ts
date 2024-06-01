@@ -1,7 +1,7 @@
 #!/usr/bin/env -S deno run -A
 
 import {
-  parse_multipart, RawPart, AttItem,
+  parse_multipart, type RawPart, type AttItem,
   isIdentOnly,
   hasLabel, hasQuotedStringValue
   , hasNestedLabel, hasStringValue, hasNestedTerm
@@ -9,25 +9,33 @@ import {
 
 import { yattParams } from '../config.ts'
 
-import {
+import type {
   YattBuildConfig,
-  BuilderMap, BuilderContext, BuilderContextClass, BuilderSession,
+  BuilderMap, BuilderContext,
+  BuilderSession
+} from './context.ts'
+import {
+  BuilderContextClass,
   DeclarationProcessor
 } from './context.ts'
 
 import { TaskGraph } from './taskgraph.ts'
 
-import {
-  TemplateDeclaration
-  , PartMapType
+import type {
+  PartMapType
   , RouteMapType
 } from './types.ts'
 
-import { PartKind, Part, Widget, makeWidget, Action, Entity } from './part.ts'
+import {
+  TemplateDeclaration
+} from './types.ts'
+
+import type { PartKind, Part, Widget, Action, Entity } from './part.ts'
+import { makeWidget } from './part.ts'
 
 import {builtin_vartypemap} from './vartype.ts'
 
-import {add_args, ArgAdder} from './addArgs.ts'
+import {add_args, type ArgAdder} from './addArgs.ts'
 
 import { BaseProcessor } from './base.ts'
 
@@ -44,7 +52,7 @@ export class WidgetBuilder implements DeclarationProcessor {
     }
 
     const {name, nameNode, route} = att
-    let widget = makeWidget(name, this.is_public, nameNode, route)
+    const widget = makeWidget(name, this.is_public, nameNode, route)
     // XXX: route params
     return [widget, attlist];
   }
@@ -105,7 +113,7 @@ export function cut_name_and_route(
   } else {
     if (!attlist.length)
       return
-    let head = attlist.shift()
+    const head = attlist.shift()
     if (head == null)
       return
     nameNode = head
@@ -199,7 +207,7 @@ function parse_method_and_route(ctx: BuilderContext, head: AttItem, attlist: Att
 }
 
 export function builtin_builders(): BuilderMap {
-  let builders = new Map
+  const builders = new Map
   builders.set('args', new WidgetBuilder(false, true))
   builders.set('widget', new WidgetBuilder(true, false))
   builders.set('page', new WidgetBuilder(true, true))
@@ -218,7 +226,7 @@ export function declarationBuilderSession(
 ): [BuilderSession, RawPart[]] {
 
   const rootDir = config.rootDir ?? ".";
-  let {
+  const {
     builders = builtin_builders(),
     varTypeMap = builtin_vartypemap(),
     declCacheSet = {[rootDir]: new Map},
@@ -270,10 +278,10 @@ export function populateTemplateDeclaration(path: string, builder_session: Build
   const ctx = new BuilderContextClass(builder_session)
 
   // For delegate type and ArgMacro
-  let partOrder: [PartKind, string][] = []
-  let partMap: PartMapType = {widget: new Map, action: new Map, entity: new Map};
-  let taskGraph = new TaskGraph<Widget>(ctx.debug);
-  let routeMap: RouteMapType = new Map
+  const partOrder: [PartKind, string][] = []
+  const partMap: PartMapType = {widget: new Map, action: new Map, entity: new Map};
+  const taskGraph = new TaskGraph<Widget>(ctx.debug);
+  const routeMap: RouteMapType = new Map
 
   for (const rawPart of rawPartList) {
     ctx.set_range(rawPart)
@@ -306,7 +314,7 @@ export function populateTemplateDeclaration(path: string, builder_session: Build
       add_route(ctx, routeMap, part.route, part);
     }
 
-    let task: ArgAdder | undefined = add_args(ctx, part, attlist)
+    const task: ArgAdder | undefined = add_args(ctx, part, attlist)
     if (task) {
       if (part.kind !== "widget") {
         ctx.NIMPL()
@@ -320,7 +328,7 @@ export function populateTemplateDeclaration(path: string, builder_session: Build
 
   // Resolve
   taskGraph.do_all((dep: string) => {
-    let inSameTemplate = partMap.widget.has(dep)
+    const inSameTemplate = partMap.widget.has(dep)
     if (inSameTemplate) {
       return [inSameTemplate, partMap.widget.get(dep)!]
     }
@@ -347,7 +355,7 @@ export function createPart(ctx: BuilderContext, rawPart: RawPart): [Part, AttIte
   if (builder == null) {
     ctx.throw_error(`Unknown part kind: ${rawPart.kind}`)
   }
-  let attlist = ctx.copy_array(rawPart.attlist)
+  const attlist = ctx.copy_array(rawPart.attlist)
   return builder.createPart(ctx, attlist)
 }
 
@@ -361,12 +369,12 @@ function location2name(loc: string): string {
 if (import.meta.main) {
   (async () => {
     const process = await import("node:process")
-    let [...args] = process.argv.slice(2);
+    const [...args] = process.argv.slice(2);
     console.time('load lrxml');
     const { parse_long_options } = await import('../deps.ts')
     console.timeLog('load lrxml');
     const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
-    let config = {
+    const config = {
       debug: { declaration: debugLevel },
       entFns: {}
     }

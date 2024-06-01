@@ -1,9 +1,9 @@
-import {Node, EntPathItem, EntTerm, isVarOrCall} from '../../../deps.ts'
-import {CodeGenContext, Part} from '../../context.ts'
-import {VarScope} from '../../varscope.ts'
+import {type Node, type EntPathItem, type EntTerm, isVarOrCall} from '../../../deps.ts'
+import type {CodeGenContext, Part} from '../../context.ts'
+import type {VarScope} from '../../varscope.ts'
 import {escapeAsStringLiteral} from '../../escape.ts'
 
-import {CodeFragment, joinAsArray} from '../../codefragment.ts'
+import {type CodeFragment, joinAsArray} from '../../codefragment.ts'
 import type {Argument} from '../../template_context/index.ts'
 
 import {find_entity} from '../../../part-finder/index.ts'

@@ -1,11 +1,12 @@
-import {
+import type {
   TemplateDeclaration, BuilderSession, Part, Widget, Entity
-  , BuilderContextClass
 } from '../declaration/index.ts'
+
+import { BuilderContextClass } from '../declaration/index.ts'
 
 export type {Part, Widget, Entity} from '../declaration/index.ts'
 
-import {MacroDict} from './macro.ts'
+import type {MacroDict} from './macro.ts'
 
 import {primaryNS, entFnPrefix} from '../config.ts'
 

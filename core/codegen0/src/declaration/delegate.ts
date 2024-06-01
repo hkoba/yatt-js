@@ -1,12 +1,12 @@
-import {AttItem, isIdentOnly} from '../deps.ts'
+import {type AttItem, isIdentOnly} from '../deps.ts'
 
-import {BuilderContext} from './context.ts'
+import type {BuilderContext} from './context.ts'
 
-import {Part, Widget} from './part.ts'
+import type {Part, Widget} from './part.ts'
 
-import {DelegateVar} from './vartype.ts'
+import type {DelegateVar} from './vartype.ts'
 
-import {add_args_cont, ArgAdder} from './addArgs.ts'
+import {add_args_cont, type ArgAdder} from './addArgs.ts'
 
 export function build_delegate_variable_adder(
   ctx: BuilderContext, part: Part, gen: Generator<AttItem>,
@@ -16,7 +16,7 @@ export function build_delegate_variable_adder(
   return {
     name: part.name, dep: restName.length ? restName.join(":") : name,
     fun: (widget: Widget): ArgAdder | undefined => {
-      let v: DelegateVar = {
+      const v: DelegateVar = {
         typeName: "delegate", varName: name,
         widget,
         delegateVars: new Map,
@@ -33,7 +33,7 @@ export function build_delegate_variable_adder(
           if (! isIdentOnly(att)) {
             ctx.NIMPL()
           }
-          let name = att.value
+          const name = att.value
           if (! widget.argMap.has(name)) {
             ctx.throw_error(`No such argument ${name} in delegated widget ${widget.name}`)
           }

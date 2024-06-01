@@ -1,4 +1,4 @@
-import {Variable} from '../declaration/index.ts'
+import type {Variable} from '../declaration/index.ts'
 
 export class VarScope extends Map<string, Variable> {
   constructor(vars?: Map<string, Variable>, public parent?: VarScope) {
