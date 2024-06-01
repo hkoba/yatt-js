@@ -16,6 +16,7 @@ export type YattParams = LrxmlParams & YattProjectParams & {
   body_argument_name: string;
   macro?: Partial<CGenMacro>,
   es?: boolean,
+  genFileSuffix?: string,
   debug: {
     build?: number,
     codegen?: number,
@@ -53,6 +54,7 @@ export function yattParams(
     lookup_subdirectory_first = false,
     templateNamespace,
     exportNamespace,
+    genFileSuffix = '.ts',
     connectionTypeName = 'Connection',
     noEmit = false,
     body_argument_name = "BODY",
@@ -69,6 +71,7 @@ export function yattParams(
     exportNamespace,
     connectionTypeName,
     noEmit,
+    genFileSuffix,
     body_argument_name
   }
 }

@@ -18,6 +18,7 @@ import {rootname} from '../src/path.ts'
     const testFile = (filename: string, expect: string) =>
       assertEquals(runFileNS(dir + filename, {
         connectionTypeName: 'yatt.runtime.Connection',
+        genFileSuffix: '',
         debug: {codegen: parseInt(process.env['DEBUG_YATT_CODEGEN'] ?? '', 10) || 0}
       }), expect, filename);
     
@@ -34,6 +35,7 @@ aaa
     const testFile = (filename: string, expect: string) =>
       assertEquals(runFileMod(dir + filename, {
         connectionTypeName: 'yatt.runtime.Connection',
+        genFileSuffix: '',
         debug: {codegen: parseInt(process.env['DEBUG_YATT_CODEGEN'] ?? '', 10) || 0}
       }), expect, filename);
     

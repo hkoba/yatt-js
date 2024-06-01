@@ -37,6 +37,8 @@ export function generate_module(
 
   const config = isYattParams(origConfig) ? origConfig : yattParams(origConfig)
 
+  const ext = config.genFileSuffix ?? "";
+
   const entFns: {[k: string]: any} = list_entity_functions(
     Path.join(Path.dirname(filename), yattRcFile)
   )
@@ -64,9 +66,9 @@ export function generate_module(
   const rootPrefix = prefixUnderRootDir(filename, config.yattRoot)
   // XXX: yatt => yatt-runtime
   if (existsSync(`${config.yattRoot}/yatt.ts`)) {
-    program.push(`import {yatt} from '${rootPrefix}yatt'\n`);
+    program.push(`import {yatt} from '${rootPrefix}yatt${ext}'\n`);
   } else {
-    program.push(`import {yatt} from '${srcDir}/yatt'\n`);
+    program.push(`import {yatt} from '${srcDir}/yatt${ext}'\n`);
   }
 
   if (Object.keys(entFns).length) {
@@ -107,7 +109,7 @@ export function generate_module(
   const importModules = Object.values(session.importDict)
   if (importModules.length) {
     program.splice(importListPos, 0, ...importModules.map(
-      (m) => `import * as ${m} from './${m}'\n`
+      (m) => `import * as ${m} from './${m}${ext}'\n`
     ))
   }
 
