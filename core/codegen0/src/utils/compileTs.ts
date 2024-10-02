@@ -23,7 +23,8 @@ export function compile(script: string, filename: string): Module {
 export function makeProgram(input: string, transpileOptions: ts.TranspileOptions = {
       reportDiagnostics: true,
       compilerOptions: {
-        module: ts.ModuleKind.CommonJS,
+        module: ts.ModuleKind.ESNext,
+        moduleResolution: ts.ModuleResolutionKind.NodeNext,
         /* Strict Type-Checking Options */
         "strict": true,
         "noImplicitAny": true,
@@ -33,6 +34,7 @@ export function makeProgram(input: string, transpileOptions: ts.TranspileOptions
         "strictPropertyInitialization": true,
         "noImplicitThis": true,
         "alwaysStrict": true,
+        "allowImportingTsExtensions": true,
       }
     })
 // : ts.CompilerHost

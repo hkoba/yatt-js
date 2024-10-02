@@ -31,7 +31,7 @@ export function runSource(source: string, config: YattConfig & {filename: string
 
   if (diagnostics && diagnostics.length > 0) {
     reportDiagnostics(output.outputText, diagnostics);
-    process.exit(1)
+    throw new Error(`Runtime error! `)
   } else {
     // console.log(outputMap)
   }

@@ -26,7 +26,7 @@ const pagesStyle = {
   yattRoot:     "./",
   documentRoot: "pages/",
   libDirs:     ["widgets/"],
-  outDir:       "gen/",
+  outDir:       "_gen/",
   linkDir:      "src/"
 }
 
@@ -88,13 +88,13 @@ export function applyProjectStyle(
   yattRoot ??= Path.normalize(
     yattSrcPrefix ? yattSrcPrefix + (style.yattRoot ?? "") :
       (style.yattRoot ?? ".")
-  )
+  ) as string
   yattRoot = yattRoot.replace(/\/*$/, '/')
 
   documentRoot ??= Path.normalize(
     yattSrcPrefix ? yattSrcPrefix + (style.documentRoot ?? "") :
       (style.documentRoot ?? ".")
-  )
+  ) as string
   documentRoot = documentRoot.replace(/\/*$/, '/')
 
   const defaultLibDirs = (yattSrcPrefix && style.libDirs)
