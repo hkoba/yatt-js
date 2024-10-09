@@ -1,3 +1,0 @@
-&yatt:sum(3,8);
-<!yatt:entity sum x y>
-return (parseInt(x, 10) || 0) + (parseInt(y, 10) || 0);
