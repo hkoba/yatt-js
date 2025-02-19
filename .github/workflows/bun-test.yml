@@ -11,6 +11,7 @@ jobs:
         with:
           bun-version: v1.x # Uses latest bun 1
       - run: bun i -D
+      - run: bun x jsr add @cross/test @std/assert
       - run: |
           shopt -s globstar
           for test in **/*.test.ts; do bun test $test || exit 1; done
