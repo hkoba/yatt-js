@@ -44,7 +44,8 @@ export function generate_namespace(
   const config = isYattParams(origConfig) ? origConfig : yattParams(origConfig)
 
   const rootDir = Path.dirname(Path.dirname(Path.resolve(filename)))
-  const entFnFile = `${rootDir}/root/${yattRcFile}.ts`
+  // XXX: _build
+  const entFnFile = `${rootDir}/root/_build/yatt/${yattRcFile}.ts`
 
   const entFns = statSync(entFnFile, {throwIfNoEntry: false}) ?
     list_entity_functions(
