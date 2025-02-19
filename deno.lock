@@ -2390,6 +2390,17 @@
           ]
         }
       },
+      "adapter/gas-clasp": {
+        "dependencies": [
+          "jsr:@cross/test@^0.0.9",
+          "jsr:@std/assert@0.223"
+        ],
+        "packageJson": {
+          "dependencies": [
+            "npm:glob@^11.0.1"
+          ]
+        }
+      },
       "core/codegen0": {
         "dependencies": [
           "jsr:@cross/test@^0.0.9",
