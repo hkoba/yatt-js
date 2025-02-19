@@ -9,8 +9,8 @@ import * as cgen from '@yatt/codegen0'
 const __dirname = new URL('.', import.meta.url).pathname;
 export const srcDir = __dirname
 
-async function build(templateDir: string, config: cgen.YattConfig): Promise<void> {
-  const outDir = config.outDir ?? (config.rootDir + "/_build")
+async function build(rootDir: string, templateDir: string, config: cgen.YattConfig): Promise<void> {
+  const outDir = config.outDir ?? (rootDir + "/_build")
   const runtimeDir = `${outDir}/yatt`;
 
   if (! config.noEmit) {
@@ -22,13 +22,12 @@ async function build(templateDir: string, config: cgen.YattConfig): Promise<void
   }
 
   // copy yatt runtime files
+  // XXX: rebuild オプションがほしい
   if (! config.noEmit) {
     Deno.copyFile(`${cgen.path.srcDir}/yatt.ts`, `${outDir}/yatt.ts`);
 
     copyFilesIfMissing(`${cgen.path.srcDir}/yatt`, '**/*.ts', runtimeDir, true);
-  }
 
-  if (! config.noEmit) {
     copyFilesIfMissing(`${srcDir}/runtime`, '**/*.ts', runtimeDir, true, {dot: true});
   }
 
@@ -52,8 +51,9 @@ async function build(templateDir: string, config: cgen.YattConfig): Promise<void
 
   // generate static file map
   if (! config.noEmit) {
+    console.log('rootDir', rootDir)
     const staticFiles = glob.sync('**/*.{html,css}', {
-      root: outDir, cwd: outDir
+      root: rootDir, cwd: rootDir
     })
     let mapFn = `${runtimeDir}/$static.js`;
     let script = {};
@@ -94,10 +94,10 @@ if (import.meta.main) {
 
     let args = process.argv.slice(2)
     const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
-    const rootDir = Path.resolve('templates') + Path.sep
+    const templateDir = Path.resolve('templates') + Path.sep
     let config: cgen.YattConfig = {
       outDir: './root/_build',
-      rootDir,
+      rootDir: templateDir,
       exportNamespace: false,
       connectionTypeName: 'yatt.Connection',
       debug: { declaration: debugLevel },
@@ -105,6 +105,6 @@ if (import.meta.main) {
     }
     parse_long_options(args, {target: config})
 
-    await build(rootDir, config)
+    await build('./root', templateDir, config)
   })()
 }

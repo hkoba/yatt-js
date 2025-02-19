@@ -3,7 +3,7 @@ function doGet(request: yatt.Request): GoogleAppsScript.HTML.HtmlOutput {
   const staticFn = _lookup_static(pathInfo)
 
   if (staticFn) {
-    return HtmlService.createHtmlFromFile(staticFn)
+    return HtmlService.createHtmlOutputFromFile(staticFn)
   }
 
   const [fileName, ...rest] = pathInfo.split('/')
