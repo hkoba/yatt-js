@@ -52,7 +52,7 @@ async function build(rootDir: string, templateDir: string, config: cgen.YattConf
   // generate static file map
   if (! config.noEmit) {
     console.log('rootDir', rootDir)
-    const staticFiles = glob.sync('**/*.{html,css}', {
+    const staticFiles = glob.sync('**/*.html', {
       root: rootDir, cwd: rootDir
     })
     let mapFn = `${runtimeDir}/$static.js`;
