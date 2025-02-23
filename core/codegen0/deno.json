@@ -5,6 +5,7 @@
   "imports": {
     "@cross/test": "jsr:@cross/test@^0.0.9",
     "@std/assert": "jsr:@std/assert@^0.223.0",
-    "@yatt/lrxml": "../lrxml/src/index.ts"
+    "@yatt/lrxml": "../lrxml/src/index.ts",
+    "@yatt/codegen0": "src/index.ts"
   }
 }
