@@ -46,7 +46,7 @@ export function isLabelTerm(term: Term)
 
 // This returns copy of att with filtering att.label
 export function attValue(att: AttItem): AttValue {
-  let obj: any = {}
+  const obj: any = {}
   for (const [k, v] of Object.entries(att)) {
     if (k === "label")
       continue
