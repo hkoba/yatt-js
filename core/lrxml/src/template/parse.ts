@@ -94,6 +94,7 @@ function parse_tokens(
 ): void {
 
   let cur;
+  let is_closed;
   while (!(cur = lex.next()).done) {
     const tok = cur.value
     ctx.index = tok.start
@@ -127,7 +128,9 @@ function parse_tokens(
           const nx = lex.next().value
           if (!nx || nx.kind !== 'tag_close')
             ctx.throw_error(`tag is not closed by '>'`)
-          return
+
+          is_closed = true
+          break;
         }
         const [attlist, end] = parse_attlist(ctx, lex, "tag_close");
         if (end.kind !== "tag_close") {
@@ -172,7 +175,16 @@ function parse_tokens(
         ctx.NIMPL(tok)
       }
     }
+
+    if (is_closed) {
+      break;
+    }
   }
+
+  if (close && ! is_closed) {
+    ctx.throw_error(`Missing close tag ${close}`)
+  }
+  
 }
 
 function parse_lcmsg(ctx: ParserContext, lex: Generator<Token>)
@@ -197,6 +209,7 @@ function parse_lcmsg(ctx: ParserContext, lex: Generator<Token>)
       }
       case "lcmsg_sep": {
         lcmsg.push(sink = [])
+        break;
       }
       case "comment": break; // just ignore
       default: {
