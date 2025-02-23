@@ -7,7 +7,7 @@ import path from 'node:path'
 import process from 'node:process'
 import {readFileSync} from 'node:fs'
 
-import {glob} from 'npm:glob'
+import {glob} from 'glob'
 
 import {parse_multipart, parse_template} from '../src/index.ts'
 import type {LrxmlConfig} from '../src/index.ts'

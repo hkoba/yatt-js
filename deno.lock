@@ -2505,7 +2505,8 @@
       "core/lrxml": {
         "dependencies": [
           "jsr:@cross/test@^0.0.9",
-          "jsr:@std/assert@0.223"
+          "jsr:@std/assert@0.223",
+          "npm:glob@*"
         ]
       },
       "util/xhf": {
