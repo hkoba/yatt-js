@@ -1,6 +1,6 @@
 #!/usr/bin/env -S deno run -A
 
-import {glob} from 'npm:glob'
+import {glob, type GlobOptions} from 'npm:glob'
 import * as Path from 'node:path'
 import {readFileSync, writeFileSync, statSync} from 'node:fs'
 

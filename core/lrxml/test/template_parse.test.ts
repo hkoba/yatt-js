@@ -3,9 +3,9 @@
 import {test} from "@cross/test"
 import {assertEquals} from '@std/assert'
 
-import {parse_multipart, parse_template, Node, Text} from '../src/index.ts'
+import {parse_multipart, parse_template} from '@yatt/lrxml'
+import type {Node, Text, AttItem} from '@yatt/lrxml'
 
-import type {AttItem} from '../src/index.ts'
 {
   const text = (source: string, nodeList: Node[]) =>
     nodeList.filter((n): n is Text => n.kind === "text").map(
@@ -14,10 +14,10 @@ import type {AttItem} from '../src/index.ts'
 
   type ResultItem = string | AttItem[] | string[] | undefined | ResultItem[]
   const it = (source: string) => {
-    let config = { debug: {} }
-    let [partList, session] = parse_multipart(source, config)
+    const config = { debug: {} }
+    const [partList, session] = parse_multipart(source, config)
     return partList.map(part => {
-      let result: ResultItem[] = []
+      const result: ResultItem[] = []
       for (const node of parse_template(session, part)) {
         if (node.kind !== "element")
           continue

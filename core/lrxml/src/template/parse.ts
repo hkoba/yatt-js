@@ -1,12 +1,12 @@
 #!/usr/bin/env -S deno run -A
 
-import {LrxmlConfig} from '../config.ts'
+import type {LrxmlConfig} from '../config.ts'
 import type { RangeLine, Range, ParserSession } from '../context.ts'
 import { ParserContext } from '../context.ts'
 
-import { tokenize, Token, Text, Comment, PI } from './tokenize.ts'
+import { tokenize, type Token, type Text, type Comment, type PI } from './tokenize.ts'
 
-import { Part } from '../multipart/parse.ts'
+import type { Part } from '../multipart/parse.ts'
 
 import type {
   AttItem, Term, Label, StringTerm,
@@ -18,11 +18,11 @@ import {
   attKindIsQuotedString,
 } from '../attlist/parse.ts'
 
-import { EntNode } from '../entity/parse.ts'
+import type { EntNode } from '../entity/parse.ts'
 
 export type Node = BodyNode | AttItem
 export type AnonNode = {kind: string} & RangeLine
-export {Term}
+export type {Term}
 
 // export function anonNode<T extends Node>(node: T): AnonNode {
 //   const {kind, start, end} = node
@@ -80,9 +80,9 @@ export function isBareLabeledAtt(att: AttItem | AttElement): att is AttLabeledBy
 }
 
 export function parse_template(session: ParserSession, part: Part): BodyNode[] {
-  let lex = tokenize(session, part.payload)
-  let ctx = new ParserContext(session);
-  let nodeList: BodyNode[] = [];
+  const lex = tokenize(session, part.payload)
+  const ctx = new ParserContext(session);
+  const nodeList: BodyNode[] = [];
   parse_tokens(ctx, part, lex, 0, nodeList);
   return nodeList;
 }
@@ -133,7 +133,7 @@ function parse_tokens(
         if (end.kind !== "tag_close") {
           ctx.NEVER()
         }
-        let elem: ElementNode | AttElement = {
+        const elem: ElementNode | AttElement = {
           kind: tok.is_option ? "attelem" : "element",
           path: tok.name.split(/:/), attlist,
           ...ctx.token_range(tok)
@@ -158,7 +158,7 @@ function parse_tokens(
 
         if (! end.is_empty_element) {
           // <yatt:tag> or <:yatt:tag>
-          let body = elem.children = []
+          const body = elem.children = []
           parse_tokens(ctx, part, lex, depth+1, body, tok.name, elem)
         }
         else if (elem.kind === "attelem") {
@@ -178,8 +178,8 @@ function parse_tokens(
 function parse_lcmsg(ctx: ParserContext, lex: Generator<Token>)
 : {lcmsg: Text[][], bind: EntNode[], end: Range} {
   let sink: Text[] = [];
-  let lcmsg = [sink]
-  let bind: EntNode[] = []
+  const lcmsg = [sink]
+  const bind: EntNode[] = []
   for (const tok of lex) {
     ctx.index = tok.start
     switch (tok.kind) {

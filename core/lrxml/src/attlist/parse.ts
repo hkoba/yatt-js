@@ -1,12 +1,14 @@
-import {
+import type {
   RangeLine, ParserContext, TokenT, AnyToken
 } from '../context.ts'
 
-import { AttToken, isAttToken, AttBare, AttSq, AttDq, AttNest, AttIdentPlus, TokenContent } from '../attlist/tokenize.ts'
+import { isAttToken } from '../attlist/tokenize.ts'
 
-import { AttStringItem, parse_attstring } from '../attstring/parse.ts'
+import type { AttToken, AttBare, AttSq, AttDq, AttNest, AttIdentPlus, TokenContent } from '../attlist/tokenize.ts'
 
-import { EntNode } from '../entity/parse.ts'
+import { type AttStringItem, parse_attstring } from '../attstring/parse.ts'
+
+import type { EntNode } from '../entity/parse.ts'
 
 type BaseTerm<T> = AnyToken & {value: T, comment: string[]}
 
@@ -56,7 +58,7 @@ export function attValue(att: AttItem): AttValue {
 export function parse_attlist<T extends {kind: string} & RangeLine>(
   ctx: ParserContext, lex: Generator<T,any,any>, end_kind: string
 ): [AttItem[], T] {
-  let attList: AttItem[] = []
+  const attList: AttItem[] = []
   let pendingTerm: Term | undefined = undefined
   let had_equal: boolean = false
   let cur
@@ -77,7 +79,7 @@ export function parse_attlist<T extends {kind: string} & RangeLine>(
     if (! isAttToken(cur.value)) {
       ctx.throw_error(`Unknown token from lexter: kind: ${cur.value.kind}`)
     }
-    let token: AttToken = cur.value
+    const token: AttToken = cur.value
 
     let term: Term | undefined
     // Following branches may fill term or continue to next loop.
@@ -173,7 +175,7 @@ function term_nest<U extends TokenT<string>>(
 }
 
 function term_entity<U extends TokenT<string>>(
-  ctx: ParserContext, lex: Generator<U,any,any>,
+  ctx: ParserContext, _lex: Generator<U,any,any>,
   token: EntNode
 ): EntTermWComment {
   // XXX: Evil cast
@@ -181,7 +183,7 @@ function term_entity<U extends TokenT<string>>(
 }
 
 function term_string<U extends TokenT<string>>(
-  ctx: ParserContext, lex: Generator<U,any,any>,
+  ctx: ParserContext, _lex: Generator<U,any,any>,
   token: {kind: "bare" | "sq" | "dq"} & TokenContent
 ): StringTerm {
   const innerRange = attKindIsQuotedString(token.kind) ?
@@ -197,10 +199,10 @@ function term_string<U extends TokenT<string>>(
 }
 
 function term_identplus<U extends TokenT<string>>(
-  ctx: ParserContext, lex: Generator<U,any,any>,
+  ctx: ParserContext, _lex: Generator<U,any,any>,
   token: {kind: "identplus", has_three_colon: boolean} & TokenContent
 ): IdentplusTerm {
-  let value = ctx.range_text(token)
+  const value = ctx.range_text(token)
   return {
     kind: token.kind, value,
     has_three_colon: token.has_three_colon,
