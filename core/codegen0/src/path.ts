@@ -6,7 +6,7 @@ import {strictEqual} from 'node:assert'
 
 import type {YattConfig} from './config.ts'
 
-import {rootname} from '@yatt/lrxml'
+import {rootname} from '../../lrxml/src/index.ts'
 export {rootname}
 
 const __dirname = new URL('.', import.meta.url).pathname;

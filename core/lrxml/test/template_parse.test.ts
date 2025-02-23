@@ -3,8 +3,8 @@
 import {test} from "@cross/test"
 import {assertEquals} from '@std/assert'
 
-import {parse_multipart, parse_template} from '@yatt/lrxml'
-import type {Node, Text, AttItem} from '@yatt/lrxml'
+import {parse_multipart, parse_template} from '../src/index.ts'
+import type {Node, Text, AttItem} from '../src/index.ts'
 
 {
   const text = (source: string, nodeList: Node[]) =>

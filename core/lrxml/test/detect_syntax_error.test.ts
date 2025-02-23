@@ -9,10 +9,10 @@ import {readFileSync} from 'node:fs'
 
 import {glob} from 'npm:glob'
 
-import {parse_multipart, parse_template} from '@yatt/lrxml'
-import type {LrxmlConfig} from '@yatt/lrxml'
+import {parse_multipart, parse_template} from '../src/index.ts'
+import type {LrxmlConfig} from '../src/index.ts'
 
-import {rootname} from '@yatt/lrxml'
+import {rootname} from '../src/index.ts'
 
 const __dirname = new URL('.', import.meta.url).pathname;
 
