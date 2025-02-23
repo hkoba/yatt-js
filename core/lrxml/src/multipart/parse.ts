@@ -112,7 +112,7 @@ function push_payload(ctx: ParserContext, partList: [Start, PartBase][], payload
 
 // console.log(this)
 
-MODULINO: if (import.meta.main) {
+if (import.meta.main) {
   (async () => {
     const process = await import("node:process")
     const { readFileSync } = await import('node:fs')

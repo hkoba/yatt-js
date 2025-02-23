@@ -207,7 +207,7 @@ function parse_lcmsg(ctx: ParserContext, lex: Generator<Token>)
   ctx.throw_error(`lcmsg is not terminated!`)
 }
 
-MODULINO: if (import.meta.main) {
+if (import.meta.main) {
   (async () => {
     const process = await import("node:process")
     const { readFileSync } = await import('node:fs')

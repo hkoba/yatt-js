@@ -108,7 +108,7 @@ export function* tokenize_multipart_context(ctx: ParserContext): ChunkGenerator 
   }
 }
 
-MODULINO: if (import.meta.main) {
+if (import.meta.main) {
   (async () => {
     const process = await import("node:process")
     const { readFileSync } = await import("node:fs")

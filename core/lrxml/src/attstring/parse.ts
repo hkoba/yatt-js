@@ -44,7 +44,7 @@ export function parse_attstring(outerCtx: ParserContext, range: RangeLine): AttS
   return items;
 }
 
-MODULINO: if (import.meta.main) {
+if (import.meta.main) {
   const process = await import("node:process")
   for (const str of process.argv.slice(2)) {
     let ctx = parserContext({

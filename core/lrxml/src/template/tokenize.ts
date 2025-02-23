@@ -178,7 +178,7 @@ export function* tokenize(session: ParserSession, payloadList: Payload[]): Gener
   }
 }
 
-MODULINO: if (import.meta.main) {
+if (import.meta.main) {
   (async () => {
     const process = await import("node:process")
     const { readFileSync } = await import('node:fs')
