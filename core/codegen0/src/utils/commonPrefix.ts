@@ -1,4 +1,4 @@
-#!/usr/bin/env -S deno run -A
+#!/usr/bin/env -S deno run
 
 export function commonPrefix(strA: string, strB: string): string {
   let i = 0

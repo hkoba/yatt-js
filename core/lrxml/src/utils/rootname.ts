@@ -1,4 +1,4 @@
-#!/usr/bin/env -S deno run -R
+#!/usr/bin/env -S deno run
 
 import path from 'node:path'
 

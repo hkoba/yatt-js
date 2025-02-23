@@ -1,4 +1,4 @@
-#!/usr/bin/env -S deno run -A
+#!/usr/bin/env -S deno run -RE
 
 import type {LrxmlConfig} from '../config.ts'
 import type { RangeLine, Range, ParserSession } from '../context.ts'

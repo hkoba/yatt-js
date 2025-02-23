@@ -1,4 +1,4 @@
-#!/usr/bin/env -S deno run -A
+#!/usr/bin/env -S deno run -WRE
 
 //// ./build.ts --outDir=example/dist core/lrxml/test/input/t00[^25]*
 

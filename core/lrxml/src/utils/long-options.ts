@@ -1,4 +1,4 @@
-#!/usr/bin/env -S deno run -A
+#!/usr/bin/env -S deno run
 
 export type Result = {[k: string]: string | boolean | Object | Array<any>}
 

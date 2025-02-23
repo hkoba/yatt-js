@@ -1,4 +1,4 @@
-#!/usr/bin/env -S deno run -A
+#!/usr/bin/env -S deno run -RE
 
 import {
   parse_multipart, type RawPart, type AttItem,

@@ -1,4 +1,4 @@
-#!/usr/bin/env -S deno run -A
+#!/usr/bin/env -S deno run -R
 
 // XXX: Remove node path dependencies
 import path from 'node:path'

@@ -1,4 +1,4 @@
-#!/usr/bin/env -S deno run -A
+#!/usr/bin/env -S deno run -R
 
 declare global {
   interface ImportMeta {main: boolean}

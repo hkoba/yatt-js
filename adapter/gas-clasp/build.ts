@@ -1,4 +1,4 @@
-#!/usr/bin/env -S deno run -A
+#!/usr/bin/env -S deno run -WRE
 
 import {glob, type GlobOptions} from 'npm:glob'
 import * as Path from 'node:path'
