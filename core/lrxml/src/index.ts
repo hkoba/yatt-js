@@ -47,3 +47,5 @@ export {
   extract_line,
   extract_prefix_spec
 } from './utils/count_lines.ts'
+
+export {rootname} from './utils/rootname.ts'
