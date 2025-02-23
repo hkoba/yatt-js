@@ -77,7 +77,7 @@ export function parse_attlist<T extends {kind: string} & RangeLine>(
     }
 
     if (! isAttToken(cur.value)) {
-      ctx.throw_error(`Unknown token from lexter: kind: ${cur.value.kind}`)
+      ctx.throw_error(`Unknown token from lexer: kind: ${cur.value.kind}`)
     }
     const token: AttToken = cur.value
 
