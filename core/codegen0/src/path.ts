@@ -6,6 +6,9 @@ import {strictEqual} from 'node:assert'
 
 import type {YattConfig} from './config.ts'
 
+import {rootname} from '@yatt/lrxml'
+export {rootname}
+
 const __dirname = new URL('.', import.meta.url).pathname;
 
 // After transpilation, jsDir will become $base/lib
@@ -109,10 +112,6 @@ export function fileNameWithNewExt(filename: string, newExt: string): string {
   const ext = path.extname(filename)
   return path.join(path.dirname(filename)
                    , path.basename(filename, ext) + newExt)
-}
-
-export function rootname(fn: string): string {
-  return fn.substring(0, fn.length - path.extname(fn).length)
 }
 
 export function* upward_dirs(
