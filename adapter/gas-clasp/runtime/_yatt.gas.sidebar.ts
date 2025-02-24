@@ -1,4 +1,18 @@
 namespace $yatt.runtime {
+  export function show_sidebar(pageName: string, params: any) {
+    try {
+      const output = $yatt.runtime.render_page(pageName, params)
+      SpreadsheetApp.getUi() // Or DocumentApp or SlidesApp or FormApp.
+        .showSidebar(output);
+    } catch (e) {
+      const diag = HtmlService.createHtmlOutput()
+      diag.append(`Error: `)
+      diag.append(e.message)
+      SpreadsheetApp.getUi()
+        .showSidebar(diag);
+    }
+  }
+
   export function render_page(pageName: string, params: any) {
 
     let output = HtmlService.createHtmlOutput()

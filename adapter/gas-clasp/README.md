@@ -69,7 +69,7 @@ namespace $yatt {
 │   │   ├── index.ts
 │   │   └── page2.ts
 │   ├── _yatt.connection.ts
-│   ├── _yatt.entity.ts
+│   ├── _yatt.entity.ts      ← entity の置き場
 │   ├── _yatt.gas.sidebar.ts
 │   ├── _yatt.gas.htmlservice.ts
 │   ├── _yatt.runtime.ts
