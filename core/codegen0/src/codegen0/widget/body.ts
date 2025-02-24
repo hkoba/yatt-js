@@ -51,7 +51,9 @@ export function generate_body(ctx: WidgetGenContext, scope: VarScope,
         program.push(generate_element(ctx, scope, node));
         break;
       case "entity":
-        program.push(' ', as_print(ctx, generate_entity(ctx, scope, node, {need_runtime_escaping: true})), ';');
+        program.push(' ', as_print(ctx, generate_entity(ctx, scope, node, {
+          need_runtime_escaping: true
+        })), ';');
         break;
       default:
         ctx.NEVER();
