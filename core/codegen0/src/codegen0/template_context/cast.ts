@@ -21,8 +21,11 @@ export function generate_as_cast_to<T extends Part>(
     case 'list': {
       return generate_as_cast_to_list(ctx, scope, term)
     }
+    case 'scalar': {
+      // XXX: is this safe? put ()?
+      return {kind: "other", code: term.value, source: term};
+    }
     case 'html':
-    case 'scalar':
     case 'widget': {
       ctx.NIMPL(term);
       break; /* not reached */
