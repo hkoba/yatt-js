@@ -1,7 +1,5 @@
 import {type LrxmlParams, lrxmlParams, IsLrxmlParams} from './deps.ts'
 
-export const yattRcFile = ".htyattrc"
-
 import {type YattProjectParams, applyProjectStyle} from "./project/layout.ts"
 
 import type {CGenMacro} from "./codegen0/macro.ts"
@@ -16,6 +14,7 @@ export type YattParams = LrxmlParams & YattProjectParams & {
   macro?: Partial<CGenMacro>,
   es?: boolean,
   genFileSuffix?: string,
+  entityDefinitionsFile?: string
   debug: {
     build?: number,
     codegen?: number,
@@ -50,6 +49,7 @@ export function yattParams(
   const {
     yattRoot, documentRoot, libDirs, outDir, linkDir,
     yattSrcPrefix, projectStyle,
+    entityDefinitionsFile,
     lookup_subdirectory_first = false,
     templateNamespace,
     genFileSuffix = '.ts',
@@ -69,6 +69,7 @@ export function yattParams(
     connectionTypeName,
     noEmit,
     genFileSuffix,
-    body_argument_name
+    body_argument_name,
+    entityDefinitionsFile
   }
 }

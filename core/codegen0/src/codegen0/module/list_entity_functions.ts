@@ -1,26 +1,16 @@
 #!/usr/bin/env -S deno run -R
 
-import {readFileSync, existsSync} from 'node:fs'
+import {readFileSync} from 'node:fs'
 
 // import {YattConfig} from '../../config'
 
 type FunctionMG = {name?: string}
 
-import {upward_dirs} from '../../path.ts'
+export function list_entity_functions(fileName: string): {[k: string]: any} {
 
-export function list_entity_functions(rootName: string): {[k: string]: any} {
-
-  const funcRe = /^export (?:declare )?function (?<name>\w+)\(this: Connection,/mg
+  const funcRe = /^\s*export (?:declare )?function (?<name>\w+)\(/mg
 
   const dict: {[k: string]: any} = {}
-
-  const fileName = find_file_with_extension(rootName, ['d.ts', 'ts']);
-  if (fileName == null) {
-    // warn
-    return dict
-  }
-
-  // console.log(`entity defs: ${fileName}`)
 
   const source = readFileSync(fileName, {encoding: 'utf-8'})
   let m
@@ -32,18 +22,6 @@ export function list_entity_functions(rootName: string): {[k: string]: any} {
   }
 
   return dict
-}
-
-function find_file_with_extension(rootName: string, extensions: string[])
-: string | undefined {
-  for (const dir of upward_dirs(rootName)) {
-    for (const ext of extensions) {
-      const fn = dir + '/' + rootName + '.' + ext;
-      if (existsSync(fn)) {
-        return fn
-      }
-    }
-  }
 }
 
 if (import.meta.main) {

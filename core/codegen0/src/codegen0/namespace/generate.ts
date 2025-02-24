@@ -44,11 +44,11 @@ export function generate_namespace(
 
   const rootDir = Path.dirname(Path.dirname(Path.resolve(filename)))
   // XXX: _build
-  const entFnFile = `${rootDir}/root/_yatt.entity.ts`
+  const entFnsFile = config.entityDefinitionsFile ?? `${rootDir}/root/_yatt.entity.ts`
 
-  const entFns = statSync(entFnFile, {throwIfNoEntry: false}) ?
+  const entFns = statSync(entFnsFile, {throwIfNoEntry: false}) ?
     list_entity_functions(
-      entFnFile, '$yatt' // XXX: entFnPrefix(session.params)
+      entFnsFile, '$yatt' // XXX: entFnPrefix(session.params)
     ) : {}
 
   const [template, session] = build_template_declaration(

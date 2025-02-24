@@ -2,7 +2,7 @@
 
 import {parse_template} from '../../deps.ts'
 
-import {type YattConfig, type YattParams, isYattParams, yattParams, primaryNS, yattRcFile} from '../../config.ts'
+import {type YattConfig, type YattParams, isYattParams, yattParams, primaryNS} from '../../config.ts'
 
 import {
   build_template_declaration
@@ -39,9 +39,12 @@ export function generate_module(
 
   const ext = config.genFileSuffix ?? "";
 
-  const entFns: {[k: string]: any} = list_entity_functions(
-    Path.join(Path.dirname(filename), yattRcFile)
-  )
+  const entFnsFile = config.entityDefinitionsFile;
+
+  let entFns: {[k: string]: any} | undefined;
+  if (entFnsFile) {
+    entFns = list_entity_functions(entFnsFile)
+  }
 
   const [template, builderSession] = build_template_declaration(
     filename, source, {
@@ -63,21 +66,21 @@ export function generate_module(
 
   const program: CodeFragment[] = []
 
-  const rootPrefix = prefixUnderRootDir(filename, config.yattRoot)
-  // XXX: yatt => yatt-runtime
-  if (existsSync(`${config.yattRoot}/yatt.ts`)) {
-    program.push(`import * as yatt from '${rootPrefix}yatt${ext}'\n`);
-  } else {
-    program.push(`import * as yatt from '${srcDir}/yatt${ext}'\n`);
-  }
+  // const rootPrefix = prefixUnderRootDir(filename, config.yattRoot)
+  // // XXX: yatt => yatt-runtime
+  // if (existsSync(`${config.yattRoot}/yatt.ts`)) {
+  //   program.push(`import * as $yatt from '${rootPrefix}yatt${ext}'\n`);
+  // } else {
+  //   program.push(`import * as $yatt from '${srcDir}/yatt${ext}'\n`);
+  // }
 
-  if (Object.keys(entFns).length) {
-    const nsName = primaryNS(builderSession.params);
-    program.push(`import * as \$${nsName} from './${yattRcFile}'\n`)
-    program.push(typeAnnotation(`import type {Connection} from './${yattRcFile}'\n`))
-  } else {
-    program.push(typeAnnotation(`type Connection = yatt.runtime.Connection\n`))
-  }
+  // if (Object.keys(entFns).length) {
+  //   const nsName = primaryNS(builderSession.params);
+  //   program.push(`import * as \$${nsName} from './${yattRcFile}'\n`)
+  //   program.push(typeAnnotation(`import type {Connection} from './${yattRcFile}'\n`))
+  // } else {
+  //   program.push(typeAnnotation(`type Connection = yatt.runtime.Connection\n`))
+  // }
 
   const importListPos = program.length
 
