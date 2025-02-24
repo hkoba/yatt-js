@@ -144,7 +144,7 @@ function finalize_codefragment_1(
           break;
         }
         default:
-          throw new Error(`never`)
+          throw new Error(`never ${item}`)
       }
     }
   }
