@@ -10,6 +10,7 @@ export type {
 
 export type {
   VarTypeSpec, Variable, WidgetVar, DelegateVar, DefaultFlag
+, SimpleVar
 } from './vartype.ts'
 
 export {

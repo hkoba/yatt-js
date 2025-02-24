@@ -4,6 +4,7 @@ import {VarScope} from '../varscope.ts'
 
 import {generate_argdecls} from './argdecls.ts'
 import {generate_body} from './body.ts'
+import {build_simple_variable} from '../../declaration/index.ts'
 
 import {type CodeFragment, joinAsArray, typeAnnotation} from '../codefragment.ts'
 
@@ -16,7 +17,6 @@ export function generate_widget(ctx: WidgetGenContext, nodeList: BodyNode[])
     ` `
   ];
 
-  //XXX: this, CON
   const scope = new VarScope(
     new Map
     , new VarScope(ctx.part.varMap, new VarScope(ctx.part.argMap))
@@ -29,8 +29,12 @@ export function generate_widget(ctx: WidgetGenContext, nodeList: BodyNode[])
   if (ctx.hasThis) {
     implicitArgs.push(['this', typeAnnotation(`: typeof ${ctx.session.templateName.join('.')}`)])
     bodyPreamble += `const $this = this`;
+    const thisVar = build_simple_variable(ctx, '$this', {typeName: "scalar"}, {})
+    scope.set('this', thisVar)
   }
   implicitArgs.push(['CON', typeAnnotation(`: ${ctx.session.params.connectionTypeName}`)])
+  const conVar = build_simple_variable(ctx, 'CON', {typeName: "scalar"}, {})
+  scope.set('CON', conVar)
 
   // XXX: default value
   // XXX: tmpl name
