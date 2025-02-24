@@ -1,6 +1,5 @@
 #!/usr/bin/env -S deno run -R
 
-// XXX: Remove node path dependencies
 import path from 'node:path'
 import {strictEqual} from 'node:assert'
 
