@@ -7,14 +7,14 @@ import type {CGenMacro} from "./codegen0/macro.ts"
 export type YattParams = LrxmlParams & YattProjectParams & {
   projectStyle?: string
   lookup_subdirectory_first: boolean
-  templateNamespace?: string;
-  connectionTypeName: string,
+  templateNamespace?: string
+  connectionTypeName: string
   noEmit: boolean;
-  body_argument_name: string;
-  macro?: Partial<CGenMacro>,
-  es?: boolean,
-  genFileSuffix?: string,
+  body_argument_name: string
   entityDefinitionsFile?: string
+  macro?: Partial<CGenMacro>
+  es?: boolean
+  genFileSuffix?: string
   debug: {
     build?: number,
     codegen?: number,
