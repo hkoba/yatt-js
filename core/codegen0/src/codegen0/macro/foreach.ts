@@ -1,7 +1,6 @@
 import {
   type ElementNode
   , type AttItem, type AttElement, type AttValue, attValue, isBareLabeledAtt
-  , type hasQuotedStringValue, type isIdentOnly
 } from '../../deps.ts'
 
 import type {WidgetGenContext} from '../context.ts'
@@ -10,7 +9,7 @@ import {VarScope} from '../varscope.ts'
 
 import {isError} from '../../utils/isError.ts'
 
-import {build_simple_variable} from '../../declaration/index.ts'
+import {build_simple_variable, type SimpleVar} from '../../declaration/index.ts'
 
 import {generate_body} from '../widget/body.ts'
 
@@ -23,7 +22,8 @@ export function macro_foreach(
   node: ElementNode,
   option?: {fragment?: boolean}
 )
-: {output: CodeFragment, fragment?: any}
+: {output: CodeFragment
+  , fragment?: {loopVar: SimpleVar, listExpr: CodeFragment, body: CodeFragment}}
 {
   // console.dir(node, {depth: null, colors: true})
   const primary = collect_arg_spec(node.attlist, ['my', 'list'])
