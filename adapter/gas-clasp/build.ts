@@ -104,7 +104,7 @@ if (import.meta.main) {
 
     const args = process.argv.slice(2)
     const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
-    const templateDir = Path.resolve('templates') + Path.sep
+    const templateDir = Path.resolve('pages') + Path.sep
     const config: cgen.YattConfig = {
       outDir: './root/_yatt',
       rootDir: templateDir,

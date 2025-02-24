@@ -52,7 +52,7 @@ namespace $yatt {
 
 ## ディレクトリ構造
 
-- `*.yatt` は `templates/` の下に置くこと。これが `root/_yatt/*.ts` へ変換される
+- `*.yatt` は `pages/` の下に置くこと。これが `root/_yatt/*.ts` へ変換される
 - `runtime/_yatt.*.ts` はそのまま `root/_yatt.*.ts` へコピーされる（同名のファイルが既にあれば無視する）
 
 ```tree
@@ -74,7 +74,7 @@ namespace $yatt {
 │   ├── _yatt.gas.htmlservice.ts
 │   ├── _yatt.runtime.ts
 │   └── appsscript.json
-├── templates　　　　　　　　　← yatt のテンプレートの置き場所
+├── pages　    　　　　　　　　← yatt のテンプレートの置き場所
 │   ├── error.ytjs
 │   ├── index.yatt
 │   └── page2.yatt
