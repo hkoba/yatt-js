@@ -10,7 +10,6 @@ export type YattParams = LrxmlParams & YattProjectParams & {
   projectStyle?: string
   lookup_subdirectory_first: boolean
   templateNamespace?: string;
-  exportNamespace?: boolean;
   connectionTypeName: string,
   noEmit: boolean;
   body_argument_name: string;
@@ -53,7 +52,6 @@ export function yattParams(
     yattSrcPrefix, projectStyle,
     lookup_subdirectory_first = false,
     templateNamespace,
-    exportNamespace,
     genFileSuffix = '.ts',
     connectionTypeName = 'Connection',
     noEmit = false,
@@ -68,7 +66,6 @@ export function yattParams(
     ),
     lookup_subdirectory_first,
     templateNamespace,
-    exportNamespace,
     connectionTypeName,
     noEmit,
     genFileSuffix,

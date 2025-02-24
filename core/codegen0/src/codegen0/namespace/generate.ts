@@ -15,12 +15,11 @@ import {generate_entity} from '../entity/generate.ts'
 import {generate_action} from '../action/generate.ts'
 
 import {
-  yattRcFile,
   type YattConfig, type YattParams,
   isYattParams, yattParams
 } from '../../config.ts'
 
-import {srcDir, templatePath} from '../../path.ts'
+import {templatePath} from '../../path.ts'
 
 import {builtinMacros} from '../macro/index.ts'
 
@@ -33,7 +32,7 @@ import {list_entity_functions} from './list_entity_functions.ts'
 import * as Path from 'node:path'
 import {statSync} from 'node:fs'
 
-export const DEFAULT_NAMESPACE = '$tmpl'
+export const DEFAULT_NAMESPACE = '$yatt.$tmpl'
 
 export function generate_namespace(
   filename: string,
@@ -45,7 +44,7 @@ export function generate_namespace(
 
   const rootDir = Path.dirname(Path.dirname(Path.resolve(filename)))
   // XXX: _build
-  const entFnFile = `${rootDir}/root/_build/yatt/${yattRcFile}.ts`
+  const entFnFile = `${rootDir}/root/_yatt.entity.ts`
 
   const entFns = statSync(entFnFile, {throwIfNoEntry: false}) ?
     list_entity_functions(
@@ -81,16 +80,6 @@ export function generate_namespace_from_template(
 ): {outputText: string, session: CGenSession}
 {
   const program: CodeFragment[] = []
-
-  const config = session.params
-  const ext = config.genFileSuffix ?? "";
-
-  if (session.params.exportNamespace) {
-    program.push(`import * as runtime from '${srcDir}/yatt/runtime${ext}'\n`);
-    program.push(`import type {Connection} from '${srcDir}/yatt/runtime${ext}'\n`);
-    program.push(`export const yatt = {runtime}\n`);
-    program.push(`export `);
-  }
 
   program.push("namespace ", session.templateName.join('.'), " {\n")
 

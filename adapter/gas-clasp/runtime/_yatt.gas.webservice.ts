@@ -1,4 +1,4 @@
-function doGet(request: yatt.Request): GoogleAppsScript.HTML.HtmlOutput {
+function doGet(request: $yatt.runtime.Request): GoogleAppsScript.HTML.HtmlOutput {
   const pathInfo = request.pathInfo ?? "index";
   const staticFn = _lookup_static(pathInfo)
 
@@ -11,14 +11,22 @@ function doGet(request: yatt.Request): GoogleAppsScript.HTML.HtmlOutput {
   let output = HtmlService.createHtmlOutput()
   let CON = {
     request,
+    output,
     append: output.append.bind(output),
-    appendUntrusted: output.appendUntrusted.bind(output)
+    appendUntrusted: output.appendUntrusted.bind(output),
+    appendRuntimeValue: (val: any) => {
+      if (typeof val === "string") {
+        output.appendUntrusted(val)
+      } else {
+        output.append($yatt.runtime.escape(val))
+      }
+    }
   }
 
-  const page = ($tmpl as any)[fileName]
+  const page = ($yatt.$tmpl as any)[fileName]
   // XXX: error.ytjs が無い時の fallback がほしい
   if (page == null) {
-    $tmpl.error.render_(CON, {msg: `Page not found: ${fileName}`})
+    $yatt.$tmpl.error.render_(CON, {msg: `Page not found: ${fileName}`})
   } else {
     // XXX safe parameter mapping
     page.render_(CON, {})
@@ -28,11 +36,11 @@ function doGet(request: yatt.Request): GoogleAppsScript.HTML.HtmlOutput {
 }
 
 function _lookup_static(fileName): string | undefined {
-  if ($staticMap[fileName]) {
+  if ($yatt.$staticMap[fileName]) {
     return fileName
   } else {
     const fn = fileName + '.html'
-    if ($staticMap[fn]) {
+    if ($yatt.$staticMap[fn]) {
       return fn
     }
   }

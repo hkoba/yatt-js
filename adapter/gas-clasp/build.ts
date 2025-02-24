@@ -10,25 +10,25 @@ const __dirname = new URL('.', import.meta.url).pathname;
 export const srcDir = __dirname
 
 async function build(rootDir: string, templateDir: string, config: cgen.YattConfig): Promise<void> {
-  const outDir = config.outDir ?? (rootDir + "/_build")
-  const runtimeDir = `${outDir}/yatt`;
+  const outDir = config.outDir ?? (rootDir + "/_yatt")
 
   if (! config.noEmit) {
-    for (const dir of [outDir, runtimeDir]) {
-      if (! statSync(dir, {throwIfNoEntry: false})) {
-        Deno.mkdirSync(dir);
-      }
+    if (! statSync(outDir, {throwIfNoEntry: false})) {
+      Deno.mkdirSync(outDir);
     }
   }
 
   // copy yatt runtime files
   // XXX: rebuild オプションがほしい
   if (! config.noEmit) {
-    Deno.copyFile(`${cgen.path.srcDir}/yatt.ts`, `${outDir}/yatt.ts`);
 
-    copyFilesIfMissing(`${cgen.path.srcDir}/yatt`, '**/*.ts', runtimeDir, true);
+    copyIntoNamespaceIfMissing(
+      "$yatt.runtime",
+      `${cgen.path.srcDir}/yatt/runtime.ts`,
+      `${rootDir}/_yatt.runtime.ts`
+    )
 
-    copyFilesIfMissing(`${srcDir}/runtime`, '**/*.ts', runtimeDir, true, {dot: true});
+    copyFilesIfMissing(`${srcDir}/runtime`, '**/*.ts', rootDir, true);
   }
 
   const fileList = glob.sync('**/*.{ytjs,yatt}', {
@@ -55,15 +55,24 @@ async function build(rootDir: string, templateDir: string, config: cgen.YattConf
     const staticFiles = glob.sync('**/*.html', {
       root: rootDir, cwd: rootDir
     })
-    let mapFn = `${runtimeDir}/$static.js`;
-    let script = {};
+    const mapFn = `${outDir}/_static.ts`;
+    const script: {[k: string]: boolean} = {};
     for (const fn of staticFiles) {
-      script[fn] = 1;
+      script[fn] = true;
     }
     console.log(`writing ${mapFn}`)
     const json = JSON.stringify(script)
-    writeFileSync(mapFn, `const $staticMap = ${json}`)
+    writeFileSync(mapFn, `namespace $yatt {\n  export const $staticMap = ${json}\n}\n`)
   }
+}
+
+function copyIntoNamespaceIfMissing(ns: string, srcFn: string, destFn: string) {
+  if (statSync(destFn, {throwIfNoEntry: false})) {
+    return
+  }
+  const content = readFileSync(srcFn, {encoding: "utf-8"})
+  const indented = content.replaceAll(/^.+$/mg, "  $&")
+  writeFileSync(destFn, `namespace ${ns} {\n${indented}\n}\n`)
 }
 
 function copyFilesIfMissing(srcDir: string, pattern: string, destDir: string
@@ -90,16 +99,16 @@ function copyFilesIfMissing(srcDir: string, pattern: string, destDir: string
 
 if (import.meta.main) {
   (async () => {
+    const process = await import("node:process")
     const { parse_long_options } = await import('@yatt/lrxml')
 
-    let args = process.argv.slice(2)
+    const args = process.argv.slice(2)
     const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
     const templateDir = Path.resolve('templates') + Path.sep
-    let config: cgen.YattConfig = {
-      outDir: './root/_build',
+    const config: cgen.YattConfig = {
+      outDir: './root/_yatt',
       rootDir: templateDir,
-      exportNamespace: false,
-      connectionTypeName: 'yatt.Connection',
+      connectionTypeName: '$yatt.runtime.Connection',
       debug: { declaration: debugLevel },
       // ext: 'ytjs',
     }
