@@ -2,17 +2,13 @@
   "name": "@yatt/codegen0",
   "version": "0.0.1",
   "description": "",
-  "main": "dist/index.js",
+  "module": "src/index.ts",
   "bin": {
     "yatt-js-lint": "dist/bin/yatt-js-lint.js"
   },
   "devDependencies": {
   },
   "scripts": {
-    "b": "tsc -p tsconfig.build.json",
-    "build": "tsc -p tsconfig.build.json",
-    "watch": "tsc -w -p tsconfig.build.json",
-    "test": "tap"
   },
   "repository": {
     "type": "git",
@@ -25,7 +21,5 @@
   },
   "homepage": "https://github.com/hkoba/yatt-js#readme",
   "dependencies": {
-    "npm:source-map": "npm:source-map@^0.7.4",
-    "npm:typescript": "npm:typescript@^4.4.2"
   }
 }

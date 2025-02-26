@@ -2,15 +2,8 @@
   "name": "@yatt/lrxml",
   "version": "0.0.1",
   "description": "Loose but Recursive XML",
-  "main": "lib/lrxml.cjs",
-  "module": "lib/lrxml.mjs",
-  "types": "types/lrxml.d.ts",
+  "module": "src/index.ts",
   "scripts": {
-    "clean": "rm -rf lib types",
-    "b": "tsc -p tsconfig.build.json",
-    "build": "npm run clean && rollup -c",
-    "watch": "rollup -c -w",
-    "test": "tap"
   },
   "author": "buribullet@gmail.com",
   "license": "MIT",
