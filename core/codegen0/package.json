@@ -7,9 +7,10 @@
     "yatt-js-lint": "dist/bin/yatt-js-lint.js"
   },
   "devDependencies": {
+    "@cross/test": "npm:@jsr/cross__test",
+    "@std/assert": "npm:@jsr/std__assert"
   },
-  "scripts": {
-  },
+  "scripts": {},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/hkoba/yatt-js.git"
@@ -20,6 +21,5 @@
     "url": "https://github.com/hkoba/yatt-js/issues"
   },
   "homepage": "https://github.com/hkoba/yatt-js#readme",
-  "dependencies": {
-  }
+  "dependencies": {}
 }
