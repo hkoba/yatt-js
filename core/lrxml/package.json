@@ -3,14 +3,12 @@
   "version": "0.0.1",
   "description": "Loose but Recursive XML",
   "module": "src/index.ts",
-  "scripts": {},
+  "scripts": {
+  },
   "author": "buribullet@gmail.com",
   "license": "MIT",
   "devDependencies": {
-    "glob": "^11.0.1",
-    "@cross/test": "npm:@jsr/cross__test",
-    "@std/assert": "npm:@jsr/std__assert"
+    "glob": "^11.0.1"
   },
-  "dependencies": {
-  }
+  "dependencies": {}
 }
