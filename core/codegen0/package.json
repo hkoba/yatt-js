@@ -6,10 +6,8 @@
   "bin": {
     "yatt-js-lint": "dist/bin/yatt-js-lint.js"
   },
-  "devDependencies": {
-  },
-  "scripts": {
-  },
+  "devDependencies": {},
+  "scripts": {},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/hkoba/yatt-js.git"
@@ -21,5 +19,6 @@
   },
   "homepage": "https://github.com/hkoba/yatt-js#readme",
   "dependencies": {
+    "source-map": "^0.7.4"
   }
 }

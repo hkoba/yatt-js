@@ -13,8 +13,6 @@
     "npm:chokidar@^3.5.3": "3.6.0",
     "npm:express@^4.17.1": "4.21.2",
     "npm:glob@^11.0.1": "11.0.1",
-    "npm:source-map@*": "0.7.4",
-    "npm:source-map@~0.7.4": "0.7.4",
     "npm:tap@^15.2.3": "15.2.3_ts-node@10.9.2__@types+node@22.12.0__typescript@4.9.5_typescript@4.9.5_@types+react@19.0.10_react@19.0.0",
     "npm:ts-node@^10.1.0": "10.9.2_@types+node@22.12.0_typescript@4.9.5",
     "npm:typescript@*": "5.7.3",
@@ -1388,7 +1386,7 @@
       "dependencies": [
         "debug@4.4.0",
         "istanbul-lib-coverage",
-        "source-map@0.6.1"
+        "source-map"
       ]
     },
     "istanbul-reports@3.1.7": {
@@ -2031,14 +2029,11 @@
       "integrity": "sha512-uBHU3L3czsIyYXKX88fdrGovxdSCoTGDRZ6SYXtSRxLZUzHg5P/66Ht6uoUlHu9EZod+inXhKo3qQgwXUT/y1w==",
       "dependencies": [
         "buffer-from",
-        "source-map@0.6.1"
+        "source-map"
       ]
     },
     "source-map@0.6.1": {
       "integrity": "sha512-UjgapumWlbMhkBgzT7Ykc5YXUT46F0iKu8SGXq0bcwP5dz/h0Plj6enJqjz1Zbq2l5WaqYnrVbwWOWMyF3F47g=="
-    },
-    "source-map@0.7.4": {
-      "integrity": "sha512-l3BikUxvPOcn5E74dZiq5BGsTb5yEwhaTSzccU6t4sDOH8NWJCstKO5QT2CvtFoK6F0saL7p9xHAqHOlCPJygA=="
     },
     "spawn-wrap@2.0.0": {
       "integrity": "sha512-EeajNjfN9zMnULLwhZZQU3GWBoFNkbngTUPfaawT4RkMiviTxcX0qfhVbGey39mfctfDHkWtuecgQ8NJcyQWHg==",
@@ -2497,8 +2492,7 @@
         ],
         "packageJson": {
           "dependencies": [
-            "npm:source-map@~0.7.4",
-            "npm:typescript@^4.4.2"
+            "npm:source-map@~0.7.4"
           ]
         }
       },
