@@ -73,6 +73,10 @@ export function generate_entpath<T extends Part>(
         }
         break;
       }
+      case "aref": {
+        result.push("[", generate_entlist(ctx, scope, item.elements, {}), "]")
+        break;
+      }
       default: {
         ctx.NIMPL(item)
       }
