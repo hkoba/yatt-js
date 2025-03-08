@@ -23,7 +23,12 @@ export function generate_as_cast_to<T extends Part>(
     }
     case 'scalar': {
       // XXX: is this safe? put ()?
-      return {kind: "other", code: term.value, source: term};
+      if (term.kind !== 'entity' && term.kind !== 'nest') {
+        return {kind: "other", code: term.value, source: term};
+      } else {
+        ctx.NIMPL(term)
+        break; /* not reached */
+      }
     }
     case 'html':
     case 'widget': {
