@@ -53,6 +53,7 @@ export function generate_mounter(
   const program: CodeFragment[] = []
 
   program.push('export function mount($yatt: type$yatt): type$this {\n')
+  program.push('const $this = {\n')
 
   let count = 0
   for (const part of template) {
@@ -84,7 +85,10 @@ export function generate_mounter(
     ++count;
   }
 
-  program.push('}')
+  program.push('};\n')
+  program.push('return $this;\n');
+  program.push('}\n')
+
 
   const output = finalize_codefragment(source, filename, program, {
     ts: !(config.es ?? false)
