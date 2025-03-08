@@ -67,6 +67,7 @@ export function generate_namespace(
     template,
     templateName,
     ...generate_namespace_from_template(template, {
+      cgenStyle: 'namespace',
       templateName,
       macro: Object.assign({}, builtinMacros, config.macro ?? {}),
       ...session

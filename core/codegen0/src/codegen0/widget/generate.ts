@@ -11,11 +11,12 @@ import {type CodeFragment, joinAsArray, typeAnnotation} from '../codefragment.ts
 export function generate_widget(ctx: WidgetGenContext, nodeList: BodyNode[])
  : CodeFragment
 {
-  const program: CodeFragment = [
-    `export function render_`,
-    {kind: 'name', code: ctx.part.name, source: ctx.part.nameNode},
-    ` `
-  ];
+  const program: CodeFragment = [];
+  if (ctx.session.cgenStyle !== 'mounter') {
+    program.push(`export function `);
+  }
+  program.push(`render_`);
+  program.push({kind: 'name', code: ctx.part.name, source: ctx.part.nameNode}, ` `)
 
   const scope = new VarScope(
     new Map

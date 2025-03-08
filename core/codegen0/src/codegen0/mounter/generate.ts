@@ -8,6 +8,8 @@ import {
   build_template_declaration
 } from '../../declaration/index.ts'
 
+import type {TranspileOutput} from '../output.ts'
+
 import {templatePath} from '../../path.ts'
 
 import {type CGenSession, CodeGenContextClass, finalize_codefragment} from '../context.ts'
@@ -18,72 +20,45 @@ import {generate_action} from '../action/generate.ts'
 
 import {type CodeFragment, typeAnnotation} from '../codefragment.ts'
 
-import type {TranspileOutput} from '../output.ts'
-
 import {builtinMacros} from '../macro/index.ts'
 
-import {list_entity_functions} from './list_entity_functions.ts'
-
-import {existsSync} from "node:fs"
-import * as Path from "node:path"
-
-export function generate_module(
+export function generate_mounter(
   filename: string,
   source: string, origConfig: YattConfig | YattParams
-): TranspileOutput
-{
+): TranspileOutput {
 
   const config = isYattParams(origConfig) ? origConfig : yattParams(origConfig)
 
-  const ext = config.genFileSuffix ?? "";
+  const entFns: {[k: string]: any} = {}; // XXX
 
-  const entFnsFile = config.entityDefinitionsFile;
-
-  let entFns: {[k: string]: any} | undefined;
-  if (entFnsFile) {
-    entFns = list_entity_functions(entFnsFile)
-  }
-
-  const [template, builderSession] = build_template_declaration(
-    filename, source, {
-      entFns,
-      ...config
-    }
+  const [template, declSession] = build_template_declaration(
+    filename,
+    source,
+    {...config, entFns}
   )
+  
   const templateName = templatePath(
     filename,
-    builderSession.params.documentRoot
+    declSession.params.documentRoot
   );
 
   const session: CGenSession = {
-    cgenStyle: 'module',
+    cgenStyle: 'mounter',
     templateName,
     macro: Object.assign({}, builtinMacros, config.macro ?? {}),
     importDict: {},
-    ...builderSession
+    ...declSession
   }
 
   const program: CodeFragment[] = []
 
-  // const rootPrefix = prefixUnderRootDir(filename, config.yattRoot)
-  // // XXX: yatt => yatt-runtime
-  // if (existsSync(`${config.yattRoot}/yatt.ts`)) {
-  //   program.push(`import * as $yatt from '${rootPrefix}yatt${ext}'\n`);
-  // } else {
-  //   program.push(`import * as $yatt from '${srcDir}/yatt${ext}'\n`);
-  // }
+  program.push('export function mount($yatt: type$yatt): type$this {\n')
 
-  // if (Object.keys(entFns).length) {
-  //   const nsName = primaryNS(builderSession.params);
-  //   program.push(`import * as \$${nsName} from './${yattRcFile}'\n`)
-  //   program.push(typeAnnotation(`import type {Connection} from './${yattRcFile}'\n`))
-  // } else {
-  //   program.push(typeAnnotation(`type Connection = yatt.runtime.Connection\n`))
-  // }
-
-  const importListPos = program.length
-
+  let count = 0
   for (const part of template) {
+    if (count > 0) {
+      program.push(', ')
+    }
     switch (part.kind) {
       case "action": {
         const ctx = new CodeGenContextClass(template, part, session);
@@ -106,14 +81,10 @@ export function generate_module(
       default:
         // just ignore...
     }
+    ++count;
   }
 
-  const importModules = session.importDict ? Object.values(session.importDict) : []
-  if (importModules.length) {
-    program.splice(importListPos, 0, ...importModules.map(
-      (m) => `import * as ${m} from './${m}${ext}'\n`
-    ))
-  }
+  program.push('}')
 
   const output = finalize_codefragment(source, filename, program, {
     ts: !(config.es ?? false)
@@ -140,7 +111,7 @@ if (import.meta.main) {
 
     for (const filename of args) {
       const source = readFileSync(filename, {encoding: "utf-8"})
-      const output = generate_module(Path.resolve(filename), source, config)
+      const output = generate_mounter(Path.resolve(filename), source, config)
       process.stdout.write(output.outputText + '\n');
     }
   })()

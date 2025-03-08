@@ -10,7 +10,10 @@ import type {MacroDict} from './macro.ts'
 
 import {primaryNS, entFnPrefix} from '../config.ts'
 
+export type CodeKind = 'namespace' | 'module' | 'mounter'
+
 export type CGenSession  = BuilderSession & {
+  cgenStyle: CodeKind
   templateName: string[]
   macro: MacroDict
   importDict?: {[k: string]: string}
