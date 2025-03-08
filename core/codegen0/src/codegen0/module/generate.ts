@@ -8,14 +8,12 @@ import {
   build_template_declaration
 } from '../../declaration/index.ts'
 
-import {srcDir, templatePath, prefixUnderRootDir} from '../../path.ts'
+import {templatePath} from '../../path.ts'
 
-import {CodeGenContextClass, finalize_codefragment} from '../context.ts'
+import {type CGenSession, CodeGenContextClass, finalize_codefragment} from '../context.ts'
 
 import {generate_widget} from '../widget/generate.ts'
-
 import {generate_entity} from '../entity/generate.ts'
-
 import {generate_action} from '../action/generate.ts'
 
 import {type CodeFragment, typeAnnotation} from '../codefragment.ts'
@@ -109,7 +107,7 @@ export function generate_module(
     }
   }
 
-  const importModules = Object.values(session.importDict)
+  const importModules = session.importDict ? Object.values(session.importDict) : []
   if (importModules.length) {
     program.splice(importListPos, 0, ...importModules.map(
       (m) => `import * as ${m} from './${m}${ext}'\n`
