@@ -65,14 +65,17 @@ export function generate_entpath<T extends Part>(
   }
 
   for (const item of rest) {
-    if (item.kind === "prop" || item.kind === "invoke") {
-      result.push(".", {kind: 'name', code: item.name, offset, source: item})
-      if (item.kind === "invoke") {
-        result.push("(", generate_entlist(ctx, scope, item.elements, {}), ")")
+    switch (item.kind) {
+      case "prop": case "invoke": {
+        result.push(".", {kind: 'name', code: item.name, offset, source: item})
+        if (item.kind === "invoke") {
+          result.push("(", generate_entlist(ctx, scope, item.elements, {}), ")")
+        }
+        break;
       }
-    }
-    else {
-      ctx.NIMPL(item)
+      default: {
+        ctx.NIMPL(item)
+      }
     }
   }
 
