@@ -32,7 +32,7 @@ import {list_entity_functions} from './list_entity_functions.ts'
 import * as Path from 'node:path'
 import {statSync} from 'node:fs'
 
-export const DEFAULT_NAMESPACE = '$yatt.$tmpl'
+export const DEFAULT_NAMESPACE = '$yatt.$public'
 
 export function generate_namespace(
   filename: string,

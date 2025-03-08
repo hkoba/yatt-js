@@ -23,10 +23,10 @@ function doGet(request: $yatt.runtime.Request): GoogleAppsScript.HTML.HtmlOutput
     }
   }
 
-  const page = ($yatt.$tmpl as any)[fileName]
+  const page = ($yatt.$public as any)[fileName]
   // XXX: error.ytjs が無い時の fallback がほしい
   if (page == null) {
-    $yatt.$tmpl.error.render_(CON, {msg: `Page not found: ${fileName}`})
+    $yatt.$public.error.render_(CON, {msg: `Page not found: ${fileName}`})
   } else {
     // XXX safe parameter mapping
     page.render_(CON, {})

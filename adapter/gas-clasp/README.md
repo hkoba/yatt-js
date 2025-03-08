@@ -32,9 +32,9 @@ npm i --save-dev @types/google-apps-script
 ## typescript 名前空間
 
 ```typescript
-// `$yatt.$tmpl` は自動生成されるコードのための名前空間
-namespace $yatt.$tmpl {
-  namespace $yatt.$tmpl.index {
+// `$yatt.$public` は自動生成されるコードのための名前空間
+namespace $yatt.$public {
+  namespace $yatt.$public.index {
     // index.yatt の変換結果。
     // ファイルの生成先は root/_yatt/index.ts
   }

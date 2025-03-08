@@ -30,7 +30,7 @@ namespace $yatt.runtime {
       }
     }
 
-    $yatt.$tmpl[pageName].render_(CON, params)
+    $yatt.$public[pageName].render_(CON, params)
 
     return output;
   }
