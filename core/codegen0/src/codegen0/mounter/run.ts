@@ -1,7 +1,5 @@
 #!/usr/bin/env -S deno run -RE
 
-import {extract_line, extract_prefix_spec} from '@yatt/lrxml'
-
 import {generate_mounter} from './generate.ts'
 
 import type {YattConfig} from '../../config.ts'
@@ -12,7 +10,7 @@ import process from 'node:process'
 
 import * as yatt from '../../yatt.ts'
 
-import {makeProgram} from '../../utils/compileTs.ts'
+import {transpileModule} from '../../utils/compileTs.ts'
 
 export async function runFile(filename: string, params: {[k:string]: any}, config: YattConfig)
 : Promise<string> {
@@ -31,35 +29,19 @@ export async function runSource(
   const output = generate_mounter(config.filename, source, config)
   const script = output.outputText
 
-  const {program, outputMap, diagnostics} = makeProgram(script, {
-    fileName: config.filename,
-    moduleName: '$yatt$public$index'
-  })
+  const {
+    outputText, diagnostics
+    // , sourceMapText
+  } = transpileModule(script)
 
-  if (diagnostics && diagnostics.length > 0) {
-    // console.dir(outputMap, {colors: true, depth: 4});
-    const dummyModName = 'module'
-    for (const [kind, diag] of diagnostics) {
-      if (diag.file && diag.file.fileName === `${dummyModName}.ts`
-          &&
-          diag.start != null && diag.messageText != null) {
-        const messageText = typeof diag.messageText === 'string' ?
-          diag.messageText : diag.messageText.messageText;
-        console.log(`${kind} error: ${messageText}`)
-        const [lastNl, _lineNo, colNo] = extract_prefix_spec(script, diag.start)
-        const tokenLine = extract_line(script, lastNl, colNo)
-        console.log(tokenLine)
-      }
-      else {
-        console.dir([kind, diag], {colors: true, depth: 3})
-      }
-    }
-    process.exit(1);
-  } else {
-    console.log(outputMap)
+  if (diagnostics != null && diagnostics.length) {
+    console.log(diagnostics)
+    process.exit(1)
   }
 
-  const {mount} = await import(`data:text/javascript,${program}`)
+  console.log(outputText)
+
+  const {mount} = await import(`data:text/javascript,${outputText}`)
 
   const $yatt = {
     $public: {}

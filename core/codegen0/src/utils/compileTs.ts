@@ -2,8 +2,27 @@ import ts from 'npm:typescript'
 
 import {extract_line, extract_prefix_spec} from '../deps.ts'
 
+export function transpileModule(source: string)
+{
+  return ts.transpileModule(source, {
+    compilerOptions: {
+      target: ts.ScriptTarget.ES2015,
+      module: ts.ModuleKind.ESNext,
+      moduleResolution: ts.ModuleResolutionKind.Bundler,
+      "strict": true,
+      "noImplicitAny": true,
+      "strictNullChecks": true,
+      "strictFunctionTypes": true,
+      "strictBindCallApply": true,
+      "strictPropertyInitialization": true,
+      "noImplicitThis": true,
+      "alwaysStrict": true,
+      "allowImportingTsExtensions": true,
+      noCheck: false,
+      reportDiagnostics: true,
+    }
+  });
 }
-
 
 // Stolen and modified from:
 // transpileModule in TypeScript/src/services/transpile.ts
