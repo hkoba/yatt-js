@@ -1,18 +1,7 @@
-
-import Module from 'node:module';
-// Use this style because class Module is exporeted via 'export ='
-export {Module}
-
 import ts from 'npm:typescript'
 
 import {extract_line, extract_prefix_spec} from '../deps.ts'
 
-export function compile(script: string, filename: string): Module {
-  type compiler = (this: Module, src: string, id: string) => any;
-  const m = new Module(filename);
-  const compile: compiler = (m as unknown as Module & {_compile: compiler})._compile;
-  compile.apply(m as unknown as Module, [script, filename])
-  return m as unknown as Module;
 }
 
 
@@ -20,7 +9,9 @@ export function compile(script: string, filename: string): Module {
 // transpileModule in TypeScript/src/services/transpile.ts
 // createTypescriptContext in angular-cli/packages/ngtools/webpack/src/transformers/spec_helpers.ts
 //
-export function makeProgram(input: string, transpileOptions: ts.TranspileOptions = {
+export function makeProgram(
+  input: string,
+  transpileOptions: ts.TranspileOptions = {
       reportDiagnostics: true,
       compilerOptions: {
         module: ts.ModuleKind.ESNext,
