@@ -14,16 +14,17 @@ import * as yatt from '../../yatt.ts'
 
 import {makeProgram} from '../../utils/compileTs.ts'
 
-export async function runFile(filename: string, config: YattConfig)
+export async function runFile(filename: string, params: {[k:string]: any}, config: YattConfig)
 : Promise<string> {
 
   const source = await readFile(filename, {encoding: 'utf-8'})
 
-  return await runSource(source, {filename, ...config})
+  return await runSource(source, params, {filename, ...config})
 }
 
 export async function runSource(
   source: string,
+  params: {[k:string]: any},
   config: YattConfig & {filename: string}
 ): Promise<string> {
 
@@ -80,7 +81,7 @@ export async function runSource(
     }
   }
 
-  $this.render_(CON, {});
+  $this.render_(CON, params);
 
   return CON.buffer;
 }
@@ -95,17 +96,19 @@ if (import.meta.main) {
       debug: { declaration: debugLevel },
       // ext: 'ytjs',
     }
-    parse_long_options(args, {target: config})
+    parse_long_options(args, {target: config});
 
-    const filename = args[0]
+    const [filename, paramsJson] = args
 
     if (filename == null) {
       console.error(`Usage: ${process.argv[1]} sourceFile`)
       process.exit(1)
     }
 
+    const params = paramsJson ? JSON.parse(paramsJson) : {}
+
     try {
-      const output = await runFile(filename, config)
+      const output = await runFile(filename, params, config)
       process.stdout.write(`\n=== output ====\n`);
       process.stdout.write(output);
     } catch (e) {
