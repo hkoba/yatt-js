@@ -31,8 +31,8 @@ export async function runSource(
   const output = generate_mounter(config.filename, source, config)
   const script = output.outputText
 
-  const {outputText, outputMap, diagnostics} = makeProgram(script, {
-    fileName: config.filename,
+  const {outputText, outputMap, diagnostics} = makeProgram(script, [], {
+    // fileName: config.filename, // XXX ファイル名を入れると outputMap がゼロになる！何で…？
     moduleName: '$yatt$public$index'
   })
 
@@ -59,7 +59,7 @@ export async function runSource(
     console.log(outputMap)
   }
 
-  console.log(outputText)
+  console.log(`outputText=${outputText}`)
 
   const {mount} = await import(`data:text/javascript,${outputText}`)
 
