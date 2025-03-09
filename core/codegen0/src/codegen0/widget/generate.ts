@@ -8,8 +8,9 @@ import {build_simple_variable} from '../../declaration/index.ts'
 
 import {type CodeFragment, joinAsArray, typeAnnotation} from '../codefragment.ts'
 
-export function generate_widget(ctx: WidgetGenContext, nodeList: BodyNode[])
- : CodeFragment
+export function generate_widget_signature(
+  ctx: WidgetGenContext
+): {signature: CodeFragment[], scope: VarScope, bodyPreamble: CodeFragment[]}
 {
   const program: CodeFragment = [];
   program.push(`render_`);
@@ -22,11 +23,11 @@ export function generate_widget(ctx: WidgetGenContext, nodeList: BodyNode[])
 
   const argDecls = generate_argdecls(ctx, scope, ctx.part);
 
-  const implicitArgs: CodeFragment[] = []
-  let bodyPreamble = ""
+  const implicitArgs: CodeFragment[] = [];
+  const bodyPreamble: CodeFragment  = []
   if (ctx.hasThis) {
     implicitArgs.push(['this', typeAnnotation(`: typeof ${ctx.session.templateName.join('.')}`)])
-    bodyPreamble += `const $this = this`;
+    bodyPreamble.push(`const $this = this`);
     const thisVar = build_simple_variable(ctx, '$this', {typeName: "scalar"}, {})
     scope.set('this', thisVar)
   }
@@ -37,9 +38,25 @@ export function generate_widget(ctx: WidgetGenContext, nodeList: BodyNode[])
   // XXX: default value
   // XXX: tmpl name
   program.push(
-    "(", joinAsArray(', ', implicitArgs.concat(argDecls)),
-    ") {" + bodyPreamble + "\n",
+    "(", joinAsArray(', ', implicitArgs.concat(argDecls)), ")"
   )
+
+  program.push(typeAnnotation(`: void`))
+
+  return {signature: program, scope, bodyPreamble}
+}
+
+export function generate_widget(ctx: WidgetGenContext, nodeList: BodyNode[])
+ : CodeFragment
+{
+
+  const program: CodeFragment = []
+
+  const {signature, scope, bodyPreamble} = generate_widget_signature(ctx)
+
+  program.push(signature)
+
+  program.push(" {", bodyPreamble, "\n")
 
   program.push(generate_body(ctx, scope, nodeList));
 
