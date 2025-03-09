@@ -22,6 +22,8 @@ import {type CodeFragment, typeAnnotation} from '../codefragment.ts'
 
 import {builtinMacros} from '../macro/index.ts'
 
+import {generate_template_interface} from './interface.ts'
+
 export function generate_mounter(
   filename: string,
   source: string, origConfig: YattConfig | YattParams
@@ -52,7 +54,10 @@ export function generate_mounter(
 
   const program: CodeFragment[] = []
 
-  program.push('export function mount($yatt: type$yatt): type$this {\n')
+  program.push(generate_template_interface(template, session))
+
+  // XXX: element path => typename mapping
+  program.push('export function mount($yatt: typeof$yatt): typeof$yatt$public$index {\n')
   program.push('const $this = {\n')
 
   let count = 0
