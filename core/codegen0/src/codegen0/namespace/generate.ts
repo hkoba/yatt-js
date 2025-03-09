@@ -103,7 +103,7 @@ export function generate_namespace_from_template(
           continue;
         const ctx = new CodeGenContextClass(template, part, session, {hasThis: true});
         const ast = parse_template(session, part.raw_part)
-        program.push(generate_widget(ctx, ast))
+        program.push(`export function `, generate_widget(ctx, ast))
       }
     }
   }

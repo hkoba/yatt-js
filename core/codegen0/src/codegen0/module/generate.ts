@@ -100,7 +100,7 @@ export function generate_module(
           continue;
         const ctx = new CodeGenContextClass(template, part, session);
         const ast = parse_template(session, part.raw_part)
-        program.push(generate_widget(ctx, ast))
+        program.push(`export function `, generate_widget(ctx, ast))
         break
       }
       default:
