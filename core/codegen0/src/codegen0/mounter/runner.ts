@@ -10,6 +10,8 @@ import {readFile} from 'node:fs/promises'
 
 import process from 'node:process'
 
+// import {resolve} from 'node:path'
+
 import * as yatt from '../../yatt.ts'
 
 import {makeProgram} from '../../utils/compileTs.ts'
@@ -32,7 +34,7 @@ export async function runSource(
   const script = output.outputText
 
   const {outputText, outputMap, diagnostics} = makeProgram(script, [], {
-    // fileName: config.filename, // XXX ファイル名を入れると outputMap がゼロになる！何で…？
+    // fileName: resolve(config.filename), // XXX ファイル名を入れると outputMap がゼロになる！何で…？
     moduleName: '$yatt$public$index'
   })
 
