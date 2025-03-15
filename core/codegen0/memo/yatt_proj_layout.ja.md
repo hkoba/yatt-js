@@ -6,7 +6,7 @@ yatt-js ベースのプロジェクトのディレクトリ構成をどうする
 ## 前提・目標
 
 - yatt-js は、第一にはサーバー側の MPA 用のテンプレートエンジン（将来はともかく…）
-- Web Request に対して(Perl版と同様に) noEmitで serve できるようにしたい。PHPのようにファイル本置きで動いて欲しい。
+- Web Request に対して(Perl版と同様に) noEmitで serve できるようにしたい。PHPのようにファイルぽん置きで動いて欲しい。
   - ただし、emit も出来るようにしたい（特に clasp では build/deploy が不可避）
 
 ## clasp の場合と、それ以外とが極端に違いすぎる
