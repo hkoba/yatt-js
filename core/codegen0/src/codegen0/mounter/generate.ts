@@ -12,6 +12,8 @@ import {
 
 import type {TranspileOutput} from '../output.ts'
 
+import {resolve} from 'node:path'
+
 import {templatePath} from '../../path.ts'
 
 import {
@@ -38,13 +40,13 @@ export function generate_mounter(
   const entFns: {[k: string]: any} = {}; // XXX
 
   const [template, declSession] = build_template_declaration(
-    filename,
+    resolve(filename),
     source,
     {...config, entFns}
   )
   
   const templateName = templatePath(
-    filename,
+    resolve(filename),
     declSession.params.documentRoot
   );
 
