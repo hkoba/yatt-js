@@ -78,19 +78,19 @@ export function generate_mounter(
     }
     switch (part.kind) {
       case "action": {
-        const ctx = new CodeGenContextClass(template, part, session);
+        const ctx = new CodeGenContextClass(template, part, session, {hasThis: true});
         program.push(generate_action(ctx))
         break
       }
       case "entity": {
-        const ctx = new CodeGenContextClass(template, part, session);
+        const ctx = new CodeGenContextClass(template, part, session, {hasThis: true});
         program.push(generate_entity(ctx))
         break
       }
       case "widget": {
         if (part.raw_part == null)
           continue;
-        const ctx = new CodeGenContextClass(template, part, session);
+        const ctx = new CodeGenContextClass(template, part, session, {hasThis: true});
         const ast = parse_template(session, part.raw_part)
         program.push(generate_widget(ctx, ast))
         break

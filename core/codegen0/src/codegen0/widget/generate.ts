@@ -33,7 +33,9 @@ export function generate_widget_signature(
     implicitArgs.push(['this',
       typeAnnotation(`: typeof ${ctx.session.templateName.join('.')}`)
     ])
-    bodyPreamble.push(`const $this = this`);
+    if (ctx.session.cgenStyle !== 'mounter') {
+      bodyPreamble.push(`const $this = this;`);
+    }
     const thisVar = build_simple_variable(
       ctx, '$this', {typeName: "scalar"}, {}
     )
