@@ -22,17 +22,17 @@ export function generate_template_interface(
 
   program.push(`interface typeof$yatt {
   $public: typeof$yatt$public
-}
+};
 
 interface typeof$yatt$public {
   index: typeof$yatt$public$index
-}
+};
 
 interface Connection {
   append(str: string): void;
   appendUntrusted(str?: string | number): void;
   appendRuntimeValue(val: any): void;
-}
+};
 `)
 
   program.push(`export interface typeof$yatt$public$index {\n`)
@@ -42,13 +42,13 @@ interface Connection {
       case "widget": {
         const ctx = new CodeGenContextClass(template, part, session);
         const {signature} = generate_widget_signature(ctx)
-        program.push(signature, "\n")
+        program.push(signature, ";\n")
         break;
       }
     }
   }
 
-  program.push('}\n')
+  program.push('};\n')
 
   return program
 }
