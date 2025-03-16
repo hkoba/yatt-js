@@ -1,0 +1,3 @@
+<!yatt:args x y>
+<h2>x=&yatt:x;</h2>
+y=&yatt:y;

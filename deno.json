@@ -2,6 +2,7 @@
   "workspace": [
     "core/lrxml",
     "core/codegen0",
+    "core/codegen0/example/*/*",
     "adapter/express",
     "adapter/gas-clasp",
     "util/xhf"

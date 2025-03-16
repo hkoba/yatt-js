@@ -1,0 +1,7 @@
+{
+  "tasks": {
+  },
+  "imports": {
+    "@yatt/codegen0": "../../../src/index.ts"
+  }
+}
