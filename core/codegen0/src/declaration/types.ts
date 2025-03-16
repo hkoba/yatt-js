@@ -1,5 +1,9 @@
-import type { PartBase, PartKind, Part, Widget, Action, Entity } from './part.ts'
-export type { PartBase, PartKind, Part, Widget, Action, Entity } from './part.ts'
+import type {
+  PartBase, PartKind, Part, Widget, Action, Entity
+} from './part.ts';
+export type {
+  PartBase, PartKind, Part, Widget, Action, Entity
+} from './part.ts';
 
 export type PartType = Widget | Action | Entity
 

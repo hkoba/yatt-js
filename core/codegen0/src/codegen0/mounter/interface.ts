@@ -5,7 +5,9 @@ import type {
 } from '../../declaration/index.ts'
 
 
-import {type CGenSession, CodeGenContextClass, finalize_codefragment} from '../context.ts'
+import {
+  type CGenSession, CodeGenContextClass, finalize_codefragment
+} from '../context.ts'
 
 import type {CodeFragment} from '../codefragment.ts'
 

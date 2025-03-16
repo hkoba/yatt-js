@@ -35,7 +35,9 @@ export function templatePath(filename: string, rootDir?: string): string[] {
   return tmplPath
 }
 
-export function pathUnderRootDir(filename: string, rootDir?: string): string | undefined {
+export function pathUnderRootDir(filename: string, rootDir?: string)
+: string | undefined
+{
   if (rootDir == null || rootDir === '' || rootDir === './') {
     return path.basename(filename);
   } else {
@@ -47,7 +49,9 @@ export function pathUnderRootDir(filename: string, rootDir?: string): string | u
   }
 }
 
-export function prefixUnderRootDir(filename: string, rootDir?: string): string {
+export function prefixUnderRootDir(filename: string, rootDir?: string)
+: string
+{
   const dir = pathUnderRootDir(path.dirname(filename), rootDir)
   if (dir == null) {
     return "./"
@@ -92,7 +96,11 @@ export function longestPrefixDir(fileList: string[]): string | undefined {
   }
 }
 
-export function outFileName(filename: string, newExt: string, config: YattConfig): string {
+export function outFileName(
+  filename: string, newExt: string, config: YattConfig
+)
+: string
+{
   if (config.outDir != null && config.outDir !== "") {
     console.log(`filename=${filename}, yattSrcPrefix=${config.yattSrcPrefix}`)
     const subName = pathUnderRootDir(filename, config.yattSrcPrefix)

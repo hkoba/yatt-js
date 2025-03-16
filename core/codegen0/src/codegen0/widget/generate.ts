@@ -6,7 +6,9 @@ import {generate_argdecls} from './argdecls.ts'
 import {generate_body} from './body.ts'
 import {build_simple_variable} from '../../declaration/index.ts'
 
-import {type CodeFragment, joinAsArray, typeAnnotation} from '../codefragment.ts'
+import {
+  type CodeFragment, joinAsArray, typeAnnotation
+} from '../codefragment.ts'
 
 export function generate_widget_signature(
   ctx: WidgetGenContext
@@ -14,7 +16,9 @@ export function generate_widget_signature(
 {
   const program: CodeFragment = [];
   program.push(`render_`);
-  program.push({kind: 'name', code: ctx.part.name, source: ctx.part.nameNode}, ` `)
+  program.push(
+    {kind: 'name', code: ctx.part.name, source: ctx.part.nameNode}, ` `
+  )
 
   const scope = new VarScope(
     new Map
@@ -26,12 +30,18 @@ export function generate_widget_signature(
   const implicitArgs: CodeFragment[] = [];
   const bodyPreamble: CodeFragment  = []
   if (ctx.hasThis) {
-    implicitArgs.push(['this', typeAnnotation(`: typeof ${ctx.session.templateName.join('.')}`)])
+    implicitArgs.push(['this',
+      typeAnnotation(`: typeof ${ctx.session.templateName.join('.')}`)
+    ])
     bodyPreamble.push(`const $this = this`);
-    const thisVar = build_simple_variable(ctx, '$this', {typeName: "scalar"}, {})
+    const thisVar = build_simple_variable(
+      ctx, '$this', {typeName: "scalar"}, {}
+    )
     scope.set('this', thisVar)
   }
-  implicitArgs.push(['CON', typeAnnotation(`: ${ctx.session.params.connectionTypeName}`)])
+  implicitArgs.push(['CON',
+    typeAnnotation(`: ${ctx.session.params.connectionTypeName}`)
+  ])
   const conVar = build_simple_variable(ctx, 'CON', {typeName: "scalar"}, {})
   scope.set('CON', conVar)
 

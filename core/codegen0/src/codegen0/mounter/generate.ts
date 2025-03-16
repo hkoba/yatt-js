@@ -2,7 +2,9 @@
 
 import {parse_template} from '../../deps.ts'
 
-import {type YattConfig, type YattParams, isYattParams, yattParams, primaryNS} from '../../config.ts'
+import {
+  type YattConfig, type YattParams, isYattParams, yattParams, primaryNS
+} from '../../config.ts'
 
 import {
   build_template_declaration
@@ -12,7 +14,9 @@ import type {TranspileOutput} from '../output.ts'
 
 import {templatePath} from '../../path.ts'
 
-import {type CGenSession, CodeGenContextClass, finalize_codefragment} from '../context.ts'
+import {
+  type CGenSession, CodeGenContextClass, finalize_codefragment
+} from '../context.ts'
 
 import {generate_widget} from '../widget/generate.ts'
 import {generate_entity} from '../entity/generate.ts'
@@ -57,7 +61,12 @@ export function generate_mounter(
   program.push(generate_template_interface(template, session))
 
   // XXX: element path => typename mapping
-  program.push('export function mount($yatt: typeof$yatt): typeof$yatt$public$index {\n')
+  program.push(
+    'export function mount($yatt',
+    typeAnnotation(': typeof$yatt'),
+    ')',
+    typeAnnotation(': typeof$yatt$public$index'),
+    ' {\n')
   program.push('const $this = {\n')
 
   let count = 0

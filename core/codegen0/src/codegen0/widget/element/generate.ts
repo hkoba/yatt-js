@@ -69,7 +69,9 @@ export function generate_element(
   ]
 }
 
-function find_callable_var(scope: VarScope, varName: string): Variable | undefined {
+function find_callable_var(scope: VarScope, varName: string)
+: Variable | undefined
+{
   const vr = scope.lookup(varName)
   if (vr != null && vr.is_callable)
     return vr;
