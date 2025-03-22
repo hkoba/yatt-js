@@ -4,14 +4,15 @@ declare global {
   interface ImportMeta {main: boolean}
 }
 
-import {LrxmlConfig} from '../config.ts'
-import {
-  AnyToken, Range, ParserContext, parserContext, ParserSession
+import type {LrxmlConfig} from '../config.ts'
+import type {
+  AnyToken, Range, ParserContext, ParserSession
 } from '../context.ts'
+import {parserContext} from '../context.ts'
 
 import { tokenize_multipart_context } from './tokenize.ts'
 
-import { AttItem, parse_attlist} from '../attlist/parse.ts'
+import { type AttItem, parse_attlist} from '../attlist/parse.ts'
 
 export type Payload = AnyToken & {kind: "text", data: string} |
   AnyToken & {kind: "comment", data: string, innerRange: Range}
@@ -37,15 +38,15 @@ export function parse_multipart(
   source: string, config: {filename?: string} & LrxmlConfig
 ): [Part[], ParserSession] {
   const {filename, ..._config} = config;
-  let ctx = parserContext({filename, source, config: _config})
+  const ctx = parserContext({filename, source, config: _config})
   return [parse_multipart_context(ctx), ctx.session]
 }
 
 type Start = {line: number, start: number}
 
 export function parse_multipart_context(ctx: ParserContext): Part[] {
-  let partList: [Start, PartBase][] = []
-  let lex = tokenize_multipart_context(ctx)
+  const partList: [Start, PartBase][] = []
+  const lex = tokenize_multipart_context(ctx)
   for (const tok of lex) {
     switch (tok.kind) {
       case "text": {
@@ -67,9 +68,9 @@ export function parse_multipart_context(ctx: ParserContext): Part[] {
         break;
       }
       case "decl_begin": {
-        let [namespace, kind, ...subkind] = tok.detail.split(/:/);
-        const [attlist, end] = parse_attlist(ctx, lex, "decl_end")
-        let part: PartBase = {
+        const [namespace, kind, ...subkind] = tok.detail.split(/:/);
+        const [attlist, _end] = parse_attlist(ctx, lex, "decl_end")
+        const part: PartBase = {
           filename: ctx.session.filename,
           namespace, kind, subkind, attlist, payload: []
         }
@@ -85,7 +86,7 @@ export function parse_multipart_context(ctx: ParserContext): Part[] {
 }
 
 function add_range<T>(list: [Start, T][], end: number): (T & Range & {line: number})[] {
-  let result: (T & Range & {line: number})[] = []
+  const result: (T & Range & {line: number})[] = []
   let [cur, ...rest] = list
   for (const nx of rest) {
     const range = {...cur[0], end: nx[0].start}
@@ -119,14 +120,14 @@ if (import.meta.main) {
     const [_cmd, _script, ...args] = process.argv;
     const { parse_long_options } = await import("../utils/long-options.ts")
     const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
-    let config: LrxmlConfig = {
+    const config: LrxmlConfig = {
       debug: { parser: debugLevel }
     }
     parse_long_options(args, {target: config})
 
     for (const fn of args) {
       const source = readFileSync(fn, { encoding: "utf-8" })
-      let [partList, ] = parse_multipart(source, {
+      const [partList, ] = parse_multipart(source, {
         filename: fn, ...config
       })
       process.stdout.write(JSON.stringify({FILENAME: fn}) + "\n")
