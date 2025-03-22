@@ -1,7 +1,7 @@
 #!/usr/bin/env -S deno run -RE
 
 import type {LrxmlConfig} from '../config.ts'
-import type { RangeLine, Range, ParserSession } from '../context.ts'
+import type { RangeLine, Range, ParserSession, ParserBaseSession } from '../context.ts'
 import { ParserContext } from '../context.ts'
 
 import { tokenize, type Token, type Text, type Comment, type PI } from './tokenize.ts'
@@ -79,9 +79,21 @@ export function isBareLabeledAtt(att: AttItem | AttElement): att is AttLabeledBy
   return hasLabel(att) && att.label.kind === 'identplus'
 }
 
-export function parse_template(session: ParserSession, part: Part): BodyNode[] {
-  const lex = tokenize(session, part.payload)
-  const ctx = new ParserContext(session);
+function ensure_session_has_patterns(session: ParserSession | ParserBaseSession)
+: ParserSession {
+  if ((session as ParserSession).patterns != null) {
+    return session as ParserSession
+  } else {
+    return {patterns: {}, ...session}
+  }
+}
+
+export function parse_template(session: ParserSession | ParserBaseSession, part: Part): BodyNode[] {
+
+  const session__ = ensure_session_has_patterns(session)
+
+  const lex = tokenize(session__, part.payload)
+  const ctx = new ParserContext(session__);
   const nodeList: BodyNode[] = [];
   parse_tokens(ctx, part, lex, 0, nodeList);
   return nodeList;

@@ -17,10 +17,18 @@ export function range_text(
   return source.substring(range.start + startOffset, range.end + endOffset)
 }
 
-export type ParserSession = {
-  filename?: string
+export type BaseSession = {
   params: LrxmlParams
+}
+
+export type SessionTarget = {
+  filename?: string
   source: string
+}
+
+export type ParserBaseSession = BaseSession & SessionTarget
+
+export type ParserSession = ParserBaseSession & {
   patterns: {[k: string]: RegExp}
   // parent?: ParserSession
 }
@@ -51,7 +59,7 @@ export type GlobalMatch = {
   lastIndex: number
 }
 
-export class ScanningContext<S extends ParserSession> {
+export class ScanningContext<S extends ParserBaseSession> {
   public line: number = 1
   constructor(public session: S,
               public index: number,

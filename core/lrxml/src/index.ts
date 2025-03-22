@@ -2,7 +2,7 @@ export type {LrxmlParams, LrxmlConfig} from './config.ts'
 export {lrxmlParams, IsLrxmlParams} from './config.ts'
 
 export type {
-  Range, ParserSession,
+  Range, ParserSession, BaseSession, SessionTarget,
   AnyToken, TokenT
 } from './context.ts'
 
