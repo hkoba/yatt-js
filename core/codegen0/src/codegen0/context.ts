@@ -1,8 +1,11 @@
+import type {YattConfig} from '../config.ts'
+
 import type {
+  YattBuildConfig,
   TemplateDeclaration, BuilderBaseSession, Part, Widget, Entity
 } from '../declaration/index.ts'
 
-import { BuilderContextClass } from '../declaration/index.ts'
+import { BuilderContextClass, declarationBuilderSession } from '../declaration/index.ts'
 
 export type {Part, Widget, Entity} from '../declaration/index.ts'
 
@@ -11,16 +14,35 @@ import type {MacroDict} from './macro.ts'
 import {primaryNS, entFnPrefix} from '../config.ts'
 import type { SessionTarget } from "@yatt/lrxml";
 
+import {builtinMacros} from './macro/index.ts'
+
 export type CodeKind = 'namespace' | 'module' | 'populator'
 
-export type CGenBaseSession  = BuilderBaseSession & {
+export type YattCGenConfig = YattBuildConfig & {
+  macro?: MacroDict
+}
+
+export type CGenBaseSession  = BuilderBaseSession & YattCGenConfig & {
   cgenStyle: CodeKind
-  templateName: string[]
   macro: MacroDict
   importDict?: {[k: string]: string}
 }
 
-export type CGenSession = CGenBaseSession & SessionTarget
+export type CGenSession = CGenBaseSession & SessionTarget & {
+  templateName: string[]
+}
+
+export function cgenSession(cgenStyle: CodeKind, origConfig: YattConfig | YattCGenConfig)
+: CGenBaseSession {
+  const builder_session = declarationBuilderSession(origConfig)
+  const session: CGenBaseSession = {
+    ...builder_session,
+    cgenStyle,
+    macro: Object.assign({}, builtinMacros, origConfig.macro ?? {}),
+  }
+
+  return session;
+}
 
 export type WidgetGenContext = CodeGenContext<Widget>
 export type EntityGenContext = CodeGenContext<Entity>

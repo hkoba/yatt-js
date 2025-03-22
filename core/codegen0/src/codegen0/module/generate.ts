@@ -5,12 +5,19 @@ import {parse_template} from '../../deps.ts'
 import {type YattConfig, type YattParams, isYattParams, yattParams, primaryNS} from '../../config.ts'
 
 import {
-  build_template_declaration
+  type DeclEntry,
+  get_template_declaration
 } from '../../declaration/index.ts'
 
 import {templatePath} from '../../path.ts'
 
-import {type CGenSession, CodeGenContextClass, finalize_codefragment} from '../context.ts'
+import {
+  type CGenSession,
+  type CGenBaseSession,
+  cgenSession,
+  CodeGenContextClass,
+  finalize_codefragment
+} from '../context.ts'
 
 import {generate_widget} from '../widget/generate.ts'
 import {generate_entity} from '../entity/generate.ts'
@@ -25,7 +32,7 @@ import {builtinMacros} from '../macro/index.ts'
 import {list_entity_functions} from './list_entity_functions.ts'
 
 import {existsSync} from "node:fs"
-import * as Path from "node:path"
+import {resolve} from "node:path"
 
 export function generate_module(
   filename: string,
@@ -33,34 +40,47 @@ export function generate_module(
 ): TranspileOutput
 {
 
-  const config = isYattParams(origConfig) ? origConfig : yattParams(origConfig)
+  const session = cgenSession('module', origConfig)
 
-  const ext = config.genFileSuffix ?? "";
+  // const entFnsFile = config.entityDefinitionsFile;
+  //
+  // let entFns: {[k: string]: any} | undefined;
+  // if (entFnsFile) {
+  //   entFns = list_entity_functions(entFnsFile)
+  // }
 
-  const entFnsFile = config.entityDefinitionsFile;
-
-  let entFns: {[k: string]: any} | undefined;
-  if (entFnsFile) {
-    entFns = list_entity_functions(entFnsFile)
+  const entry = get_template_declaration(
+    session, resolve(filename), source
+  )
+  if (! entry) {
+    throw new Error(`No such item: ${filename}`)
   }
 
-  const [template, builderSession] = build_template_declaration(
-    filename, source, {
-      entFns,
-      ...config
-    }
-  )
+  const output = generate_module_for_declentry(entry, session)
+
+  return {
+    template: entry.template,
+    session,
+    ...output
+  }
+}
+
+export function generate_module_for_declentry(
+  entry: DeclEntry,
+  baseSession: CGenBaseSession
+): {outputText: string, sourceMapText: string} {
+
+  const {source, template} = entry
+
+  const filename = template.path
+
   const templateName = templatePath(
     filename,
-    builderSession.params.documentRoot
+    baseSession.params.documentRoot
   );
 
   const session: CGenSession = {
-    cgenStyle: 'module',
-    templateName,
-    macro: Object.assign({}, builtinMacros, config.macro ?? {}),
-    importDict: {},
-    ...builderSession
+    ...baseSession, templateName, source
   }
 
   const program: CodeFragment[] = []
@@ -110,20 +130,15 @@ export function generate_module(
 
   const importModules = session.importDict ? Object.values(session.importDict) : []
   if (importModules.length) {
+    const ext = '.mts';
     program.splice(importListPos, 0, ...importModules.map(
       (m) => `import * as ${m} from './${m}${ext}'\n`
     ))
   }
 
-  const output = finalize_codefragment(source, filename, program, {
-    ts: !(config.es ?? false)
+  return finalize_codefragment(source, filename, program, {
+    ts: true
   })
-
-  return {
-    templateName, template,
-    session,
-    ...output
-  }
 }
 
 if (import.meta.main) {

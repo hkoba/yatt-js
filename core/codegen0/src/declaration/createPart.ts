@@ -12,11 +12,14 @@ import { yattParams } from '../config.ts'
 import type {
   YattBuildConfig,
   BuilderMap, BuilderContext,
-  BuilderSession
+  BuilderBaseSession,
+  DeclarationProcessor,
+  DeclEntry
 } from './context.ts'
+
 import {
   BuilderContextClass,
-  DeclarationProcessor
+  isBuilderSession
 } from './context.ts'
 
 import { TaskGraph } from './taskgraph.ts'
@@ -220,10 +223,8 @@ export function builtin_builders(): BuilderMap {
 }
 
 export function declarationBuilderSession(
-  filename: string,
-  source: string,
   config: YattBuildConfig
-): [BuilderSession, RawPart[]] {
+): BuilderBaseSession {
 
   const rootDir = config.rootDir ?? ".";
   const {
@@ -239,41 +240,102 @@ export function declarationBuilderSession(
     declCacheSet[dir] = new Map
   }
 
-  const [rawPartList, _parser_session] = parse_multipart(
-    source, {...rest_config, filename}
-  )
-
-  const builder_session: BuilderSession = {
-    builders, varTypeMap, source, filename,
+  const builder_session: BuilderBaseSession = {
+    builders, varTypeMap,
     declCacheSet,
     entFns,
     visited: new Map,
     params: buildParams
   }
 
-  return [builder_session, rawPartList]
+  return builder_session
+}
+
+import {pathUnderRootDir, type PathSpec, type PathPair} from '../path.ts'
+
+import {needsUpdate} from './partFolder.ts'
+
+import * as Path from 'node:path'
+
+export function get_template_declaration(
+  session: BuilderBaseSession,
+  pathSpec: PathSpec,
+  source?: string,
+  modTime?: number
+): (DeclEntry & {updated: boolean}) | undefined {
+
+  const {rootDir, virtPath} = pathPairFromSpec(pathSpec, session.params.rootDir)
+  const realPath = [rootDir, virtPath].join(Path.sep)
+
+  const cache = session.declCacheSet[rootDir] ??= new Map
+
+  const needs = source != null
+    ? {source, modTime: modTime ?? Date.now()}
+    : needsUpdate(
+      session, cache,
+      virtPath, realPath
+    )
+
+  if (needs == null) {
+
+    const entry = cache.get(virtPath)
+
+    if (entry == null) {
+      return
+    }
+
+    return {...entry, updated: false}
+
+  } else {
+    const {modTime, source} = needs
+    const template = build_template_declaration(realPath, source, session)
+    const entry = {modTime, source, template}
+    cache.set(virtPath, entry)
+    session.visited.set(realPath, true)
+
+    return {...entry, updated: true}
+  }
+}
+
+export function pathPairFromSpec(pathSpec: PathSpec, rootDir?: string): PathPair {
+  if (typeof pathSpec !== 'string') {
+    return pathSpec
+  } else if (rootDir == null) {
+    return {rootDir: Path.dirname(pathSpec), virtPath: Path.basename(pathSpec)}
+  } else {
+    const virtPath = pathUnderRootDir(pathSpec, rootDir)
+    if (! virtPath) {
+      throw new Error(`path ${pathSpec} doesn't start from rootDir ${rootDir}`)
+    }
+    return {rootDir, virtPath}
+  }
 }
 
 export function build_template_declaration(
   filename: string,
   source: string,
-  config: YattBuildConfig
-): [TemplateDeclaration, BuilderSession] {
+  configOrSession: YattBuildConfig | BuilderBaseSession
+): TemplateDeclaration {
 
-  const [builder_session, rawPartList] = declarationBuilderSession(filename, source, config)
+  const builder_session = isBuilderSession(configOrSession)
+    ? configOrSession
+    : declarationBuilderSession(configOrSession)
 
-  // console.log(`template config:`, config)
-
-  const decl = populateTemplateDeclaration(
-    filename,
-    builder_session, rawPartList
+  const [rawPartList] = parse_multipart(
+    source, {...builder_session, filename}
   )
 
-  return [decl, builder_session]
+  return populateTemplateDeclaration(
+    filename, source,
+    builder_session, rawPartList
+  )
 }
 
-export function populateTemplateDeclaration(path: string, builder_session: BuilderSession, rawPartList: RawPart[]): TemplateDeclaration {
-  const ctx = new BuilderContextClass(builder_session)
+export function populateTemplateDeclaration(
+  filename: string, source: string,
+  builder_session: BuilderBaseSession, rawPartList: RawPart[]
+): TemplateDeclaration {
+  const ctx = new BuilderContextClass({filename, source, ...builder_session})
 
   // For delegate type and ArgMacro
   const partOrder: [PartKind, string][] = []
@@ -333,8 +395,8 @@ export function populateTemplateDeclaration(path: string, builder_session: Build
     // XXX: find from vfs
   })
 
-  const folder = ctx.dirname(path)
-  return new TemplateDeclaration(path, folder, partMap, routeMap, partOrder)
+  const folder = ctx.dirname(filename)
+  return new TemplateDeclaration(filename, folder, partMap, routeMap, partOrder)
 }
 
 function add_route(
@@ -382,7 +444,7 @@ if (import.meta.main) {
 
     console.time('run');
     for (const fn of args) {
-      const [template, _session] = build_template_declaration(
+      const template = build_template_declaration(
         fn,
         readFileSync(fn, { encoding: "utf-8" }),
         config

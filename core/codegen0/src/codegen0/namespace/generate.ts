@@ -2,10 +2,17 @@
 
 import {parse_template} from '../../deps.ts'
 
-import {CodeGenContextClass, type CGenSession, finalize_codefragment} from '../context.ts'
 import {
-  build_template_declaration, type TemplateDeclaration
-  , BuilderContextClass
+  type CGenSession, type CGenBaseSession,
+  cgenSession,
+  CodeGenContextClass,
+  finalize_codefragment
+} from '../context.ts'
+
+import {
+  type DeclEntry,
+  get_template_declaration,
+  BuilderContextClass
   // , Widget, Entity
 } from '../../declaration/index.ts'
 import {generate_widget} from '../widget/generate.ts'
@@ -14,14 +21,11 @@ import {generate_entity} from '../entity/generate.ts'
 
 import {generate_action} from '../action/generate.ts'
 
-import {
-  type YattConfig, type YattParams,
-  isYattParams, yattParams
+import type {
+  YattConfig, YattParams,
 } from '../../config.ts'
 
 import {templatePath} from '../../path.ts'
-
-import {builtinMacros} from '../macro/index.ts'
 
 import type {CodeFragment} from '../codefragment.ts'
 
@@ -40,58 +44,58 @@ export function generate_namespace(
 ): TranspileOutput
 {
 
-  const config = isYattParams(origConfig) ? origConfig : yattParams(origConfig)
+  const session = cgenSession('namespace', origConfig)
 
-  const rootDir = Path.dirname(Path.dirname(Path.resolve(filename)))
+  const absFile = Path.resolve(filename)
+
+  const rootDir = Path.dirname(Path.dirname(absFile))
   // XXX: _build
-  const entFnsFile = config.entityDefinitionsFile ?? `${rootDir}/root/_yatt.entity.ts`
+  const entFnsFile = session.params.entityDefinitionsFile ?? `${rootDir}/root/_yatt.entity.ts`
 
   const entFns = statSync(entFnsFile, {throwIfNoEntry: false}) ?
     list_entity_functions(
       entFnsFile, '$yatt' // XXX: entFnPrefix(session.params)
     ) : {}
 
-  const [template, decl_session] = build_template_declaration(
-    filename,
-    source,
-    {...config, entFns}
+  session.entFns = entFns
+
+  const entry = get_template_declaration(
+    session, absFile, source
   )
-
-  decl_session.params.templateNamespace ??= DEFAULT_NAMESPACE
-
-  const templateName: string[] = [decl_session.params.templateNamespace,
-    ...templatePath(filename, config.rootDir)];
-
-  const session: CGenSession = {
-    cgenStyle: 'namespace',
-    templateName,
-    macro: Object.assign({}, builtinMacros, config.macro ?? {}),
-    ...decl_session
+  if (! entry) {
+    throw new Error(`No such item: ${filename}`)
   }
 
-  const program: CodeFragment[] = generate_namespace_from_template(template, session);
-
-  // XXX: 
-  const _fileCtx = new BuilderContextClass(session)
-
-  const {outputText, sourceMapText} = finalize_codefragment(
-    session.source, session.filename ?? '', program, {}
-  );
+  const output = generate_namespace_for_declentry(entry, session);
 
   // XXX: should return templateName too.
   return {
-    template,
-    templateName,
-    outputText,
+    template: entry.template,
     session,
-    sourceMapText
+    ...output
   }
 }
 
-export function generate_namespace_from_template(
-  template: TemplateDeclaration, session: CGenSession
-): CodeFragment[]
-{
+export function generate_namespace_for_declentry(
+  entry: DeclEntry,
+  baseSession: CGenBaseSession
+): {outputText: string, sourceMapText: string} {
+  const {source, template} = entry
+
+  const filename = template.path
+
+  baseSession.params.templateNamespace ??= DEFAULT_NAMESPACE
+
+  const templateName: string[] = [baseSession.params.templateNamespace,
+    ...templatePath(filename, baseSession.params.rootDir)];
+
+  const session: CGenSession = {
+    ...baseSession,
+    templateName, source
+  }
+
+  // const _fileCtx = new BuilderContextClass(session)
+
   const program: CodeFragment[] = []
 
   program.push("namespace ", session.templateName.join('.'), " {\n")
@@ -122,7 +126,9 @@ export function generate_namespace_from_template(
 
   program.push('}\n')
 
-  return program
+  return finalize_codefragment(
+    session.source, filename, program, {}
+  );
 }
 
 if (import.meta.main) {

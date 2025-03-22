@@ -1,11 +1,10 @@
 import type {TemplateDeclaration} from '../declaration/index.ts'
 
-import type {CGenSession} from './context.ts'
+import type {CGenBaseSession} from './context.ts'
 
 export interface TranspileOutput {
   outputText: string;
   template: TemplateDeclaration;
-  templateName: string[];
-  session: CGenSession;
+  session: CGenBaseSession;
   sourceMapText?: string;
 }

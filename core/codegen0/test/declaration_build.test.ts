@@ -7,7 +7,7 @@ import { build_template_declaration } from '../src/declaration/createPart.ts'
 
 {
   const it = (src: string) => {
-    const [template, _session] = build_template_declaration('', src, {entFns: {}});
+    const template = build_template_declaration('', src, {entFns: {}});
     const {partMap} = template
     return [...partMap.widget.entries()].map(([name, widget]) => {
       return {name, args: [...widget.argMap.keys()],
@@ -83,7 +83,7 @@ import { build_template_declaration } from '../src/declaration/createPart.ts'
 
 {
   const it = (src: string) => {
-    const [template, _session] = build_template_declaration('', src, {entFns: {}});
+    const template = build_template_declaration('', src, {entFns: {}});
     const {routeMap} = template
     return [...routeMap.entries()].map(([route, rec]) => {
       return {route, kind: rec.part.kind, name: rec.part.name}

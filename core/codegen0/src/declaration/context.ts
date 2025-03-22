@@ -20,6 +20,11 @@ export type YattBuildConfig = YattConfig & {
   entFns?: {[k: string]: any}
 }
 
+export function isBuilderSession(arg: YattBuildConfig | BuilderBaseSession)
+: arg is BuilderBaseSession {
+  return (arg as BuilderBaseSession).params != null
+}
+
 export type BuilderMap = Map<string, DeclarationProcessor>;
 
 export interface DeclarationProcessor {
@@ -40,7 +45,9 @@ export type BuilderSession = BuilderBaseSession & SessionTarget
 
 export type DeclarationCacheSet = {[k: string]: DeclTree}
 
-export type DeclTree = Map<string, {modTime: number, tree: TemplateDeclaration}>
+export type DeclTree = Map<string, DeclEntry>
+
+export type DeclEntry = {modTime: number, template: TemplateDeclaration, source: string}
 
 export type BuilderContext = BuilderContextClass<BuilderSession>
 

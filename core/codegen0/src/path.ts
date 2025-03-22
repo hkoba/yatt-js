@@ -16,6 +16,9 @@ export const jsDir = __dirname
 // Revert $base/src
 export const srcDir = path.join(path.dirname(jsDir), 'src')
 
+export type PathPair = {rootDir: string, virtPath: string}
+export type PathSpec = string | PathPair
+
 export function templatePath(filename: string, rootDir?: string): string[] {
 
   const suffix = pathUnderRootDir(filename, rootDir)

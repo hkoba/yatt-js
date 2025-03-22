@@ -2,23 +2,24 @@
 
 import {parse_template} from '../../deps.ts'
 
-import {
-  type YattConfig, type YattParams, isYattParams, yattParams, primaryNS
-} from '../../config.ts'
+import type { YattConfig } from '../../config.ts'
 
 import {
-  build_template_declaration,
-  type TemplateDeclaration
+  get_template_declaration,
+  type DeclEntry
 } from '../../declaration/index.ts'
 
 import type {TranspileOutput} from '../output.ts'
 
 import {resolve} from 'node:path'
 
-import {templatePath} from '../../path.ts'
+import {templatePath, type PathSpec} from '../../path.ts'
 
 import {
-  type CGenSession, CodeGenContextClass, finalize_codefragment
+  type CGenSession, type CGenBaseSession,
+  cgenSession,
+  CodeGenContextClass,
+  finalize_codefragment
 } from '../context.ts'
 
 import {generate_widget} from '../widget/generate.ts'
@@ -27,54 +28,72 @@ import {generate_action} from '../action/generate.ts'
 
 import {type CodeFragment, typeAnnotation} from '../codefragment.ts'
 
-import {builtinMacros} from '../macro/index.ts'
-
 import {generate_template_interface} from './interface.ts'
+
+export function ensure_generate_populator(
+  pathSpec: PathSpec,
+  baseSession: CGenBaseSession & {cgenStyle: 'populator'},
+  outputTextDict: {[k: string]: string}
+) {
+
+  const entry = get_template_declaration(baseSession, pathSpec);
+  if (! entry) {
+    throw new Error(`No such item: ${pathSpec}`)
+  }
+
+  if (entry.updated) {
+
+    const output = generate_populator_for_declentry(entry, baseSession)
+
+    outputTextDict[entry.template.path] = output.outputText
+  }
+}
 
 export function generate_populator(
   filename: string,
-  source: string, origConfig: YattConfig | YattParams
+  source: string,
+  config: YattConfig
 ): TranspileOutput {
 
-  const config = isYattParams(origConfig) ? origConfig : yattParams(origConfig)
+  //origConfig: YattConfig | YattParams
 
-  const entFns: {[k: string]: any} = {}; // XXX
+  const session = cgenSession('populator', config)
 
-  const [template, declSession] = build_template_declaration(
-    resolve(filename),
-    source,
-    {...config, entFns}
+  const entry = get_template_declaration(
+    session, resolve(filename), source
   )
-  
-  const templateName = templatePath(
-    resolve(filename),
-    declSession.params.documentRoot
-  );
 
-  const session: CGenSession = {
-    cgenStyle: 'populator',
-    templateName,
-    macro: Object.assign({}, builtinMacros, config.macro ?? {}),
-    importDict: {},
-    ...declSession
+  if (! entry) {
+    throw new Error(`No such item: ${filename}`)
   }
 
-  const program: CodeFragment[] = generate_populator_from_template(template, session)
-
-  const output = finalize_codefragment(source, filename, program, {
-    ts: !(config.es ?? false)
-  })
+  const output = generate_populator_for_declentry(entry, session)
 
   return {
-    templateName, template,
+    template: entry.template,
     session,
     ...output
   }
 }
 
-export function generate_populator_from_template(
-  template: TemplateDeclaration, session: CGenSession
-): CodeFragment[] {
+export function generate_populator_for_declentry(
+  entry: DeclEntry,
+  baseSession: CGenBaseSession
+): {outputText: string, sourceMapText: string} {
+
+  const {source, template} = entry
+
+  const filename = template.path
+
+  const templateName = templatePath(
+    filename,
+    baseSession.params.documentRoot
+  );
+
+  const session: CGenSession = {
+    ...baseSession, templateName, source
+  }
+
   const program: CodeFragment[] = []
 
   program.push(generate_template_interface(template, session))
@@ -122,7 +141,9 @@ export function generate_populator_from_template(
   program.push('return $this;\n');
   program.push('}\n')
 
-  return program
+  return finalize_codefragment(source, filename, program, {
+    ts: true
+  })
 }
 
 if (import.meta.main) {

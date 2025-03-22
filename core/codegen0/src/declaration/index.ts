@@ -1,5 +1,6 @@
 export {
   build_template_declaration,
+  get_template_declaration,
   declarationBuilderSession,
   builtin_builders
 } from './createPart.ts'
@@ -17,9 +18,10 @@ export {
   build_simple_variable
 } from './vartype.ts'
 
-export {BuilderContextClass} from './context.ts'
+export {BuilderContextClass, isBuilderSession} from './context.ts'
 export type {
   YattBuildConfig,
+  DeclEntry,
   BuilderContext,
   BuilderSession,
   BuilderBaseSession,
