@@ -51,34 +51,46 @@ export function generate_namespace(
       entFnsFile, '$yatt' // XXX: entFnPrefix(session.params)
     ) : {}
 
-  const [template, session] = build_template_declaration(
+  const [template, decl_session] = build_template_declaration(
     filename,
     source,
     {...config, entFns}
   )
 
-  session.params.templateNamespace ??= DEFAULT_NAMESPACE
+  decl_session.params.templateNamespace ??= DEFAULT_NAMESPACE
 
-  const templateName = [session.params.templateNamespace,
-                        ...templatePath(filename, config.rootDir)];
+  const templateName: string[] = [decl_session.params.templateNamespace,
+    ...templatePath(filename, config.rootDir)];
+
+  const session: CGenSession = {
+    cgenStyle: 'namespace',
+    templateName,
+    macro: Object.assign({}, builtinMacros, config.macro ?? {}),
+    ...decl_session
+  }
+
+  const program: CodeFragment[] = generate_namespace_from_template(template, session);
+
+  // XXX: 
+  const _fileCtx = new BuilderContextClass(session)
+
+  const {outputText, sourceMapText} = finalize_codefragment(
+    session.source, session.filename ?? '', program, {}
+  );
 
   // XXX: should return templateName too.
   return {
     template,
     templateName,
-    ...generate_namespace_from_template(template, {
-      cgenStyle: 'namespace',
-      templateName,
-      macro: Object.assign({}, builtinMacros, config.macro ?? {}),
-      ...session
-    })
-    // sourceMapText
+    outputText,
+    session,
+    sourceMapText
   }
 }
 
 export function generate_namespace_from_template(
   template: TemplateDeclaration, session: CGenSession
-): {outputText: string, session: CGenSession}
+): CodeFragment[]
 {
   const program: CodeFragment[] = []
 
@@ -110,12 +122,7 @@ export function generate_namespace_from_template(
 
   program.push('}\n')
 
-  // XXX
-  const _fileCtx = new BuilderContextClass(session)
-
-  return {...finalize_codefragment(
-    session.source, session.filename ?? '', program, {}
-  ), session};
+  return program
 }
 
 if (import.meta.main) {

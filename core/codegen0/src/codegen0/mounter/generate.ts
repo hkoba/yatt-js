@@ -7,7 +7,8 @@ import {
 } from '../../config.ts'
 
 import {
-  build_template_declaration
+  build_template_declaration,
+  type TemplateDeclaration
 } from '../../declaration/index.ts'
 
 import type {TranspileOutput} from '../output.ts'
@@ -58,6 +59,22 @@ export function generate_mounter(
     ...declSession
   }
 
+  const program: CodeFragment[] = generate_mounter_from_template(template, session)
+
+  const output = finalize_codefragment(source, filename, program, {
+    ts: !(config.es ?? false)
+  })
+
+  return {
+    templateName, template,
+    session,
+    ...output
+  }
+}
+
+export function generate_mounter_from_template(
+  template: TemplateDeclaration, session: CGenSession
+): CodeFragment[] {
   const program: CodeFragment[] = []
 
   program.push(generate_template_interface(template, session))
@@ -105,16 +122,7 @@ export function generate_mounter(
   program.push('return $this;\n');
   program.push('}\n')
 
-
-  const output = finalize_codefragment(source, filename, program, {
-    ts: !(config.es ?? false)
-  })
-
-  return {
-    templateName, template,
-    session,
-    ...output
-  }
+  return program
 }
 
 if (import.meta.main) {
