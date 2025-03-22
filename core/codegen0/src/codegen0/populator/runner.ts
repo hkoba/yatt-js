@@ -2,7 +2,7 @@
 
 import {extract_line, extract_prefix_spec} from '@yatt/lrxml'
 
-import {generate_mounter} from './generate.ts'
+import {generate_populator} from './generate.ts'
 
 import type {YattConfig} from '../../config.ts'
 
@@ -30,7 +30,7 @@ export async function runSource(
   config: YattConfig & {filename: string}
 ): Promise<string> {
 
-  const output = generate_mounter(config.filename, source, config)
+  const output = generate_populator(config.filename, source, config)
   const script = output.outputText
 
   const {outputText, outputMap, diagnostics} = makeProgram(script, [], {
@@ -63,13 +63,13 @@ export async function runSource(
 
   console.log(`outputText=${outputText}`)
 
-  const {mount} = await import(`data:text/javascript,${outputText}`)
+  const {populate} = await import(`data:text/javascript,${outputText}`)
 
   const $yatt = {
     $public: {}
   }
 
-  const $this = mount($yatt)
+  const $this = populate($yatt)
 
   const CON = {
     buffer: "",

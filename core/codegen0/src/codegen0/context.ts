@@ -11,7 +11,7 @@ import type {MacroDict} from './macro.ts'
 import {primaryNS, entFnPrefix} from '../config.ts'
 import type { SessionTarget } from "@yatt/lrxml";
 
-export type CodeKind = 'namespace' | 'module' | 'mounter'
+export type CodeKind = 'namespace' | 'module' | 'populator'
 
 export type CGenBaseSession  = BuilderBaseSession & {
   cgenStyle: CodeKind

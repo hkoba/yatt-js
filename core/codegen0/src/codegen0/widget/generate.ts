@@ -33,7 +33,7 @@ export function generate_widget_signature(
     implicitArgs.push(['this',
       typeAnnotation(`: typeof ${ctx.session.templateName.join('.')}`)
     ])
-    if (ctx.session.cgenStyle !== 'mounter') {
+    if (ctx.session.cgenStyle !== 'populator') {
       bodyPreamble.push(`const $this = this;`);
     }
     const thisVar = build_simple_variable(

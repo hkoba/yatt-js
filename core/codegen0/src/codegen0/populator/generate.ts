@@ -31,7 +31,7 @@ import {builtinMacros} from '../macro/index.ts'
 
 import {generate_template_interface} from './interface.ts'
 
-export function generate_mounter(
+export function generate_populator(
   filename: string,
   source: string, origConfig: YattConfig | YattParams
 ): TranspileOutput {
@@ -52,14 +52,14 @@ export function generate_mounter(
   );
 
   const session: CGenSession = {
-    cgenStyle: 'mounter',
+    cgenStyle: 'populator',
     templateName,
     macro: Object.assign({}, builtinMacros, config.macro ?? {}),
     importDict: {},
     ...declSession
   }
 
-  const program: CodeFragment[] = generate_mounter_from_template(template, session)
+  const program: CodeFragment[] = generate_populator_from_template(template, session)
 
   const output = finalize_codefragment(source, filename, program, {
     ts: !(config.es ?? false)
@@ -72,7 +72,7 @@ export function generate_mounter(
   }
 }
 
-export function generate_mounter_from_template(
+export function generate_populator_from_template(
   template: TemplateDeclaration, session: CGenSession
 ): CodeFragment[] {
   const program: CodeFragment[] = []
@@ -81,7 +81,7 @@ export function generate_mounter_from_template(
 
   // XXX: element path => typename mapping
   program.push(
-    'export function mount($yatt',
+    'export function populate($yatt',
     typeAnnotation(': typeof$yatt'),
     ')',
     typeAnnotation(': typeof$yatt$public$index'),
@@ -139,7 +139,7 @@ if (import.meta.main) {
 
     for (const filename of args) {
       const source = readFileSync(filename, {encoding: "utf-8"})
-      const output = generate_mounter(Path.resolve(filename), source, config)
+      const output = generate_populator(Path.resolve(filename), source, config)
       process.stdout.write(output.outputText + '\n');
     }
   })()

@@ -1,6 +1,6 @@
 #!/usr/bin/env -S deno run -NRE
 
-import {generate_mounter, runtime} from '@yatt/codegen0'
+import {generate_populator, runtime} from '@yatt/codegen0'
 
 import {readFileSync, statSync} from 'node:fs'
 
@@ -26,18 +26,20 @@ async function handler(req: Request): Promise<Response> {
 
   const source = readFileSync(fn, {encoding: "utf-8"})
 
-  const output = generate_mounter(fn, source, {})
+  const output = generate_populator(fn, source, {})
 
   const script = output.outputText
 
-  const {mount} = await import(`data:text/typescript,${script}`)
+  console.log(`script:`, script)
+
+  const {populate} = await import(`data:text/typescript,${script}`)
 
   const $yatt = {
     runtime,
     $public: {}
   }
 
-  const $this = mount($yatt)
+  const $this = populate($yatt)
 
   const CON = {
     buffer: "",
