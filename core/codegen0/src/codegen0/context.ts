@@ -1,5 +1,5 @@
 import type {
-  TemplateDeclaration, BuilderSession, Part, Widget, Entity
+  TemplateDeclaration, BuilderBaseSession, Part, Widget, Entity
 } from '../declaration/index.ts'
 
 import { BuilderContextClass } from '../declaration/index.ts'
@@ -9,15 +9,18 @@ export type {Part, Widget, Entity} from '../declaration/index.ts'
 import type {MacroDict} from './macro.ts'
 
 import {primaryNS, entFnPrefix} from '../config.ts'
+import type { SessionTarget } from "@yatt/lrxml";
 
 export type CodeKind = 'namespace' | 'module' | 'mounter'
 
-export type CGenSession  = BuilderSession & {
+export type CGenBaseSession  = BuilderBaseSession & {
   cgenStyle: CodeKind
   templateName: string[]
   macro: MacroDict
   importDict?: {[k: string]: string}
 }
+
+export type CGenSession = CGenBaseSession & SessionTarget
 
 export type WidgetGenContext = CodeGenContext<Widget>
 export type EntityGenContext = CodeGenContext<Entity>

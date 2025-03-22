@@ -22,6 +22,7 @@ export type {
   YattBuildConfig,
   BuilderContext,
   BuilderSession,
+  BuilderBaseSession,
   BuilderMap,
   DeclarationProcessor
 } from './context.ts'

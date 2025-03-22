@@ -1,5 +1,5 @@
 import {
-  type ParserSession,
+  type BaseSession,
   type AttItem,
   ScanningContext
 } from '../deps.ts'
@@ -11,6 +11,7 @@ import type { Part } from './part.ts'
 import type { VarTypeMap } from './vartype.ts'
 
 import type { TemplateDeclaration } from './types.ts'
+import type { SessionTarget } from "@yatt/lrxml";
 
 export type YattBuildConfig = YattConfig & {
   builders?: BuilderMap
@@ -26,7 +27,7 @@ export interface DeclarationProcessor {
   createPart(ctx: BuilderContext, attlist: AttItem[]): [Part, AttItem[]] | undefined
 }
 
-export type BuilderSession = ParserSession & {
+export type BuilderBaseSession = BaseSession & {
   builders: BuilderMap
   params: YattParams
   varTypeMap: VarTypeMap
@@ -34,6 +35,8 @@ export type BuilderSession = ParserSession & {
   visited: Map<string, boolean>
   entFns: {[k: string]: any}
 }
+
+export type BuilderSession = BuilderBaseSession & SessionTarget
 
 export type DeclarationCacheSet = {[k: string]: DeclTree}
 

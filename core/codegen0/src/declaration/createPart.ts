@@ -239,14 +239,12 @@ export function declarationBuilderSession(
     declCacheSet[dir] = new Map
   }
 
-  const [rawPartList, parser_session] = parse_multipart(
+  const [rawPartList, _parser_session] = parse_multipart(
     source, {...rest_config, filename}
   )
 
-  const {patterns} = parser_session;
-
   const builder_session: BuilderSession = {
-    builders, varTypeMap, source, filename, patterns,
+    builders, varTypeMap, source, filename,
     declCacheSet,
     entFns,
     visited: new Map,
