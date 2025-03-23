@@ -251,7 +251,10 @@ export function declarationBuilderSession(
   return builder_session
 }
 
-import {pathUnderRootDir, type PathSpec, type PathPair} from '../path.ts'
+import {
+  pathPairFromSpec,
+  type PathSpec
+} from '../path.ts'
 
 import {needsUpdate} from './partFolder.ts'
 
@@ -296,20 +299,6 @@ export async function get_template_declaration(
     session.visited.set(realPath, true)
 
     return {...entry, updated: true}
-  }
-}
-
-export function pathPairFromSpec(pathSpec: PathSpec, rootDir?: string): PathPair {
-  if (typeof pathSpec !== 'string') {
-    return pathSpec
-  } else if (rootDir == null) {
-    return {rootDir: Path.dirname(pathSpec), virtPath: Path.basename(pathSpec)}
-  } else {
-    const virtPath = pathUnderRootDir(pathSpec, rootDir)
-    if (! virtPath) {
-      throw new Error(`path ${pathSpec} doesn't start from rootDir ${rootDir}`)
-    }
-    return {rootDir, virtPath}
   }
 }
 

@@ -19,6 +19,20 @@ export const srcDir = path.join(path.dirname(jsDir), 'src')
 export type PathPair = {rootDir: string, virtPath: string}
 export type PathSpec = string | PathPair
 
+export function pathPairFromSpec(pathSpec: PathSpec, rootDir?: string): PathPair {
+  if (typeof pathSpec !== 'string') {
+    return pathSpec
+  } else if (rootDir == null) {
+    return {rootDir: path.dirname(pathSpec), virtPath: path.basename(pathSpec)}
+  } else {
+    const virtPath = pathUnderRootDir(pathSpec, rootDir)
+    if (! virtPath) {
+      throw new Error(`path ${pathSpec} doesn't start from rootDir ${rootDir}`)
+    }
+    return {rootDir, virtPath}
+  }
+}
+
 export function templatePath(filename: string, rootDir?: string): string[] {
 
   const suffix = pathUnderRootDir(filename, rootDir)
