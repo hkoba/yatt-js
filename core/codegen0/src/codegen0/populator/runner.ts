@@ -30,7 +30,7 @@ export async function runSource(
   config: YattConfig & {filename: string}
 ): Promise<string> {
 
-  const output = generate_populator(config.filename, source, config)
+  const output = await generate_populator(config.filename, source, config)
   const script = output.outputText
 
   const {outputText, outputMap, diagnostics} = makeProgram(script, [], {

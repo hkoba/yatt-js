@@ -10,7 +10,7 @@ import {build_simple_variable} from '../../declaration/index.ts'
 import { generate_as_cast_to_text } from "../template_context/text.ts";
 
 
-export function macro_my(
+export async function macro_my(
     ctx: WidgetGenContext,
     scope: VarScope,
     node: ElementNode,

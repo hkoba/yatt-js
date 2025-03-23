@@ -58,8 +58,8 @@ export function generate_widget_signature(
   return {signature: program, scope, bodyPreamble}
 }
 
-export function generate_widget(ctx: WidgetGenContext, nodeList: BodyNode[])
- : CodeFragment
+export async function generate_widget(ctx: WidgetGenContext, nodeList: BodyNode[])
+ : Promise<CodeFragment>
 {
 
   const program: CodeFragment = []
@@ -70,7 +70,7 @@ export function generate_widget(ctx: WidgetGenContext, nodeList: BodyNode[])
 
   program.push(" {", bodyPreamble, "\n")
 
-  program.push(generate_body(ctx, scope, nodeList));
+  program.push(await generate_body(ctx, scope, nodeList));
 
   program.push("}\n");
 

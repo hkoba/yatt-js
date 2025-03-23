@@ -22,9 +22,9 @@ import {candidatesForLookup} from '../declaration/partFolder.ts'
 // --lookup_subdirectory_first
 // --lookup_only
 //
-export function find_widget(
+export async function find_widget(
   session: BuilderBaseSession, template: TemplateDeclaration, partPath: string[]
-): {widget: Widget, template: TemplateDeclaration} | undefined
+): Promise<{widget: Widget, template: TemplateDeclaration} | undefined>
 {
   const [head, ...rest] = partPath
   if (rest.length === 0 && template.partMap.widget.has(head)) {
@@ -35,7 +35,7 @@ export function find_widget(
   for (const cand of candidatesForLookup(session, template.folder, partPath)) {
     const {rootDir, virtPath, name} = cand;
 
-    const entry = get_template_declaration(session, {rootDir, virtPath})
+    const entry = await get_template_declaration(session, {rootDir, virtPath})
 
     if (! entry)
       continue

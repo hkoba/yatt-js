@@ -17,13 +17,13 @@ import {generate_as_cast_to_list} from '../template_context/list.ts'
 
 import type {CodeFragment} from '../codefragment.ts'
 
-export function macro_foreach(
+export async function macro_foreach(
   ctx: WidgetGenContext, scope: VarScope,
   node: ElementNode,
   option?: {fragment?: boolean}
 )
-: {output: CodeFragment
-  , fragment?: {loopVar: SimpleVar, listExpr: CodeFragment, body: CodeFragment}}
+: Promise<{output: CodeFragment
+  , fragment?: {loopVar: SimpleVar, listExpr: CodeFragment, body: CodeFragment}}>
 {
   // console.dir(node, {depth: null, colors: true})
   const primary = collect_arg_spec(node.attlist, ['my', 'list'])
@@ -46,7 +46,7 @@ export function macro_foreach(
   if (node.children == null)
     ctx.token_error(node, `BUG?: foreach body is empty!`)
 
-  const body = generate_body(ctx, localScope, node.children)
+  const body = await generate_body(ctx, localScope, node.children)
 
   const output: CodeFragment[] = []
   output.push(

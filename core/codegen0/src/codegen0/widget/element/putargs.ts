@@ -10,11 +10,11 @@ import {type CodeFragment, joinAsArray} from '../../codefragment.ts'
 
 import {generate_as_cast_to} from '../../template_context/cast.ts'
 
-export function generate_putargs(
+export async function generate_putargs(
   ctx: WidgetGenContext, scope: VarScope, node: Node & {kind: 'element'}
   , calleeWidget: Widget
   // , delegateVars
-): CodeFragment
+): Promise<CodeFragment>
 {
   const formalArgs = calleeWidget.argMap;
   const actualArgs: Map<string, CodeFragment> = new Map
@@ -66,7 +66,7 @@ export function generate_putargs(
       switch (BODY.typeName) {
         case "widget": {
           const argDecls = generate_argdecls(ctx, scope, BODY.widget);
-          const bodyProgram = generate_body(ctx, scope, node.children);
+          const bodyProgram = await generate_body(ctx, scope, node.children);
           const conT = ctx.session.params.connectionTypeName
           actualArgs.set(
             BODY_NAME,

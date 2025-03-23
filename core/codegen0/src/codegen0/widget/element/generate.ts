@@ -8,9 +8,9 @@ import {type CodeFragment, joinAsArray} from '../../codefragment.ts'
 
 import {find_widget} from '../../../part-finder/index.ts'
 
-export function generate_element(
+export async function generate_element(
   ctx: WidgetGenContext, scope: VarScope, node: Node & {kind: 'element'}
-): CodeFragment
+): Promise<CodeFragment>
 {
   // XXX: macro_if, foreach, ...
   // XXX: find_callable_var
@@ -19,7 +19,7 @@ export function generate_element(
 
   const macroHandler = ctx.session.macro[`macro_${wname}`]
   if (macroHandler) {
-    return macroHandler(ctx, scope, node).output
+    return (await macroHandler(ctx, scope, node)).output
   }
 
   let callExpr: string | undefined
@@ -39,7 +39,7 @@ export function generate_element(
     }
   }
   else {
-    const res = find_widget(ctx.session, ctx.template, [wname, ...rest])
+    const res = await find_widget(ctx.session, ctx.template, [wname, ...rest])
     if (res == null) {
       ctx.token_error(node, `No such widget ${node.path.join(':')}`)
     }
@@ -56,7 +56,7 @@ export function generate_element(
   // XXX: ensure_generated
   // XXX: add_dependecy
 
-  const argsExpr = generate_putargs(ctx, scope, node, calleeWidget);
+  const argsExpr = await generate_putargs(ctx, scope, node, calleeWidget);
 
   return [
     " ",

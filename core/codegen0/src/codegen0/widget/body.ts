@@ -10,8 +10,12 @@ import type {CodeFragment} from '../codefragment.ts'
 
 import {as_print} from '../template_context/print.ts'
 
-export function generate_body(ctx: WidgetGenContext, scope: VarScope,
-                              nodeList: Node[]): CodeFragment {
+export async function generate_body(
+  ctx: WidgetGenContext,
+  scope: VarScope,
+  nodeList: Node[]
+): Promise<CodeFragment>
+{
   const program: CodeFragment = []
   for (const node of nodeList) {
     switch (node.kind) {
@@ -48,7 +52,7 @@ export function generate_body(ctx: WidgetGenContext, scope: VarScope,
         break;
       }
       case "element":
-        program.push(generate_element(ctx, scope, node));
+        program.push(await generate_element(ctx, scope, node));
         break;
       case "entity":
         program.push(' ', as_print(ctx, generate_entity(ctx, scope, node, {

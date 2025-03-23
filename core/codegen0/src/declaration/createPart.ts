@@ -257,12 +257,14 @@ import {needsUpdate} from './partFolder.ts'
 
 import * as Path from 'node:path'
 
-export function get_template_declaration(
+// XXX: 本当に undef を返すケースが有って良いのか？
+
+export async function get_template_declaration(
   session: BuilderBaseSession,
   pathSpec: PathSpec,
   source?: string,
   modTime?: number
-): (DeclEntry & {updated: boolean}) | undefined {
+): Promise<(DeclEntry & {updated: boolean}) | undefined> {
 
   const {rootDir, virtPath} = pathPairFromSpec(pathSpec, session.params.rootDir)
   const realPath = [rootDir, virtPath].join(Path.sep)
@@ -271,7 +273,7 @@ export function get_template_declaration(
 
   const needs = source != null
     ? {source, modTime: modTime ?? Date.now()}
-    : needsUpdate(
+    : await needsUpdate(
       session, cache,
       virtPath, realPath
     )

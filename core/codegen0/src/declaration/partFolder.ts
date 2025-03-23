@@ -1,12 +1,12 @@
 import * as Path from 'node:path'
-import * as Fs from 'node:fs'
+import * as Fs from 'node:fs/promises'
 
 import type {BuilderBaseSession, DeclTree} from './context.ts'
 
-export function needsUpdate(
+export async function needsUpdate(
   session: BuilderBaseSession, cache: DeclTree,
   virtPath: string, realPath: string
-): {modTime: number, source: string} | undefined {
+): Promise<{modTime: number, source: string} | undefined> {
   const debug = session.params.debug.declaration
   if (debug) {
     console.log(`refreshing virtPath=${virtPath}, realPath=${realPath}`)
@@ -17,26 +17,34 @@ export function needsUpdate(
     }
     return
   }
-  const stat = Fs.statSync(realPath, {throwIfNoEntry: false})
-  if (cache.has(virtPath)) {
+  let stat;
+  try {
+    stat = await Fs.stat(realPath)
+  } catch (err) {
+    if (debug) {
+      console.log(` => Not found: `, err)
+    }
+  }
+
+  if (! stat) {
+    if (debug) {
+      console.log(` => No real file: ${realPath}`)
+    }
+    return;
+  } else if (cache.has(virtPath)) {
     if (debug) {
       console.log(` => has cache: ${virtPath}`)
     }
     const entry = cache.get(virtPath)!
-    if (stat == null) {
-      return
-    }
     if (stat.mtimeMs <= entry.modTime) {
+      if (debug) {
+        console.log(` => cache is valid: cache(${entry.modTime}) vs stat(${stat.mtimeMs})`)
+      }
       return
     }
-  } else if (! Fs.existsSync(realPath)) {
-    if (debug) {
-      console.log(` => No realfile: ${realPath}`)
-    }
-    return
   }
 
-  const source = Fs.readFileSync(realPath, {encoding: 'utf-8'})
+  const source = await Fs.readFile(realPath, {encoding: 'utf-8'})
 
   return {source, modTime: stat!.mtimeMs}
 }

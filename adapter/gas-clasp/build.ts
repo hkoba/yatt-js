@@ -42,7 +42,7 @@ async function build(rootDir: string, templateDir: string, config: cgen.YattConf
     const srcFn = Path.join(templateDir, fn);
     const outFn = `${outDir}/${rn}.ts`
     const source = readFileSync(srcFn, {encoding: 'utf-8'})
-    const output = cgen.generate_namespace(srcFn, source, config)
+    const output = await cgen.generate_namespace(srcFn, source, config)
     if (! config.noEmit) {
       console.log(`Generating ${outFn}`)
       writeFileSync(outFn, output.outputText)

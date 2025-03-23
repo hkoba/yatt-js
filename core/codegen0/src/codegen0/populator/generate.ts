@@ -30,36 +30,36 @@ import {type CodeFragment, typeAnnotation} from '../codefragment.ts'
 
 import {generate_template_interface} from './interface.ts'
 
-export function ensure_generate_populator(
+export async function ensure_generate_populator(
   pathSpec: PathSpec,
   baseSession: CGenBaseSession & {cgenStyle: 'populator'},
   outputTextDict: {[k: string]: string}
 ) {
 
-  const entry = get_template_declaration(baseSession, pathSpec);
+  const entry = await get_template_declaration(baseSession, pathSpec);
   if (! entry) {
     throw new Error(`No such item: ${pathSpec}`)
   }
 
   if (entry.updated) {
 
-    const output = generate_populator_for_declentry(entry, baseSession)
+    const output = await generate_populator_for_declentry(entry, baseSession)
 
     outputTextDict[entry.template.path] = output.outputText
   }
 }
 
-export function generate_populator(
+export async function generate_populator(
   filename: string,
   source: string,
   config: YattConfig
-): TranspileOutput {
+): Promise<TranspileOutput> {
 
   //origConfig: YattConfig | YattParams
 
   const session = cgenSession('populator', config)
 
-  const entry = get_template_declaration(
+  const entry = await get_template_declaration(
     session, resolve(filename), source
   )
 
@@ -67,7 +67,7 @@ export function generate_populator(
     throw new Error(`No such item: ${filename}`)
   }
 
-  const output = generate_populator_for_declentry(entry, session)
+  const output = await generate_populator_for_declentry(entry, session)
 
   return {
     template: entry.template,
@@ -76,10 +76,10 @@ export function generate_populator(
   }
 }
 
-export function generate_populator_for_declentry(
+export async function generate_populator_for_declentry(
   entry: DeclEntry,
   baseSession: CGenBaseSession
-): {outputText: string, sourceMapText: string} {
+): Promise<{outputText: string, sourceMapText: string}> {
 
   const {source, template} = entry
 
@@ -128,7 +128,7 @@ export function generate_populator_for_declentry(
           continue;
         const ctx = new CodeGenContextClass(template, part, session, {hasThis: true});
         const ast = parse_template(session, part.raw_part)
-        program.push(generate_widget(ctx, ast))
+        program.push(await generate_widget(ctx, ast))
         break
       }
       default:
@@ -160,7 +160,7 @@ if (import.meta.main) {
 
     for (const filename of args) {
       const source = readFileSync(filename, {encoding: "utf-8"})
-      const output = generate_populator(Path.resolve(filename), source, config)
+      const output = await generate_populator(Path.resolve(filename), source, config)
       process.stdout.write(output.outputText + '\n');
     }
   })()

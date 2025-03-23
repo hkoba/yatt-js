@@ -38,10 +38,10 @@ import {statSync} from 'node:fs'
 
 export const DEFAULT_NAMESPACE = '$yatt.$public'
 
-export function generate_namespace(
+export async function generate_namespace(
   filename: string,
   source: string, origConfig: YattConfig | YattParams
-): TranspileOutput
+): Promise<TranspileOutput>
 {
 
   const session = cgenSession('namespace', origConfig)
@@ -59,14 +59,14 @@ export function generate_namespace(
 
   session.entFns = entFns
 
-  const entry = get_template_declaration(
+  const entry = await get_template_declaration(
     session, absFile, source
   )
   if (! entry) {
     throw new Error(`No such item: ${filename}`)
   }
 
-  const output = generate_namespace_for_declentry(entry, session);
+  const output = await generate_namespace_for_declentry(entry, session);
 
   // XXX: should return templateName too.
   return {
@@ -76,10 +76,10 @@ export function generate_namespace(
   }
 }
 
-export function generate_namespace_for_declentry(
+export async function generate_namespace_for_declentry(
   entry: DeclEntry,
   baseSession: CGenBaseSession
-): {outputText: string, sourceMapText: string} {
+): Promise<{outputText: string, sourceMapText: string}> {
   const {source, template} = entry
 
   const filename = template.path
@@ -119,7 +119,7 @@ export function generate_namespace_for_declentry(
           continue;
         const ctx = new CodeGenContextClass(template, part, session, {hasThis: true});
         const ast = parse_template(session, part.raw_part)
-        program.push(`export function `, generate_widget(ctx, ast))
+        program.push(`export function `, await generate_widget(ctx, ast))
       }
     }
   }
@@ -151,7 +151,7 @@ if (import.meta.main) {
 
     for (const filename of args) {
       const source = readFileSync(filename, {encoding: "utf-8"})
-      const output = generate_namespace(filename, source, config)
+      const output = await generate_namespace(filename, source, config)
       if (cm && output.sourceMapText) {
 
         if (config.eachMapping) {

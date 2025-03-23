@@ -31,13 +31,12 @@ import {builtinMacros} from '../macro/index.ts'
 
 import {list_entity_functions} from './list_entity_functions.ts'
 
-import {existsSync} from "node:fs"
 import {resolve} from "node:path"
 
-export function generate_module(
+export async function generate_module(
   filename: string,
   source: string, origConfig: YattConfig | YattParams
-): TranspileOutput
+): Promise<TranspileOutput>
 {
 
   const session = cgenSession('module', origConfig)
@@ -49,14 +48,14 @@ export function generate_module(
   //   entFns = list_entity_functions(entFnsFile)
   // }
 
-  const entry = get_template_declaration(
+  const entry = await get_template_declaration(
     session, resolve(filename), source
   )
   if (! entry) {
     throw new Error(`No such item: ${filename}`)
   }
 
-  const output = generate_module_for_declentry(entry, session)
+  const output = await generate_module_for_declentry(entry, session)
 
   return {
     template: entry.template,
@@ -65,10 +64,10 @@ export function generate_module(
   }
 }
 
-export function generate_module_for_declentry(
+export async function generate_module_for_declentry(
   entry: DeclEntry,
   baseSession: CGenBaseSession
-): {outputText: string, sourceMapText: string} {
+): Promise<{outputText: string, sourceMapText: string}> {
 
   const {source, template} = entry
 
@@ -120,7 +119,7 @@ export function generate_module_for_declentry(
           continue;
         const ctx = new CodeGenContextClass(template, part, session);
         const ast = parse_template(session, part.raw_part)
-        program.push(`export function `, generate_widget(ctx, ast))
+        program.push(`export function `, await generate_widget(ctx, ast))
         break
       }
       default:
@@ -155,7 +154,7 @@ if (import.meta.main) {
 
     for (const filename of args) {
       const source = readFileSync(filename, {encoding: "utf-8"})
-      const output = generate_module(Path.resolve(filename), source, config)
+      const output = await generate_module(Path.resolve(filename), source, config)
       process.stdout.write(output.outputText + '\n');
     }
   })()

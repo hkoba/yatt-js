@@ -8,6 +8,6 @@ import type {CodeFragment} from './codefragment.ts'
 
 export type CGenMacro = (
   ctx: WidgetGenContext, scope: VarScope, node: ElementNode
-) => {output: CodeFragment, fragment?: any}; // XXX: may need emitter abstraction
+) => Promise<{output: CodeFragment, fragment?: any}>; // XXX: may need emitter abstraction
 
 export type MacroDict = {[k: `macro_${string}`]: CGenMacro}
