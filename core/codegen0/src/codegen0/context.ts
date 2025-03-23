@@ -44,6 +44,12 @@ export function cgenSession(cgenStyle: CodeKind, origConfig: YattConfig | YattCG
   return session;
 }
 
+export function freshCGenSession(base: CGenBaseSession)
+: CGenBaseSession {
+  const fresh = {...base, visited: new Map}
+  return fresh
+}
+
 export type WidgetGenContext = CodeGenContext<Widget>
 export type EntityGenContext = CodeGenContext<Entity>
 
