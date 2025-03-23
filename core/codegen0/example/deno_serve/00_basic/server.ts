@@ -26,7 +26,7 @@ async function handler(req: Request): Promise<Response> {
 
   const source = readFileSync(fn, {encoding: "utf-8"})
 
-  const output = generate_populator(fn, source, {})
+  const output = await generate_populator(fn, source, {})
 
   const script = output.outputText
 
