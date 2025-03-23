@@ -37,7 +37,7 @@ async function handler(req: Request): Promise<Response> {
   console.log(`GET: ${fn}`)
 
   const $this = await refresh_populator(
-    {rootDir: config.rootDir, virtPath: fn}, {...cgen, $yatt}
+    [config.rootDir, fn], {...cgen, $yatt}
   )
 
   if (! $this) {

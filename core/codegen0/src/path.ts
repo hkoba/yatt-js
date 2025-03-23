@@ -17,10 +17,14 @@ export const jsDir = __dirname
 export const srcDir = path.join(path.dirname(jsDir), 'src')
 
 export type PathPair = {rootDir: string, virtPath: string}
-export type PathSpec = string | PathPair
+export type PathSpec = string | PathPair | [string, string]
 
-export function pathPairFromSpec(pathSpec: PathSpec, rootDir?: string): PathPair {
-  if (typeof pathSpec !== 'string') {
+export function pathPairFromSpec(pathSpec: PathSpec, rootDir?: string)
+: PathPair
+{
+  if (pathSpec instanceof Array && pathSpec.length === 2) {
+    return {rootDir: pathSpec[0], virtPath: pathSpec[1]}
+  } else if (typeof pathSpec !== 'string') {
     return pathSpec
   } else if (rootDir == null) {
     return {rootDir: path.dirname(pathSpec), virtPath: path.basename(pathSpec)}
