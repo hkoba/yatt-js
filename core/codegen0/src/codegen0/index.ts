@@ -6,4 +6,8 @@ export {generate_namespace} from './namespace/generate.ts'
 
 export {generate_populator} from './populator/generate.ts'
 
+export {refresh_populator} from './populator/loader.ts'
+
 export {runFile} from './populator/runner.ts'
+
+export {cgenSession, freshCGenSession} from './context.ts'

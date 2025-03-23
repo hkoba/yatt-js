@@ -269,6 +269,8 @@ export async function get_template_declaration(
   modTime?: number
 ): Promise<(DeclEntry & {updated: boolean}) | undefined> {
 
+  const debug = session.params.debug.declaration
+
   const {rootDir, virtPath} = pathPairFromSpec(pathSpec, session.params.rootDir)
   const realPath = [rootDir, virtPath].join(Path.sep)
 
@@ -282,16 +284,30 @@ export async function get_template_declaration(
     )
 
   if (needs == null) {
+    if (debug) {
+      console.log(`needs == null, virtPath=${virtPath}, cache: `, cache)
+    }
 
     const entry = cache.get(virtPath)
 
     if (entry == null) {
+      if (debug) {
+        console.log(`entry is null for ${virtPath}`)
+      }
+
       return
+    }
+
+    if (debug) {
+      console.log(`found ${virtPath}: `, entry)
     }
 
     return {...entry, updated: false}
 
   } else {
+    if (debug) {
+      console.log(`needsUpdate`)
+    }
     const {modTime, source} = needs
     const template = build_template_declaration(realPath, source, session)
     const entry = {modTime, source, template}
