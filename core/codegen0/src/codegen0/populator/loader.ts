@@ -3,11 +3,19 @@
 import type {
   YattParams
 } from '../../config.ts'
+import type {runtime} from '../../yatt.ts'
 
-type LoaderSession = {
-  params: YattParams
+interface typeof$yatt {
+  runtime: typeof runtime
+  $public: {[k: string]: DirHandler}
 }
 
-// function ensure_declaration_is_loaded(
-//   session: LoaderSession
-// )
+interface DirHandler {
+  render_(CON: Connection, $params: {[k: string]: any}): Promise<void>
+}
+
+interface Connection {
+  append(str: string): void;
+  appendUntrusted(str?: string | number): void;
+  appendRuntimeValue(val: any): void;
+}
