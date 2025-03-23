@@ -38,6 +38,7 @@ async function handler(req: Request): Promise<Response> {
 
   const $this = await refresh_populator(
     [config.rootDir, fn], {...cgen, $yatt}
+    // , {private: false}
   )
 
   if (! $this) {

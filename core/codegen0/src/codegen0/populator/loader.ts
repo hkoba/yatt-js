@@ -1,6 +1,9 @@
 #!/usr/bin/env -S deno run -RE
 
-import { get_template_declaration } from '../../declaration/index.ts'
+import {
+  get_public_template_declaration,
+  get_template_declaration
+} from '../../declaration/index.ts'
 
 import type {
   CGenBaseSession
@@ -34,15 +37,21 @@ export type LoaderSession = CGenBaseSession & {
   $yatt: typeof$yatt
 }
 
+export type RefreshOptions = {
+  private?: boolean
+}
+
 export async function refresh_populator(
-  pathSpec: PathSpec, session: LoaderSession
+  pathSpec: PathSpec, session: LoaderSession, options?: RefreshOptions
 ): Promise<DirHandler | undefined> {
 
   const debug = session.params.debug.declaration
 
   const pathPair = pathPairFromSpec(pathSpec)
 
-  const entry = await get_template_declaration(session, pathSpec);
+  const entry = options?.private
+    ? await get_template_declaration(session, pathSpec)
+    : await get_public_template_declaration(session, pathSpec);
 
   if (! entry) {
     if (debug) {

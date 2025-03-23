@@ -260,9 +260,26 @@ import {needsUpdate} from './partFolder.ts'
 
 import * as Path from 'node:path'
 
-// XXX: 本当に undef を返すケースが有って良いのか？
+export async function get_public_template_declaration(
+  session: BuilderBaseSession,
+  pathSpec: PathSpec,
+  source?: string,
+  modTime?: number
+): Promise<(DeclEntry & {updated: boolean}) | undefined> {
+  return await get_template_declaration__(true, session, pathSpec, source, modTime)
+}
 
 export async function get_template_declaration(
+  session: BuilderBaseSession,
+  pathSpec: PathSpec,
+  source?: string,
+  modTime?: number
+): Promise<(DeclEntry & {updated: boolean}) | undefined> {
+  return await get_template_declaration__(false, session, pathSpec, source, modTime)
+}
+
+async function get_template_declaration__(
+  publicOnly: boolean,
   session: BuilderBaseSession,
   pathSpec: PathSpec,
   source?: string,
@@ -272,6 +289,11 @@ export async function get_template_declaration(
   const debug = session.params.debug.declaration
 
   const {rootDir, virtPath} = pathPairFromSpec(pathSpec, session.params.rootDir)
+
+  if (publicOnly && rootDir !== session.params.rootDir) {
+    return;
+  }
+
   const realPath = [rootDir, virtPath].join(Path.sep)
 
   const cache = session.declCacheSet[rootDir] ??= new Map
