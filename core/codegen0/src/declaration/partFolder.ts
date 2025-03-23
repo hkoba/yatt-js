@@ -17,16 +17,17 @@ export async function needsUpdate(
     }
     return
   }
-  let stat;
+  let fh, stat;
   try {
-    stat = await Fs.stat(realPath)
+    fh = await Fs.open(realPath)
+    stat = await fh.stat()
   } catch (err) {
     if (debug) {
       console.log(` => Not found: `, err)
     }
   }
 
-  if (! stat) {
+  if (!fh || !stat) {
     if (debug) {
       console.log(` => No real file: ${realPath}`)
     }
@@ -44,7 +45,7 @@ export async function needsUpdate(
     }
   }
 
-  const source = await Fs.readFile(realPath, {encoding: 'utf-8'})
+  const source = await fh.readFile({encoding: 'utf-8'})
 
   return {source, modTime: stat!.mtimeMs}
 }
