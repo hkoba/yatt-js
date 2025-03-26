@@ -37,7 +37,7 @@ async function handler(req: Request): Promise<Response> {
   console.log(`GET: ${fn}`)
 
   const $this = await refresh_populator(
-    [config.rootDir, fn], {...cgen, $yatt}
+    resolve(config.rootDir, fn), {...cgen, $yatt}
     // , {private: false}
   )
 
