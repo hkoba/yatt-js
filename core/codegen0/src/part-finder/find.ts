@@ -33,9 +33,9 @@ export async function find_widget(
   }
 
   for (const cand of candidatesForLookup(session, template.folder, partPath)) {
-    const {rootDir, virtPath, name} = cand;
+    const {realPath, name} = cand;
 
-    const entry = await get_template_declaration(session, {rootDir, virtPath})
+    const entry = await get_template_declaration(session, realPath)
 
     if (! entry)
       continue

@@ -13,7 +13,7 @@ import type {TranspileOutput} from '../output.ts'
 
 import {resolve} from 'node:path'
 
-import {templatePath, type PathSpec} from '../../path.ts'
+import {templatePath} from '../../path.ts'
 
 import {
   type CGenSession, type CGenBaseSession,
@@ -31,14 +31,14 @@ import {type CodeFragment, typeAnnotation} from '../codefragment.ts'
 import {generate_template_interface} from './interface.ts'
 
 export async function ensure_generate_populator(
-  pathSpec: PathSpec,
+  realPath: string,
   baseSession: CGenBaseSession & {cgenStyle: 'populator'},
   outputTextDict: {[k: string]: string}
 ) {
 
-  const entry = await get_template_declaration(baseSession, pathSpec);
+  const entry = await get_template_declaration(baseSession, realPath);
   if (! entry) {
-    throw new Error(`No such item: ${pathSpec}`)
+    throw new Error(`No such item: ${realPath}`)
   }
 
   if (entry.updated) {
