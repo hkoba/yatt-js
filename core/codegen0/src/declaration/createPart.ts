@@ -230,19 +230,16 @@ export function declarationBuilderSession(
   const {
     builders = builtin_builders(),
     varTypeMap = builtin_vartypemap(),
-    declCacheSet = {[rootDir]: new Map},
+    declCache = new Map,
     entFns = {},
     ...rest_config
   } = config
 
   const buildParams = yattParams(rest_config);
-  for (const dir of buildParams.libDirs) {
-    declCacheSet[dir] = new Map
-  }
 
   const builder_session: BuilderBaseSession = {
     builders, varTypeMap,
-    declCacheSet,
+    declCache,
     entFns,
     visited: new Map,
     params: buildParams
@@ -260,80 +257,52 @@ import {needsUpdate} from './partFolder.ts'
 
 import * as Path from 'node:path'
 
-export async function get_public_template_declaration(
-  session: BuilderBaseSession,
-  pathSpec: PathSpec,
-  source?: string,
-  modTime?: number
-): Promise<(DeclEntry & {updated: boolean}) | undefined> {
-  return await get_template_declaration__(true, session, pathSpec, source, modTime)
-}
-
 export async function get_template_declaration(
   session: BuilderBaseSession,
-  pathSpec: PathSpec,
-  source?: string,
-  modTime?: number
-): Promise<(DeclEntry & {updated: boolean}) | undefined> {
-  return await get_template_declaration__(false, session, pathSpec, source, modTime)
-}
-
-async function get_template_declaration__(
-  publicOnly: boolean,
-  session: BuilderBaseSession,
-  pathSpec: PathSpec,
+  realPath: string,
   source?: string,
   modTime?: number
 ): Promise<(DeclEntry & {updated: boolean}) | undefined> {
 
   const debug = session.params.debug.declaration
 
-  const {rootDir, virtPath} = pathPairFromSpec(pathSpec, session.params.rootDir)
-
-  if (publicOnly && rootDir !== session.params.rootDir) {
-    return;
+  if (debug) {
+    console.log(`get_template_declaration: ${realPath}`)
   }
-
-  const realPath = [rootDir, virtPath].join(Path.sep)
-
-  const cache = session.declCacheSet[rootDir] ??= new Map
 
   const needs = source != null
     ? {source, modTime: modTime ?? Date.now()}
-    : await needsUpdate(
-      session, cache,
-      virtPath, realPath
-    )
+    : await needsUpdate(session, realPath)
 
   if (needs == null) {
     if (debug) {
-      console.log(`needs == null, virtPath=${virtPath}, cache: `, cache)
+      console.log(`needs == null`)
     }
 
-    const entry = cache.get(virtPath)
+    const entry = session.declCache.get(realPath)
 
     if (entry == null) {
       if (debug) {
-        console.log(`entry is null for ${virtPath}`)
+        console.log(`entry is null for ${realPath}`)
       }
 
       return
     }
 
     if (debug) {
-      console.log(`found ${virtPath}: `, entry)
+      console.log(`found ${realPath}: `, entry)
     }
 
     return {...entry, updated: false}
 
   } else {
     if (debug) {
-      console.log(`needsUpdate`)
+      console.log(`needsUpdate, build_template_declaration: ${realPath}`)
     }
     const {modTime, source} = needs
     const template = build_template_declaration(realPath, source, session)
     const entry = {modTime, source, template}
-    cache.set(virtPath, entry)
+    session.declCache.set(realPath, entry)
     session.visited.set(realPath, true)
 
     return {...entry, updated: true}

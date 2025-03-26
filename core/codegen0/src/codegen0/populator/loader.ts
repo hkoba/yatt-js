@@ -1,7 +1,6 @@
 #!/usr/bin/env -S deno run -RE
 
 import {
-  get_public_template_declaration,
   get_template_declaration
 } from '../../declaration/index.ts'
 
@@ -37,32 +36,24 @@ export type LoaderSession = CGenBaseSession & {
   $yatt: typeof$yatt
 }
 
-export type RefreshOptions = {
-  private?: boolean
-}
-
 export async function refresh_populator(
-  pathSpec: PathSpec, session: LoaderSession, options?: RefreshOptions
+  realPath: string, session: LoaderSession
 ): Promise<DirHandler | undefined> {
 
   const debug = session.params.debug.declaration
 
-  const pathPair = pathPairFromSpec(pathSpec)
-
-  const entry = options?.private
-    ? await get_template_declaration(session, pathSpec)
-    : await get_public_template_declaration(session, pathSpec);
+  const entry = await get_template_declaration(session, realPath);
 
   if (! entry) {
     if (debug) {
-      console.log(`No template declaration: `, pathSpec)
+      console.log(`No template declaration: `, realPath)
     }
     return
   }
 
   if (entry.updated) {
     if (debug) {
-      console.log(`entry is updated: `, pathPair)
+      console.log(`entry is updated: `, realPath)
     }
 
     const output = await generate_populator_for_declentry(entry, session);
@@ -71,7 +62,7 @@ export async function refresh_populator(
 
     const {populate} = await import(`data:text/typescript,${script}`)
 
-    session.$yatt.$public[pathPair.virtPath] = populate(session.$yatt)
+    session.$yatt.$public[realPath] = populate(session.$yatt)
   } else {
     if (debug) {
       console.log(`use cached handler`)
@@ -82,5 +73,5 @@ export async function refresh_populator(
     console.log(`session.$yatt.$public: `, session.$yatt.$public)
   }
 
-  return session.$yatt.$public[pathPair.virtPath]
+  return session.$yatt.$public[realPath]
 }

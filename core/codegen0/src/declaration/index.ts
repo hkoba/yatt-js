@@ -1,6 +1,5 @@
 export {
   build_template_declaration,
-  get_public_template_declaration,
   get_template_declaration,
   declarationBuilderSession,
   builtin_builders

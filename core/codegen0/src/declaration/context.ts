@@ -15,7 +15,7 @@ import type { SessionTarget } from "@yatt/lrxml";
 
 export type YattBuildConfig = YattConfig & {
   builders?: BuilderMap
-  declCacheSet?: DeclarationCacheSet
+  declCache?: DeclTree
   varTypeMap?: VarTypeMap
   entFns?: {[k: string]: any}
 }
@@ -36,14 +36,12 @@ export type BuilderBaseSession = BaseSession & {
   builders: BuilderMap
   params: YattParams
   varTypeMap: VarTypeMap
-  declCacheSet: DeclarationCacheSet
+  declCache: DeclTree
   visited: Map<string, boolean>
   entFns: {[k: string]: any}
 }
 
 export type BuilderSession = BuilderBaseSession & SessionTarget
-
-export type DeclarationCacheSet = {[k: string]: DeclTree}
 
 export type DeclTree = Map<string, DeclEntry>
 
