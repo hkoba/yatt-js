@@ -147,7 +147,7 @@ if (import.meta.main) {
     }
     parse_long_options(args, {target: config})
 
-    const cm = config.sourcemap ? (await import('npm:source-map')).SourceMapConsumer : null
+    const cm = config.sourcemap ? (await import('source-map')).SourceMapConsumer : null
 
     for (const filename of args) {
       const source = readFileSync(filename, {encoding: "utf-8"})

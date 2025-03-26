@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "exports": "./src/index.ts",
   "imports": {
+    "source-map": "npm:source-map",
     "@cross/test": "jsr:@cross/test@^0.0.9",
     "@std/assert": "jsr:@std/assert@^0.223.0",
     "@yatt/lrxml": "../lrxml/src/index.ts",

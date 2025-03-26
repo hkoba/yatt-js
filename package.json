@@ -2,7 +2,9 @@
   "name": "yatt",
   "version": "0.0.1",
   "author": "buribullet@gmail.com",
-  "devDependencies": {},
+  "devDependencies": {
+    "source-map": "npm:source-map"
+  },
   "description": "Yet Another Template Transpiler to TypeScript",
   "license": "MIT",
   "private": true,
@@ -21,6 +23,8 @@
     "disable-coverage": true
   },
   "dependencies": {
+    "@cross/test": "npm:@jsr/cross__test",
+    "@std/assert": "npm:@jsr/std__assert",
     "typescript": "^5.4.5"
   }
 }
