@@ -23,8 +23,6 @@
     "disable-coverage": true
   },
   "dependencies": {
-    "@cross/test": "npm:@jsr/cross__test",
-    "@std/assert": "npm:@jsr/std__assert",
     "typescript": "^5.4.5"
   }
 }
