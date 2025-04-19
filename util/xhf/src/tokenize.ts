@@ -38,10 +38,10 @@ export function* tokenizer(str: string): Generator<XHF_Token[]> {
       if (item === "" || /^\#/.test(item)) {
         lineno += count_newlines(item); continue
       }
-      let match = item.match(re_item)
+      const match = item.match(re_item)
       if (! match)
         throw new Error(`Invalid XHF token ((${item}))`)
-      let mg = match.groups as Match
+      const mg = match.groups as Match
 
       if (mg.name === '') {
         if (mg.sigil === ':')

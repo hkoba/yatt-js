@@ -64,7 +64,7 @@ function parse_by_sigil(token: XHF_Token, lexer: Generator<XHF_Token>) {
 }
 
 function parse_array(lexer: Generator<XHF_Token>): any[] {
-  let result: any[] = []
+  const result: any[] = []
   let item
   while (!(item = lexer.next()).done) {
     const token = item.value
@@ -86,7 +86,7 @@ function parse_array(lexer: Generator<XHF_Token>): any[] {
 }
 
 function parse_object(lexer: Generator<XHF_Token>) {
-  let entries: [string, any][] = []
+  const entries: [string, any][] = []
   let item
   while (!(item = lexer.next()).done) {
     const token = item.value
