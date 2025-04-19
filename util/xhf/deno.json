@@ -1,0 +1,10 @@
+{
+  "name": "@yatt/xhf",
+  "version": "0.0.1",
+  "description": "xhf parser/formatter. xhf stands for eXtended Header Fields",
+  "exports": "./src/index.ts",
+  "imports": {
+    "@cross/test": "jsr:@cross/test@^0.0.9",
+    "@std/assert": "jsr:@std/assert@^0.223.0"
+  }
+}

@@ -1,2 +1,2 @@
-export {parser, parseAsObjectList, parseAsArrayList} from './parse'
+export {parser, parseAsObjectList, parseAsArrayList} from './parse.ts'
 
