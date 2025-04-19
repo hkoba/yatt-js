@@ -1,16 +1,25 @@
-#!/usr/bin/env ts-node
+#!/usr/bin/env -S deno test -RE
 
-import tap from 'tap'
+import {test} from "@cross/test"
+import {assertEquals} from '@std/assert'
 
-import {parseAsArrayList, parseAsObjectList} from '../src/parse'
+import {parseAsArrayList, parseAsObjectList} from '../src/parse.ts'
 
 const testObjectList = (str: string, expected: any) => {
   const msg = `parseAsObjectList(${JSON.stringify(str)}) -> ${JSON.stringify(expected)}`
-  tap.same(parseAsObjectList(str), expected, msg)
+
+  test(msg, () => {
+    assertEquals([...parseAsObjectList(str)], expected);
+  })
+
 }
 const testArrayList = (str: string, expected: any) => {
   const msg = `parseAsArrayList (${JSON.stringify(str)}) -> ${JSON.stringify(expected)}`
-  tap.same(parseAsArrayList(str), expected, msg)
+
+  test(msg, () => {
+    assertEquals([...parseAsArrayList(str)], expected)
+  })
+
 }
 
 {
@@ -34,7 +43,7 @@ baz: 3
 x: a
 y: b
 z: c
-`, [{foo: 1, bar: 2, baz: 3}, {x: "a", y: "b", z: "c"}])
+`, [{foo: "1", bar: "2", baz: "3"}, {x: "a", y: "b", z: "c"}])
 
 testArrayList(
 `- foo
@@ -48,7 +57,7 @@ bar: 2
 baz: before next chunk.
 qux= #null
 
-`, [["foo", "bar", null, "baz"], ["foo", "after comment", "bar", 2, "baz", "before next chunk.", "qux", null]]
+`, [["foo", "bar", null, "baz"], ["foo", "after comment", "bar", "2", "baz", "before next chunk.", "qux", null]]
 )
 
 
@@ -76,10 +85,10 @@ x: 1
 y: 2
 
 
-`, [{foo: 1, bar: " 2 \n", baz: 3},
-    {foo: 1, "bar/bar": 2, "baz.html": 3, "bang-4": 4},
-    {foo: 1, bar: "\n2\n", baz: 3},
-    {x: 1, y: 2}
+`, [{foo: "1", bar: " 2 \n", baz: "3\n"},
+    {foo: "1", "bar/bar": "2", "baz.html": "3", "bang-4": "4"},
+    {foo: "1", bar: "\n2\n", baz: "3"},
+    {x: "1", y: "2"}
 ]
 )
 
@@ -97,10 +106,10 @@ bar: 2
 }
 
 `, [
-  ["foo", 1,
-   "bar", {x: 2.1, y: 2.2},
-   "baz", 3],
-  [{foo: 1, bar: 2}],
+  ["foo", "1",
+   "bar", {x: "2.1", y: "2.2"},
+   "baz", "3"],
+  [{foo: "1", bar: "2"}],
 ]
 )
 
@@ -149,7 +158,7 @@ qux: quux
 }
 
 `, [
-  [{foo: 1, bar: 2, "ba z": null},
+  [{foo: "1", bar: "2", "ba z": null},
    {"": null},
    [null, 'baz', 'bang']],
   [{"foo bar": "baz", qux: "quux"}]
@@ -179,10 +188,10 @@ moe:   2.1.2
 baz: 3
 
 `, [
-  {foo: 1, bar: [2.1, 2.2, 2.3], baz: 3},
-  {foo: 1,
-   bar: [2.1, {hoe: "2.1.1\n", moe: "2.1.2"}, 2.3],
-   baz: 3}
+  {foo: "1", bar: ["2.1", "2.2", "2.3"], baz: "3"},
+  {foo: "1",
+   bar: ["2.1", {hoe: "2.1.1\n", moe: "2.1.2"}, "2.3"],
+   baz: "3"}
 ]
 )
 
@@ -197,7 +206,7 @@ baz:
  3
 
 `, [
-  {foo: 1, bar: 2, baz: "3\n"},
+  {foo: "1", bar: "2", baz: "3\n"},
 ]
 )
 
@@ -207,6 +216,6 @@ chklst[]: 2
 chklst[]: 5
 
 `, [
-  ['chklst[]', 1, 'chklst[]', 2, 'chklst[]', 5]
+  ['chklst[]', "1", 'chklst[]', "2", 'chklst[]', "5"]
 ]
 )

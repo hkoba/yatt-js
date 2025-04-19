@@ -1,11 +1,11 @@
-#!/usr/bin/env ts-node
+#!/usr/bin/env -S deno run -RE
 
 export type Paragraph = [string, number]
 
 export function* paragraph(str: string): Generator<Paragraph> {
   const re = /(?<=\n)\n+/g
   let match, pos = 0
-  while (match = re.exec(str)) {
+  while ((match = re.exec(str))) {
     yield [str.substring(pos, match.index), match[0].length]
     pos = re.lastIndex
   }
@@ -14,8 +14,9 @@ export function* paragraph(str: string): Generator<Paragraph> {
   }
 }
 
-if (module.id === ".") {
+if (import.meta.main) {
   (async () => {
+    const process = await import("node:process")
     const fs = await import('node:fs')
 
     for (const fileName of process.argv.slice(2)) {

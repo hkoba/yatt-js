@@ -1,6 +1,6 @@
-#!/usr/bin/env ts-node
+#!/usr/bin/env -S deno run -RE
 
-import {tokenizer, XHF_Token} from './tokenize'
+import {tokenizer, XHF_Token} from './tokenize.ts'
 
 // XXX: parse options like {filename?: string}
 
@@ -128,10 +128,11 @@ function parse_expression(token: XHF_Token) {
   return EXPR_KEYWORD.get(match[1])
 }
 
-if (module.id === ".") {
+if (import.meta.main) {
   (async () => {
+    const process = await import('node:process')
     const fs = await import('node:fs')
-    const {promisify} = await import('util')
+    const {promisify} = await import('node:util')
 
     const write = promisify(process.stdout.write.bind(process.stdout))
 

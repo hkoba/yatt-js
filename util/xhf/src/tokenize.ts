@@ -1,6 +1,6 @@
-#!/usr/bin/env ts-node
+#!/usr/bin/env -S deno run -RE
 
-import {paragraph} from './paragraph'
+import {paragraph} from './paragraph.ts'
 
 import {count_newlines} from '@yatt/lrxml'
 
@@ -80,8 +80,9 @@ export function* tokenizer(str: string): Generator<XHF_Token[]> {
   }
 }
 
-if (module.id === ".") {
+if (import.meta.main) {
   (async () => {
+    const process = await import("node:process")
     const fs = await import('node:fs')
 
     // console.log(re_item)
