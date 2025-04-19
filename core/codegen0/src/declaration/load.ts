@@ -2,8 +2,8 @@ import {open} from 'node:fs/promises'
 
 import type { RegistryEntry } from "../registry.ts";
 
-export class DefaultSourceRefresher {
-  async refresh(
+export class DefaultSourceLoader {
+  async loadIfModified(
     path: string, modTimeMs?: number, debug?: number
   ): Promise<RegistryEntry | undefined> {
 

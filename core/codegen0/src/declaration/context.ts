@@ -16,15 +16,15 @@ import type { TemplateDeclaration } from './types.ts'
 import type { SessionTarget } from "@yatt/lrxml";
 
 
-export interface SourceRefresher {
-  refresh(path: string, modTimeMs?: number, debug?: number): Promise<RegistryEntry | undefined>
+export interface SourceLoader {
+  loadIfModified(path: string, modTimeMs?: number, debug?: number): Promise<RegistryEntry | undefined>
 }
 
 export type YattBuildConfig = YattConfig & {
   builders?: BuilderMap
   declCache?: DeclTree
   sourceCache?: SourceRegistry
-  sourceRefresher?: SourceRefresher
+  sourceLoader?: SourceLoader
   varTypeMap?: VarTypeMap
   entFns?: {[k: string]: any}
 }
@@ -47,7 +47,7 @@ export type BuilderBaseSession = BaseSession & {
   varTypeMap: VarTypeMap
   declCache: DeclTree
   sourceCache: SourceRegistry
-  sourceRefresher?: SourceRefresher
+  sourceLoader?: SourceLoader
   visited: Map<string, boolean>
   entFns: {[k: string]: any}
 }

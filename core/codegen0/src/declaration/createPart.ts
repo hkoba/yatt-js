@@ -22,7 +22,7 @@ import {
   isBuilderSession
 } from './context.ts'
 
-import { DefaultSourceRefresher } from './refresh.ts'
+import { DefaultSourceLoader } from './load.ts'
 
 import { TaskGraph } from './taskgraph.ts'
 
@@ -240,15 +240,15 @@ export function declarationBuilderSession(
 
   const buildParams = yattParams(rest_config);
 
-  let sourceRefresher = Object.hasOwn(config, 'sourceRefresher')
-    ? config.sourceRefresher : new DefaultSourceRefresher
+  let sourceLoader = Object.hasOwn(config, 'sourceLoader')
+    ? config.sourceLoader : new DefaultSourceLoader
   
 
   const builder_session: BuilderBaseSession = {
     builders, varTypeMap,
     declCache,
     sourceCache,
-    sourceRefresher,
+    sourceLoader,
     entFns,
     visited: new Map,
     params: buildParams
@@ -272,7 +272,7 @@ export async function get_template_declaration(
     console.log(`get_template_declaration: ${realPath}`)
   }
 
-  const {sourceEntry, updated} = await get_cached_source(
+  const {sourceEntry, updated} = await refresh_source_cache(
     session, realPath, source, modTimeMs
   )
 
@@ -298,7 +298,7 @@ export async function get_template_declaration(
   }
 }
 
-export async function get_cached_source(
+export async function refresh_source_cache(
   session: BuilderBaseSession,
   realPath: string,
   source?: string,
@@ -315,20 +315,20 @@ export async function get_cached_source(
   let updated
   let sourceEntry = session.sourceCache.get(realPath)
 
-  // If sourceRefresher is explicitly null, skip refresh
-  if (! session.sourceRefresher) {
+  // If sourceLoader is explicitly null, skip refresh
+  if (! session.sourceLoader) {
     return {sourceEntry, updated: false}
   }
 
   if (! sourceEntry) {
-    sourceEntry = await session.sourceRefresher.refresh(
+    sourceEntry = await session.sourceLoader.loadIfModified(
       realPath, undefined, session.params.debug.cache
     );
     if (sourceEntry) {
       session.sourceCache.setFile(realPath, sourceEntry.source, sourceEntry?.modTimeMs)
     }
   } else if (! session.visited.has(realPath)) {
-    updated = await session.sourceRefresher.refresh(realPath, sourceEntry.modTimeMs)
+    updated = await session.sourceLoader.loadIfModified(realPath, sourceEntry.modTimeMs)
     if (updated) {
       sourceEntry = updated
       session.sourceCache.setFile(realPath, updated.source, updated.modTimeMs)
