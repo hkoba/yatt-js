@@ -1,43 +1,42 @@
 import {open} from 'node:fs/promises'
 
-import type { RegistryEntry } from "../registry.ts";
+import type { RegistryEntry } from "./registry.ts";
 
-export class DefaultSourceLoader {
-  async loadIfModified(
+export async function loadIfModified(
     path: string, modTimeMs?: number, debug?: number
-  ): Promise<RegistryEntry | undefined> {
+): Promise<RegistryEntry | undefined> {
 
-    let fh
-    try {
-      fh = await open(path)
-      let stat = await fh.stat()
+  let fh
+  try {
+    fh = await open(path)
+    let stat = await fh.stat()
 
-      if (modTimeMs == null) {
-        if (debug) {
-          console.log(`Cache: First fetch: ${path}`)
-        }
-      } else if (stat.mtimeMs <= modTimeMs) {
-        if (debug) {
-          console.log(`Cache: Latest: ${path}`)
-        }
-        return;
-      } else {
-        if (debug) {
-          console.log(`Cache: Need update: ${path}`)
-        }
+    if (modTimeMs == null) {
+      if (debug) {
+        console.log(`Cache: First fetch: ${path}`)
       }
-      const source = await fh.readFile({encoding: 'utf-8'})
-      stat = await fh.stat()
-
-      return {source, modTimeMs: stat.mtimeMs}
-    } catch (err) {
-      if (err instanceof Error && err.name !== "NotFound") {
-        console.warn(err)
-      } else if (debug) {
-        console.log(`Cache: Can't read: ${path}`, err)
+    } else if (stat.mtimeMs <= modTimeMs) {
+      if (debug) {
+        console.log(`Cache: Latest: ${path}`)
       }
-    } finally {
-      await fh?.close()
+      return;
+    } else {
+      if (debug) {
+        console.log(`Cache: Need update: ${path}`)
+      }
     }
+    const source = await fh.readFile({encoding: 'utf-8'})
+    stat = await fh.stat()
+
+    return {source, modTimeMs: stat.mtimeMs}
+  } catch (err) {
+    if (err instanceof Error && err.name !== "NotFound") {
+      console.warn(err)
+    } else if (debug) {
+      console.log(`Cache: Can't read: ${path}`, err)
+    }
+  } finally {
+    await fh?.close()
   }
 }
+

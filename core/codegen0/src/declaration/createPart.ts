@@ -22,8 +22,6 @@ import {
   isBuilderSession
 } from './context.ts'
 
-import { DefaultSourceLoader } from './load.ts'
-
 import { TaskGraph } from './taskgraph.ts'
 
 import type {
@@ -234,30 +232,26 @@ export function declarationBuilderSession(
     varTypeMap = builtin_vartypemap(),
     declCache = new Map,
     entFns = {},
-    sourceCache = new SourceRegistry,
     ...rest_config
   } = config
 
   const buildParams = yattParams(rest_config);
 
-  let sourceLoader = Object.hasOwn(config, 'sourceLoader')
-    ? config.sourceLoader : new DefaultSourceLoader
-  
+  const sourceCache = new SourceRegistry(config)
 
   const builder_session: BuilderBaseSession = {
     builders, varTypeMap,
     declCache,
     sourceCache,
-    sourceLoader,
     entFns,
-    visited: new Map,
+    visited: new Set,
     params: buildParams
   }
 
   return builder_session
 }
 
-import { SourceRegistry, type RegistryEntry } from "../registry.ts";
+import { SourceRegistry } from "./registry.ts";
 
 export async function get_template_declaration(
   session: BuilderBaseSession,
@@ -272,11 +266,11 @@ export async function get_template_declaration(
     console.log(`get_template_declaration: ${realPath}`)
   }
 
-  const {sourceEntry, updated} = await refresh_source_cache(
-    session, realPath, source, modTimeMs
+  const {sourceEntry, updated} = await session.sourceCache.refresh(
+    realPath, session.visited.has(realPath), source, modTimeMs
   )
 
-  session.visited.set(realPath, true)
+  session.visited.add(realPath)
 
   const template = session.declCache.get(realPath)
 
@@ -296,46 +290,6 @@ export async function get_template_declaration(
   if (debug >= 2) {
     console.log(`XXX: has sourceEntry(updated=${updated}):`, sourceEntry != null, `has template: `, template != null)
   }
-}
-
-export async function refresh_source_cache(
-  session: BuilderBaseSession,
-  realPath: string,
-  source?: string,
-  modTimeMs?: number
-): Promise<{sourceEntry: RegistryEntry | undefined, updated: boolean}>
-{
-  if (source != null) {
-    return {
-      sourceEntry: session.sourceCache.setFile(realPath, source, modTimeMs),
-      updated: false
-    }
-  }
-
-  let updated
-  let sourceEntry = session.sourceCache.get(realPath)
-
-  // If sourceLoader is explicitly null, skip refresh
-  if (! session.sourceLoader) {
-    return {sourceEntry, updated: false}
-  }
-
-  if (! sourceEntry) {
-    sourceEntry = await session.sourceLoader.loadIfModified(
-      realPath, undefined, session.params.debug.cache
-    );
-    if (sourceEntry) {
-      session.sourceCache.setFile(realPath, sourceEntry.source, sourceEntry?.modTimeMs)
-    }
-  } else if (! session.visited.has(realPath)) {
-    updated = await session.sourceLoader.loadIfModified(realPath, sourceEntry.modTimeMs)
-    if (updated) {
-      sourceEntry = updated
-      session.sourceCache.setFile(realPath, updated.source, updated.modTimeMs)
-    }
-  }
-
-  return {sourceEntry, updated: updated != null}
 }
 
 export function build_template_declaration(

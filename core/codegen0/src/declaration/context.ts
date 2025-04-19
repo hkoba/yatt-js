@@ -6,7 +6,7 @@ import {
 
 import type {YattParams, YattConfig} from '../config.ts'
 
-import {SourceRegistry, type RegistryEntry} from '../registry.ts'
+import {SourceRegistry, type SourceLoader} from './registry.ts'
 
 import type { Part } from './part.ts'
 
@@ -15,10 +15,6 @@ import type { VarTypeMap } from './vartype.ts'
 import type { TemplateDeclaration } from './types.ts'
 import type { SessionTarget } from "@yatt/lrxml";
 
-
-export interface SourceLoader {
-  loadIfModified(path: string, modTimeMs?: number, debug?: number): Promise<RegistryEntry | undefined>
-}
 
 export type YattBuildConfig = YattConfig & {
   builders?: BuilderMap
@@ -47,8 +43,7 @@ export type BuilderBaseSession = BaseSession & {
   varTypeMap: VarTypeMap
   declCache: DeclTree
   sourceCache: SourceRegistry
-  sourceLoader?: SourceLoader
-  visited: Map<string, boolean>
+  visited: Set<string> // XXX: Base から外して freshCGenSession を整理せよ
   entFns: {[k: string]: any}
 }
 

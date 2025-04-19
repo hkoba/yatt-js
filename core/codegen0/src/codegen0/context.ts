@@ -46,7 +46,7 @@ export function cgenSession(cgenStyle: CodeKind, origConfig: YattConfig | YattCG
 
 export function freshCGenSession(base: CGenBaseSession)
 : CGenBaseSession {
-  const fresh = {...base, visited: new Map}
+  const fresh = {...base, visited: new Set<string>}
   return fresh
 }
 
