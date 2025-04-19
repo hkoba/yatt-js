@@ -1,4 +1,4 @@
-#!/usr/bin/env -S deno test -A
+#!/usr/bin/env -S deno test -RE
 
 // * add test/**/*.ts to tsconfig.src
 // * enable 'esModuleInterop' flags

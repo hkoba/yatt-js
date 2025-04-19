@@ -1,4 +1,4 @@
-#!/usr/bin/env -S deno test -A
+#!/usr/bin/env -S deno test -RE
 
 import {test as cross_test} from "@cross/test"
 import {assertEquals} from '@std/assert'
