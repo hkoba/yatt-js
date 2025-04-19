@@ -22,6 +22,8 @@ import {
   isBuilderSession
 } from './context.ts'
 
+import { DefaultSourceRefresher } from './loader.ts'
+
 import { TaskGraph } from './taskgraph.ts'
 
 import type {
@@ -232,14 +234,21 @@ export function declarationBuilderSession(
     varTypeMap = builtin_vartypemap(),
     declCache = new Map,
     entFns = {},
+    sourceCache = new SourceRegistry,
     ...rest_config
   } = config
 
   const buildParams = yattParams(rest_config);
 
+  let sourceRefresher = Object.hasOwn(config, 'sourceRefresher')
+    ? config.sourceRefresher : new DefaultSourceRefresher
+  
+
   const builder_session: BuilderBaseSession = {
     builders, varTypeMap,
     declCache,
+    sourceCache,
+    sourceRefresher,
     entFns,
     visited: new Map,
     params: buildParams
@@ -248,65 +257,85 @@ export function declarationBuilderSession(
   return builder_session
 }
 
-import {
-  pathPairFromSpec,
-  type PathSpec
-} from '../path.ts'
-
-import {needsUpdate} from './partFolder.ts'
-
-import * as Path from 'node:path'
+import { SourceRegistry, type RegistryEntry } from "../registry.ts";
 
 export async function get_template_declaration(
   session: BuilderBaseSession,
   realPath: string,
   source?: string,
-  modTime?: number
-): Promise<(DeclEntry & {updated: boolean}) | undefined> {
+  modTimeMs?: number
+): Promise<(DeclEntry & {source: string, updated: boolean}) | undefined> {
 
-  const debug = session.params.debug.declaration
+  const debug = session.params.debug.declaration ?? 0
 
   if (debug) {
     console.log(`get_template_declaration: ${realPath}`)
   }
 
-  const needs = source != null
-    ? {source, modTime: modTime ?? Date.now()}
-    : await needsUpdate(session, realPath)
+  const {sourceEntry, updated} = await get_cached_source(
+    session, realPath, source, modTimeMs
+  )
 
-  if (needs == null) {
-    if (debug) {
-      console.log(`needs == null`)
-    }
+  session.visited.set(realPath, true)
 
-    const entry = session.declCache.get(realPath)
+  const template = session.declCache.get(realPath)
 
-    if (entry == null) {
-      if (debug) {
-        console.log(`entry is null for ${realPath}`)
-      }
-
-      return
-    }
-
-    if (debug) {
-      console.log(`found ${realPath}: `, entry)
-    }
-
-    return {...entry, updated: false}
-
-  } else {
-    if (debug) {
-      console.log(`needsUpdate, build_template_declaration: ${realPath}`)
-    }
-    const {modTime, source} = needs
-    const template = build_template_declaration(realPath, source, session)
-    const entry = {modTime, source, template}
-    session.declCache.set(realPath, entry)
-    session.visited.set(realPath, true)
-
-    return {...entry, updated: true}
+  if (template && sourceEntry && !updated) {
+    const {modTimeMs, source} = sourceEntry
+    return {source, template, modTimeMs, updated: false}
   }
+
+  if (sourceEntry) {
+    const {modTimeMs, source} = sourceEntry
+    const template = build_template_declaration(realPath, source, session)
+    session.declCache.set(realPath, template)
+
+    return {source, template, modTimeMs, updated: true}
+  }
+
+  if (debug >= 2) {
+    console.log(`XXX: has sourceEntry(updated=${updated}):`, sourceEntry != null, `has template: `, template != null)
+  }
+}
+
+export async function get_cached_source(
+  session: BuilderBaseSession,
+  realPath: string,
+  source?: string,
+  modTimeMs?: number
+): Promise<{sourceEntry: RegistryEntry | undefined, updated: boolean}>
+{
+  if (source != null) {
+    return {
+      sourceEntry: session.sourceCache.setFile(realPath, source, modTimeMs),
+      updated: false
+    }
+  }
+
+  let updated
+  let sourceEntry = session.sourceCache.get(realPath)
+
+  // If sourceRefresher is explicitly null, skip refresh
+  if (! session.sourceRefresher) {
+    return {sourceEntry, updated: false}
+  }
+
+  if (! sourceEntry) {
+    sourceEntry = await session.sourceRefresher.refresh(
+      realPath, undefined, session.params.debug.cache
+    );
+    if (sourceEntry) {
+      session.sourceCache.setFile(realPath, sourceEntry.source, sourceEntry?.modTimeMs)
+    }
+  } else if (! session.visited.has(realPath)) {
+    updated = await session.sourceRefresher.refresh(realPath, sourceEntry.modTimeMs)
+    if (updated) {
+      sourceEntry = updated
+      session.sourceCache.setFile(realPath, updated.source, updated.modTimeMs)
+    }
+  }
+
+  return {sourceEntry, updated: updated != null}
 }
 
 export function build_template_declaration(

@@ -1,0 +1,9 @@
+decl	cache	stat	mtime	MEANING	ACTION
+hasDecl	hasCache	stat	latest	Has latest cache	Reuse decl
+hasDecl	hasCache	stat	stale	Has cache but stale	purge caches and update decl
+hasDecl	hasCache	none	-	Has cache but deleted	??
+none	hasCache	stat	latest	Has latest cache	build decl from cache
+none	hasCache	stat	stale	Has cache but stale	purge caches and build decl
+none	hasCache	none	-	Has cache but deleted	??
+none	none	stat	-	New file	build decl and set to cache
+none	none	none	-	Missing	?? negative cache?

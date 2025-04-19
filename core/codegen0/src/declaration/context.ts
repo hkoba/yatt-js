@@ -6,6 +6,8 @@ import {
 
 import type {YattParams, YattConfig} from '../config.ts'
 
+import {SourceRegistry, type RegistryEntry} from '../registry.ts'
+
 import type { Part } from './part.ts'
 
 import type { VarTypeMap } from './vartype.ts'
@@ -13,9 +15,16 @@ import type { VarTypeMap } from './vartype.ts'
 import type { TemplateDeclaration } from './types.ts'
 import type { SessionTarget } from "@yatt/lrxml";
 
+
+export interface SourceRefresher {
+  refresh(path: string, modTimeMs?: number, debug?: number): Promise<RegistryEntry | undefined>
+}
+
 export type YattBuildConfig = YattConfig & {
   builders?: BuilderMap
   declCache?: DeclTree
+  sourceCache?: SourceRegistry
+  sourceRefresher?: SourceRefresher
   varTypeMap?: VarTypeMap
   entFns?: {[k: string]: any}
 }
@@ -37,15 +46,16 @@ export type BuilderBaseSession = BaseSession & {
   params: YattParams
   varTypeMap: VarTypeMap
   declCache: DeclTree
+  sourceCache: SourceRegistry
+  sourceRefresher?: SourceRefresher
   visited: Map<string, boolean>
   entFns: {[k: string]: any}
 }
 
 export type BuilderSession = BuilderBaseSession & SessionTarget
 
-export type DeclTree = Map<string, DeclEntry>
-
-export type DeclEntry = {modTime: number, template: TemplateDeclaration, source: string}
+export type DeclTree = Map<string, TemplateDeclaration>
+export type DeclEntry = {modTimeMs: number, template: TemplateDeclaration}
 
 export type BuilderContext = BuilderContextClass<BuilderSession>
 

@@ -37,13 +37,22 @@ export async function find_widget(
 
     const entry = await get_template_declaration(session, realPath)
 
-    if (! entry)
+    if (! entry) {
+      if ((session.params.debug.declaration ?? 0) >= 2) {
+        console.log(`template not found at: ${realPath}`)
+      }
       continue
+    }
+
 
     const {template} = entry
 
     if (template.partMap.widget.has(name)) {
       return {widget: template.partMap.widget.get(name)!, template}
+    } else {
+      if ((session.params.debug.declaration ?? 0) >= 2) {
+        console.log(`widget ${name} not found in template ${realPath}`)
+      }
     }
   }
 }
@@ -79,6 +88,7 @@ if (import.meta.main) {
     const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
     const config: YattConfig & {lookup_only?: string, entity?: boolean} = {
       debug: {
+        cache: debugLevel,
         declaration: debugLevel
       }
     }
@@ -116,7 +126,7 @@ if (import.meta.main) {
       }
     }
     else {
-      const widget = find_widget(
+      const widget = await find_widget(
         session,
         template,
         elemPath

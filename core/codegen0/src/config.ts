@@ -19,6 +19,7 @@ export type YattParams = LrxmlParams & YattProjectParams & {
     build?: number,
     codegen?: number,
     declaration?: number,
+    cache?: number,
     parser?: number
   }
 }

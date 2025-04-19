@@ -1,56 +1,6 @@
 import * as Path from 'node:path'
-import * as Fs from 'node:fs/promises'
 
 import type {BuilderBaseSession} from './context.ts'
-
-export async function needsUpdate(
-  session: BuilderBaseSession, realPath: string
-): Promise<{modTime: number, source: string} | undefined> {
-  const debug = session.params.debug.declaration
-  if (debug) {
-    console.log(`refreshing realPath=${realPath}`)
-  }
-  if (session.visited.get(realPath)) {
-    if (debug) {
-      console.log(` => has visited: ${realPath}`)
-    }
-    return
-  }
-
-  let fh, stat;
-  try {
-    fh = await Fs.open(realPath)
-    stat = await fh.stat()
-
-    if (session.declCache.has(realPath)) {
-      if (debug) {
-        console.log(` => has cache: ${realPath}`)
-      }
-      const entry = session.declCache.get(realPath)!
-      if (stat.mtimeMs <= entry.modTime) {
-        if (debug) {
-          console.log(` => cache is valid: cache(${entry.modTime}) vs stat(${stat.mtimeMs})`)
-        }
-        return
-      }
-    }
-    if (debug) {
-      console.log(` => Reading ${realPath}`)
-    }
-
-    const source = await fh.readFile({encoding: 'utf-8'})
-    return {source, modTime: stat!.mtimeMs}
-
-  } catch (err) {
-    if (err instanceof Error && err.name !== "NotFound") {
-      console.warn(err)
-    } else if (debug) {
-      console.log(` => Not found: ${realPath}`)
-    }
-  } finally {
-    await fh?.close()
-  }
-}
 
 // partPath = ['foo', 'bar']
 // 1. foo.ytjs:<!yatt:widget bar>

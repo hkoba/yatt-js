@@ -27,11 +27,12 @@ const widget_text = (widget: Widget | undefined): string | undefined => {
 
 {
   const rootDir = path.join(testDir, '1')
+  const debug = parseInt(process.env.DEBUG ?? '', 10) || 0
   const session = cgenSession('populator', {
     rootDir,
     ext_public: ".yatt",
     debug: {
-      declaration: parseInt(process.env.DEBUG ?? '', 10) || 0
+      declaration: debug, cache: debug
     }
   })
 
