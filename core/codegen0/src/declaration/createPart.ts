@@ -22,7 +22,7 @@ import {
   isBuilderSession
 } from './context.ts'
 
-import { DefaultSourceRefresher } from './loader.ts'
+import { DefaultSourceRefresher } from './refresh.ts'
 
 import { TaskGraph } from './taskgraph.ts'
 
