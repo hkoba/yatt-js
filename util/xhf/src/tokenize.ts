@@ -2,6 +2,8 @@
 
 import {paragraph} from './paragraph.ts'
 
+import type {XHF_Options} from './options.ts'
+
 import {count_newlines} from '@yatt/lrxml'
 
 export type Sigil = ':' | '-' | ',' | '=' | '[' | ']' | '{' | '}'
@@ -29,9 +31,11 @@ const NAMELESS: {[k: string]: boolean} = {']': true, '}': true, '-': true}
 
 type Match = {name: string, sigil: Sigil | '#', tabsp?: string, eol?: string}
 
-export function* tokenizer(str: string): Generator<XHF_Token[]> {
+export function* tokenizer(str: string, options?: XHF_Options): Generator<XHF_Token[]> {
   let lineno = 1
+  let paraNo = 0;
   for (const para of paragraph(str)) {
+    ++paraNo;
     const tokens: XHF_Token[] = []
     for (const item of para[0].split(/(?<=\n)(?=[^\ \t])/)) {
       // console.log(lineno, item)
@@ -73,7 +77,9 @@ export function* tokenizer(str: string): Generator<XHF_Token[]> {
       lineno += count_newlines(item)
     }
 
-    if (tokens.length) {
+    if (tokens.length
+      || paraNo == 1 && options?.header
+      || (options?.keep_empty_items ?? false)) {
       yield tokens
     }
     lineno += para[1]
