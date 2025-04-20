@@ -14,15 +14,20 @@ export function* parseAsObjectList(str: string) {
   }
 }
 
-export function makeEntries(array: any[]) {
+export function makeEntries<T, S = string>(array: T[]): [S, T][] {
   if (array.length % 2 !== 0) {
     throw new Error(`Invalid XHF: Odd number of items: ${array}`)
   }
-  return array.reduce(
-    (p: any[], cur: any, i) => {
-      return i % 2 == 0 ? [p, cur] : p[0].concat([[p[1], cur]])
-    }, []
-  )
+  const result: [S, T][] = []
+  let prevKey
+  for (const [i, v] of array.entries()) {
+    if (i % 2 === 0) {
+      prevKey = v
+    } else {
+      result.push([prevKey as S, v])
+    }
+  }
+  return result
 }
 
 export function* parser(str: string) {
