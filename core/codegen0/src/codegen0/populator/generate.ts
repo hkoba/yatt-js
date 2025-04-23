@@ -6,7 +6,7 @@ import type { YattConfig } from '../../config.ts'
 
 import {
   get_template_declaration,
-  type DeclEntry
+  type DeclState
 } from '../../declaration/index.ts'
 
 import type {TranspileOutput} from '../output.ts'
@@ -77,7 +77,7 @@ export async function generate_populator(
 }
 
 export async function generate_populator_for_declentry(
-  entry: DeclEntry,
+  entry: DeclState,
   baseSession: CGenBaseSession
 ): Promise<{outputText: string, sourceMapText: string}> {
 

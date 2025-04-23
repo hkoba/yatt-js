@@ -11,13 +11,13 @@ import {rootname} from '../src/path.ts'
 
 import {cgenSession} from '../src/codegen0/context.ts'
 import { get_template_declaration
-  , type DeclEntry, type Widget } from '../src/declaration/index.ts'
+  , type DeclState, type Widget } from '../src/declaration/index.ts'
 
 import {find_widget} from '../src/part-finder/find.ts'
 
 const testDir = rootname(rootname(new URL(import.meta.url).pathname)) + '.d'
 
-const entry_part = (entry: DeclEntry, name: string): Widget | undefined => {
+const entry_part = (entry: DeclState, name: string): Widget | undefined => {
   return entry.template.partMap.widget.get(name)
 }
 

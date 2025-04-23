@@ -21,7 +21,7 @@ export {
 export {BuilderContextClass, isBuilderSession} from './context.ts'
 export type {
   YattBuildConfig,
-  DeclEntry,
+  DeclState,
   BuilderContext,
   BuilderSession,
   BuilderBaseSession,
@@ -33,4 +33,8 @@ export type {
   TemplateDeclaration
   , PartMapType, RouteMapType
 } from './types.ts'
+
+
+export {SourceRegistry} from './registry.ts'
+export type {SourceLoader, SourceConfig} from './registry.ts'
 

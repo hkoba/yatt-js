@@ -1,6 +1,9 @@
-import type {YattBuildConfig} from './context.ts'
-
 import { loadIfModified } from './load.ts'
+
+export interface SourceConfig {
+  sourceLoader?: SourceLoader
+  files?: {[path: string]: string} | Map<string, string>
+}
 
 export type RegistryEntry = {modTimeMs: number, source: string}
 
@@ -10,15 +13,29 @@ export class SourceRegistry {
   loader?: SourceLoader
   entries: Map<string, RegistryEntry>
 
-  constructor(config: YattBuildConfig) {
-    // 本当は外から sourceLoader を渡す方が今風。
+  constructor(config: SourceConfig) {
+    // 本当は外から sourceLoader を渡す方が今風だろうとは思う。
     // けど、それだと loader の default 実装を探すのが面倒。
     // なので、あえて config を取る interface にした。
 
+    // null が来たら、null のままにする
     this.loader = Object.hasOwn(config, 'sourceLoader')
       ? config.sourceLoader : loadIfModified
 
     this.entries = new Map
+
+    if (config.files) {
+      this.install(config.files)
+    }
+  }
+
+  install(files: Map<string,string> | {[path: string]:string}): void {
+    const modTimeMs = Date.now()
+    const entries = files instanceof Map
+      ? files.entries() : Object.entries(files)
+    for (const [path, content] of entries) {
+      this.setFile(path, content, modTimeMs)
+    }
   }
 
   setFile(path: string, source: string, modTimeMs?: number): RegistryEntry {

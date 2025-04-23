@@ -6,6 +6,7 @@ dist/
 *.strace
 *.out
 *.log
+*.bak
 lib/example
 lib/src
 lib/test

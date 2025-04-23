@@ -8,11 +8,6 @@ import type {
   CGenBaseSession
 } from '../context.ts'
 
-import {
-  type PathSpec,
-  pathPairFromSpec
-} from '../../path.ts'
-
 import {generate_populator_for_declentry} from './generate.ts'
 
 import type {runtime} from '../../yatt.ts'

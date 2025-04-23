@@ -14,7 +14,7 @@ import type {
   BuilderMap, BuilderContext,
   BuilderBaseSession,
   DeclarationProcessor,
-  DeclEntry
+  DeclState
 } from './context.ts'
 
 import {
@@ -258,7 +258,7 @@ export async function get_template_declaration(
   realPath: string,
   source?: string,
   modTimeMs?: number
-): Promise<(DeclEntry & {source: string, updated: boolean}) | undefined> {
+): Promise<DeclState | undefined> {
 
   const debug = session.params.debug.declaration ?? 0
 
@@ -267,7 +267,8 @@ export async function get_template_declaration(
   }
 
   const {sourceEntry, updated} = await session.sourceCache.refresh(
-    realPath, session.visited.has(realPath), source, modTimeMs
+    realPath, session.visited.has(realPath), source, modTimeMs,
+    session.params.debug.cache ?? 0
   )
 
   session.visited.add(realPath)

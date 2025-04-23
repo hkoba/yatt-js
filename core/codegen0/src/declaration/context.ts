@@ -37,6 +37,9 @@ export interface DeclarationProcessor {
   createPart(ctx: BuilderContext, attlist: AttItem[]): [Part, AttItem[]] | undefined
 }
 
+// Session は３階層にすべきか…
+// single-file, visited(per request), shared(persistent)
+
 export type BuilderBaseSession = BaseSession & {
   builders: BuilderMap
   params: YattParams
@@ -51,6 +54,7 @@ export type BuilderSession = BuilderBaseSession & SessionTarget
 
 export type DeclTree = Map<string, TemplateDeclaration>
 export type DeclEntry = {modTimeMs: number, template: TemplateDeclaration}
+export type DeclState = DeclEntry & {source: string, updated: boolean}
 
 export type BuilderContext = BuilderContextClass<BuilderSession>
 
