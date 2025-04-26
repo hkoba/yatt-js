@@ -328,7 +328,8 @@ export function populateTemplateDeclaration(
   for (const rawPart of rawPartList) {
     ctx.set_range(rawPart)
     if (! builder_session.builders.has(rawPart.kind)) {
-      ctx.token_error(rawPart, `Unsupported part kind: ${rawPart.kind}`);
+      const ns = ctx.session.params.namespace[0]
+      ctx.token_error(rawPart, `Unknown declarator (<!${ns}:${rawPart.kind} >)`);
     }
     const pn = createPart(ctx, rawPart)
     if (! pn)
