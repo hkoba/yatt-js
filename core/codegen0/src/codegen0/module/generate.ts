@@ -5,7 +5,7 @@ import {parse_template} from '../../deps.ts'
 import {type YattConfig, type YattParams, isYattParams, yattParams, primaryNS} from '../../config.ts'
 
 import {
-  type DeclEntry,
+  type DeclState,
   get_template_declaration
 } from '../../declaration/index.ts'
 
@@ -65,7 +65,7 @@ export async function generate_module(
 }
 
 export async function generate_module_for_declentry(
-  entry: DeclEntry,
+  entry: DeclState,
   baseSession: CGenBaseSession
 ): Promise<{outputText: string, sourceMapText: string}> {
 
