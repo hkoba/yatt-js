@@ -1,7 +1,8 @@
 #!/usr/bin/env -S deno run -RE
 
 import {
-  get_template_declaration
+  get_template_declaration,
+  type TemplateDeclaration
 } from '../../declaration/index.ts'
 
 import type {
@@ -17,6 +18,7 @@ export interface typeof$yatt {
   $public: {[k: string]: DirHandler}
 }
 
+// XXX: more precise type
 export interface DirHandler {
   render_(CON: Connection, $params: {[k: string]: any}): Promise<void>
 }
@@ -33,7 +35,7 @@ export type LoaderSession = CGenBaseSession & {
 
 export async function refresh_populator(
   realPath: string, session: LoaderSession
-): Promise<DirHandler | undefined> {
+): Promise<{$this: DirHandler, template: TemplateDeclaration} | undefined> {
 
   const debug = session.params.debug.declaration
 
@@ -68,5 +70,9 @@ export async function refresh_populator(
     console.log(`session.$yatt.$public: `, session.$yatt.$public)
   }
 
-  return session.$yatt.$public[realPath]
+  const $this = session.$yatt.$public[realPath]
+
+  if ($this) {
+    return {$this, template: entry.template}
+  }
 }

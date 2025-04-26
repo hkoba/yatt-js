@@ -36,14 +36,16 @@ async function handler(req: Request): Promise<Response> {
   const fn = pathname.substring(1) + '.yatt'
   console.log(`GET: ${fn}`)
 
-  const $this = await refresh_populator(
+  const entry = await refresh_populator(
     resolve(config.rootDir, fn), {...cgen, $yatt}
     // , {private: false}
   )
 
-  if (! $this) {
+  if (! entry) {
     return new Response("Not found", {status: 404})
   }
+
+  const {$this} = entry
 
   const CON = {
     buffer: "",

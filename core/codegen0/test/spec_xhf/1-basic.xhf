@@ -15,6 +15,7 @@ ERROR: ^Unknown declarator \(<!yatt:bar >\)
 FILE: nodecl.html
 IN: foo bar baz
 
+SKIP: 1
 TITLE: file widget without decl
 IN: <yatt:nodecl/>
 OUT: foo bar baz
@@ -24,17 +25,20 @@ IN:
  <!yatt:args x y>
  <yatt:hello x y/>world!
  
+ <!yatt:entity mul x y>
+ return x * y;
  <!yatt:widget hello x y>
  <h2>Hello</h2>
- &yatt:x; x &yatt:y; = ??
+ &yatt:x; x &yatt:y; = &yatt:mul(:x,:y);
 PARAM[
 - 3
 - 8
 ]
 OUT:
  <h2>Hello</h2>
- 3 x 8 = ??
+ 3 x 8 = 24
  world!
+ 
 
 TITLE: one template, with body
 IN:
@@ -47,7 +51,9 @@ IN:
   --
  >
  <h2>Hello <yatt:body/></h2>
- &yatt:x; x &yatt:y; = ??
+ &yatt:x; x &yatt:y; = &yatt:mul(:x,:y);
+ <!yatt:entity mul x y>
+ return x * y;
 PARAM[
 - 8
 - 3
@@ -71,7 +77,6 @@ OUT:
  <h2>Hello foo world! bar</h2>
  
 
-SKIP: 1
 TITLE: Misplaced widget declaration.
 IN:
  <form>

@@ -146,12 +146,15 @@ export async function doOutputTest(
 ): Promise<string> {
   const cgen = freshCGenSession(baseCgen)
 
-  const $this = await refresh_populator(
+  const entry = await refresh_populator(
     item.FILE, {...cgen, $yatt}
   )
-  if (! $this) {
+  if (! entry) {
     fail(`FAILED to compile: ${item.TITLE}`)
   }
+
+  const {$this, template} = entry
+
   const CON = {
     buffer: "",
     append(str: string) {
@@ -165,7 +168,22 @@ export async function doOutputTest(
       this.buffer += $yatt.runtime.escape(val)
     }
   }
-  $this.render_(CON, {})
+  // item.PARAMS を引数列に map しないと…
+  // そのためには、位置引数が必要…
+
+  const widget = template.partMap.widget.get('')!
+
+  const params: {[k: string]: any} = {}
+
+  if (item.PARAM) {
+    for (const [name, varSpec] of widget.argMap.entries()) {
+      if (varSpec.argNo != null && varSpec.argNo < item.PARAM.length) {
+        params[name] = item.PARAM[varSpec.argNo]
+      }
+    }
+  }
+
+  $this.render_(CON, params)
 
   return CON.buffer
 }

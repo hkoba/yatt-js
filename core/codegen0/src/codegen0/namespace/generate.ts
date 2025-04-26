@@ -10,7 +10,7 @@ import {
 } from '../context.ts'
 
 import {
-  type DeclEntry,
+  type DeclState,
   get_template_declaration,
   BuilderContextClass
   // , Widget, Entity
@@ -77,7 +77,7 @@ export async function generate_namespace(
 }
 
 export async function generate_namespace_for_declentry(
-  entry: DeclEntry,
+  entry: DeclState,
   baseSession: CGenBaseSession
 ): Promise<{outputText: string, sourceMapText: string}> {
   const {source, template} = entry
