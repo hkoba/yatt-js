@@ -7,10 +7,13 @@ import {type CodeFragment, joinAsArray} from '../codefragment.ts'
 import {varTypeExpr} from '../widget/vartype.ts'
 
 export function generate_entity(ctx: CodeGenContext<Entity>): CodeFragment {
-  const program: CodeFragment = [
-    `export function `,
-    {kind: 'name', code: ctx.part.name, source: ctx.part.nameNode},
-  ]
+  const program: CodeFragment = []
+
+  if (ctx.session.cgenStyle !== 'populator') {
+    program.push(`export function `)
+  }
+
+  program.push({kind: 'name', code: ctx.part.name, source: ctx.part.nameNode})
 
   const argDecls = generate_entity_argdecls(ctx, ctx.part)
 
