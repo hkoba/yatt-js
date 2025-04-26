@@ -52,7 +52,7 @@ export function* tokenize_multipart_context(ctx: ParserContext): ChunkGenerator 
   let re_comment_end = ctx.session.params.compat_end_of_comment ?
     /(?<prefix>.*?)-->/sy :
     /(?<prefix>.*?)#-->/sy;
-  let re_decl_end = />\r?\n/y;
+  let re_decl_end = />(?:\r?\n)?/y;
   
   let globalMatch: GlobalMatch | null = null
   while ((globalMatch = ctx.global_match(re_decls)) !== null) {
