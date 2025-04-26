@@ -17,11 +17,11 @@ interface typeof$yatt {
   $public: {[k: string]: DirHandler}
 }
 
-interface DirHandler {
+export interface DirHandler {
   render_(CON: Connection, $params: {[k: string]: any}): Promise<void>
 }
 
-interface Connection {
+export interface Connection {
   append(str: string): void;
   appendUntrusted(str?: string | number): void;
   appendRuntimeValue(val: any): void;
