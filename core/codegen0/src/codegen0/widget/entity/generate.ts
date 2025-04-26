@@ -38,7 +38,7 @@ export function generate_entpath<T extends Part>(
     } else {
       const entitySpec = find_entity(ctx.session, ctx.template, head.name)
       if (entitySpec == null) {
-        console.log(`entFns: `, ctx.session.entFns)
+        // console.log(`entFns: `, ctx.session.entFns)
         ctx.token_error(head, `No such entity: ${head.name}`);
       }
 

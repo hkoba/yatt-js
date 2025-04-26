@@ -25,7 +25,7 @@ export function generate_as_cast_to_text<T extends Part>(
     })
     return joinAsArray('+', fragments)
   } else {
-    console.log(term)
+    // console.log(term)
     ctx.NIMPL(term)
   }
 }
