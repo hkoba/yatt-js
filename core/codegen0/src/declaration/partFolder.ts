@@ -17,7 +17,7 @@ export function* candidatesForLookup(
     console.log(`fromDir: ${fromDir} looking partPath: `, partPath)
   }
 
-  const ext = session.params.ext_public
+  const extMayList = session.params.ext_public
 
   const genList = session.params.lookup_subdirectory_first ?
     [partInSubdir, partInFile] :
