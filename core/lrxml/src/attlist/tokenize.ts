@@ -6,7 +6,7 @@ import { re_entity_open, EntPrefixChar, parse_entpath, EntNode } from '../entity
 function re_att(ns: string[], entPrefixChar: EntPrefixChar): RegExp {
   const pat = re_join(
     '(?<ws>[ \\t\\r\\n]+)',
-    '(?<comment>--.*?--)',
+    '(?<comment>--+.*?--+)',
     '(?<equal>=\\s*)',
     re_join(
       "(?<sq>'[^']*')",
