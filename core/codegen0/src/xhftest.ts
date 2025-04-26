@@ -1,7 +1,7 @@
 #!/usr/bin/env -S deno run -RE
 
 import {test} from '@cross/test'
-import {} from '@std/assert'
+import {assertEquals, assertMatch} from '@std/assert'
 
 import {readFileSync} from 'node:fs'
 
@@ -10,7 +10,7 @@ import {parseAsObjectList} from '@yatt/xhf'
 import type {YattConfig} from './config.ts'
 
 import { cgenSession, freshCGenSession } from "./codegen0/context.ts"
-import { refresh_populator } from "./codegen0/populator/loader.ts"
+import { refresh_populator, type DirHandler, type Connection } from "./codegen0/populator/loader.ts"
 import { SourceLoader } from "./declaration/registry.ts" 
 import { runtime } from "./yatt.ts"
 
@@ -22,21 +22,38 @@ export type Header = {
   ONLY_UTF8?: string
 }
 
-export type TestItem = Required<ItemSpecBase> & ItemSpec & {
-  realfile: string
-  num: number
-}
-
-export type ItemSpecBase = {
+export interface ItemSpec {
   FILE?: string
   TITLE?: string
   WIDGET?: string
+
+  IN?: string
+  PARAM?: string[]
+  OUT?: string
+  ERROR?: string
 }
 
-export type ItemSpec = ItemSpecBase & {
-  IN?: string
-  PARAM?: string
-} & ({OUT?: string} | {ERROR?: string})
+export type TestItem = TestItemOk | TestItemError
+
+export interface TestItemBase {
+  kind: 'output' | 'error'
+  realfile: string
+  num: number
+
+  FILE: string
+  TITLE: string
+  WIDGET: string
+  PARAM?: string[]
+}
+
+export type TestItemOk = TestItemBase & {
+  kind: 'output'
+  OUT: string
+}
+export type TestItemError = TestItemBase & {
+  kind: 'error'
+  ERROR: string
+}
 
 /*
   BREAK?: string
@@ -53,7 +70,9 @@ export type ItemSpec = ItemSpecBase & {
   CON_CLASS?: string
  */
 
-export async function runtest(files: string[], baseConfig: YattConfig): Promise<void> {
+export function runtests(files: string[], baseConfig: YattConfig): Promise<void>[] {
+  const tests = []
+
   for (const fn of files) {
     console.log('=====', fn)
     const xhf_content = readFileSync(fn, {encoding: "utf-8"})
@@ -67,58 +86,52 @@ export async function runtest(files: string[], baseConfig: YattConfig): Promise<
     let fileNo = 0
     const testItems: TestItem[] = []
     for (const item of (xhf_stream as Generator<ItemSpec>)) {
-      let {IN, TITLE, FILE, WIDGET} = item
-
-      if (! testItems.length) {
-        if (IN == null) {
-          throw new Error(`First item must have "IN" field!`)
-        }
-        if (TITLE == null) {
-          throw new Error(`First item must have "TITLE" field!`)
-        }
-      }
-      if (IN != null) {
+      if (item.IN != null) {
         ++fileNo
       }
-      FILE ??= `f${fileNo}.yatt`
-      const realfile = IN != null ? FILE : testItems[testItems.length-1].realfile
 
-      WIDGET ??= filename2widgetname(realfile)
+      const [realfile, testItem] = parseTestItemSpec(item, fileNo, testItems[testItems.length-1])
 
-      if (IN != null) {
-        baseCgen.sourceCache.setFile(FILE, IN, now)
+      if (item.IN != null) {
+        baseCgen.sourceCache.setFile(realfile, item.IN, now)
       }
 
-      TITLE ??= testItems[testItems.length-1].TITLE
-
-      const testItem = {
-        ...item,
-        realfile, num: fileNo,
-        IN, TITLE, FILE, WIDGET
+      if (testItem) {
+        testItems.push(testItem)
       }
-
-      testItems.push(testItem)
     }
 
     const $yatt = {
       runtime, $public: {}
     }
 
-    // deno.test に入れないと！
     for (const item of testItems) {
       // console.log(item)
-      try {
+
+      let $this: DirHandler | undefined
+      tests.push(test(`${item.TITLE} [compile]`, async () => {
         const cgen = freshCGenSession(baseCgen)
-        const $this = await refresh_populator(
-          item.FILE, {...cgen, $yatt}
-        )
-
-        if (! $this) {
-          console.warn(`Can't compile ${item.TITLE}`)
-
-          continue
+        if (item.kind === 'error') {
+          try {
+            await refresh_populator(
+              item.FILE, {...cgen, $yatt}
+            )
+          } catch (error) {
+            if (error instanceof Error) {
+              assertMatch(error.message, new RegExp(item.ERROR))
+            }
+          }
         }
 
+        $this = await refresh_populator(
+          item.FILE, {...cgen, $yatt}
+        )
+      }))
+
+      tests.push(test(`${item.TITLE}`, () => {
+        if (! $this) {
+          throw new Error(`SKIP`)
+        }
         const CON = {
           buffer: "",
           append(str: string) {
@@ -133,14 +146,60 @@ export async function runtest(files: string[], baseConfig: YattConfig): Promise<
           }
         }
 
-        $this.render_(CON, {})
+        if (item.kind === 'output') {
 
-        console.log('output:', CON.buffer)
-      } catch (err) {
-        console.log(`catch error:`, err)
-      }
+          $this.render_(CON, {})
+
+          assertEquals(CON.buffer, item.OUT)
+        }
+
+      }))
     }
   }
+  return tests
+}
+
+export function parseTestItemSpec(spec: ItemSpec, fileNo: number, prevItem?: TestItem): [string, TestItem | undefined] {
+  let {IN, TITLE, FILE, WIDGET} = spec
+
+  if (prevItem == null) {
+    if (IN == null) {
+      throw new Error(`First item must have "IN" field!`)
+    }
+    if (TITLE == null) {
+      throw new Error(`First item must have "TITLE" field!`)
+    }
+  }
+
+  FILE ??= `f${fileNo}.yatt`
+  const realfile = IN != null ? FILE : prevItem!.realfile
+
+  WIDGET ??= filename2widgetname(realfile)
+
+  TITLE ??= prevItem!.TITLE
+
+  let testItem: TestItem | undefined
+  if (spec.OUT != null) {
+    testItem = {
+      ...spec,
+      kind: 'output',
+      realfile, num: fileNo,
+      TITLE, FILE, WIDGET,
+      OUT: spec.OUT
+    }
+  } else if (spec.ERROR != null) {
+    testItem = {
+      ...spec,
+      kind: 'error',
+      realfile, num: fileNo,
+      TITLE, FILE, WIDGET,
+      ERROR: spec.ERROR
+    }
+  } else {
+    // none
+  }
+
+  return [realfile, testItem]
 }
 
 function filename2widgetname(path: string): string {
@@ -152,5 +211,5 @@ if (import.meta.main) {
 
   const args = process.argv.slice(2)
 
-  await runtest(args, {})
+  Promise.all(runtests(args, {}))
 }
