@@ -2,7 +2,7 @@
   "name": "@yatt/xhf",
   "version": "0.0.1",
   "description": "xhf parser/formatter. xhf stands for eXtended Header Fields",
-  "main": "dist/index.js",
+  "module": "src/index.ts",
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "watch": "tsc -w -p tsconfig.build.json",
