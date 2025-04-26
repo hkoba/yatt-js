@@ -1,7 +1,7 @@
 #!/usr/bin/env -S deno run -RE
 
 import {test} from '@cross/test'
-import {assertEquals, assertMatch} from '@std/assert'
+import {assertEquals, assertMatch, fail} from '@std/assert'
 
 import {readFileSync} from 'node:fs'
 
@@ -11,7 +11,7 @@ import type {YattConfig} from './config.ts'
 
 import { cgenSession, freshCGenSession } from "./codegen0/context.ts"
 import { refresh_populator, type DirHandler, type Connection } from "./codegen0/populator/loader.ts"
-import { SourceLoader } from "./declaration/registry.ts" 
+import { SourceRegistry, SourceConfig } from "./declaration/registry.ts" 
 import { runtime } from "./yatt.ts"
 
 export type Header = {
@@ -23,6 +23,8 @@ export type Header = {
 }
 
 export interface ItemSpec {
+  SKIP?: string
+
   FILE?: string
   TITLE?: string
   WIDGET?: string
@@ -74,31 +76,14 @@ export function runtests(files: string[], baseConfig: YattConfig): void {
 
   for (const fn of files) {
     // console.log('=====', fn)
-    const xhf_content = readFileSync(fn, {encoding: "utf-8"})
-    const xhf_stream = parseAsObjectList(xhf_content, {header: true})
-    const header = xhf_stream.next()?.value as Header
-    // console.log('header: ', header)
-    
-    const baseCgen = cgenSession('populator', baseConfig)
-    
-    const now = Date.now()
-    let fileNo = 0
-    const testItems: TestItem[] = []
-    for (const item of (xhf_stream as Generator<ItemSpec>)) {
-      if (item.IN != null) {
-        ++fileNo
-      }
 
-      const [realfile, testItem] = parseTestItemSpec(item, fileNo, testItems[testItems.length-1])
+    const {header, sourceCache, testItems} = loadTestItems(fn, {})
 
-      if (item.IN != null) {
-        baseCgen.sourceCache.setFile(realfile, item.IN, now)
-      }
-
-      if (testItem) {
-        testItems.push(testItem)
-      }
-    }
+    const baseCgen = cgenSession('populator', {
+      ...header,
+      ...baseConfig,
+      sourceCache
+    })
 
     const $yatt = {
       runtime, $public: {}
@@ -109,48 +94,92 @@ export function runtests(files: string[], baseConfig: YattConfig): void {
 
       test(`${item.TITLE}`, async () => {
         const cgen = freshCGenSession(baseCgen)
-        if (item.kind === 'error') {
-          try {
-            await refresh_populator(
+
+        switch (item.kind) {
+          case 'error': {
+            try {
+              await refresh_populator(
+                item.FILE, {...cgen, $yatt}
+              )
+            } catch (error) {
+              if (error instanceof Error) {
+                assertMatch(error.message, new RegExp(item.ERROR))
+              }
+            }
+            break;
+          }
+          case 'output': {
+            const $this = await refresh_populator(
               item.FILE, {...cgen, $yatt}
             )
-          } catch (error) {
-            if (error instanceof Error) {
-              assertMatch(error.message, new RegExp(item.ERROR))
+            if (! $this) {
+              fail(`FAILED to compile: ${item.TITLE}`)
             }
-          }
-        } else if (item.kind === 'output') {
-          const $this = await refresh_populator(
-            item.FILE, {...cgen, $yatt}
-          )
-          if (! $this) {
-            throw new Error(`SKIP`)
-          }
-          const CON = {
-            buffer: "",
-            append(str: string) {
-              this.buffer += str;
-            },
-            appendUntrusted(str?: string) {
-              if (str == null) return;
-              this.buffer += $yatt.runtime.escape(str)
-            },
-            appendRuntimeValue(val: any) {
-              this.buffer += $yatt.runtime.escape(val)
+            const CON = {
+              buffer: "",
+              append(str: string) {
+                this.buffer += str;
+              },
+              appendUntrusted(str?: string) {
+                if (str == null) return;
+                this.buffer += $yatt.runtime.escape(str)
+              },
+              appendRuntimeValue(val: any) {
+                this.buffer += $yatt.runtime.escape(val)
+              }
             }
-          }
-
-          if (item.kind === 'output') {
-
             $this.render_(CON, {})
 
             assertEquals(CON.buffer, item.OUT)
-          
+            break;
+          }
+          default: {
+            // NEVER
+            break;
           }
         }
       })
     }
   }
+}
+
+export function loadTestItems(fn: string, config: SourceConfig): {
+  header: Header,
+  testItems: TestItem[],
+  sourceCache: SourceRegistry
+} {
+  const xhf_content = readFileSync(fn, {encoding: "utf-8"})
+  const xhf_stream = parseAsObjectList(xhf_content, {header: true})
+  const header = xhf_stream.next()?.value as Header
+  // console.log('header: ', header)
+    
+  const sourceCache = new SourceRegistry(config);
+    
+  const now = Date.now()
+  let fileNo = 0
+  const testItems: TestItem[] = []
+  for (const item of (xhf_stream as Generator<ItemSpec>)) {
+    if (item.IN != null) {
+      ++fileNo
+    }
+
+    if (item.SKIP) {
+      console.warn(`SKIP: ${item.TITLE ?? fileNo}`)
+      continue
+    }
+
+    const [realfile, testItem] = parseTestItemSpec(item, fileNo, testItems[testItems.length-1])
+
+    if (item.IN != null) {
+      sourceCache.setFile(realfile, item.IN, now)
+    }
+
+    if (testItem) {
+      testItems.push(testItem)
+    }
+  }
+
+  return {header, testItems, sourceCache}
 }
 
 export function parseTestItemSpec(spec: ItemSpec, fileNo: number, prevItem?: TestItem): [string, TestItem | undefined] {
@@ -205,5 +234,11 @@ if (import.meta.main) {
 
   const args = process.argv.slice(2)
 
-  runtests(args, {})
+  for (const fn of args) {
+    const {header, testItems} = loadTestItems(fn, {})
+    console.log(header)
+    for (const item of testItems) {
+      console.log(item)
+    }
+  }
 }
