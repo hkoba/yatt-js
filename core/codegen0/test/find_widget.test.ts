@@ -25,9 +25,10 @@ const widget_text = (widget: Widget | undefined): string | undefined => {
   return widget?.raw_part?.payload[0].data
 }
 
+const debug = parseInt(process.env.DEBUG ?? '', 10) || 0
+
 {
   const rootDir = path.join(testDir, '1')
-  const debug = parseInt(process.env.DEBUG ?? '', 10) || 0
   const session = cgenSession('populator', {
     rootDir,
     ext_public: ".yatt",
@@ -68,5 +69,34 @@ const widget_text = (widget: Widget | undefined): string | undefined => {
 
     assertEquals(widget_text((await find_widget(session, entry.template, ['qux']))?.widget)
       , `FFF\n`)
+  })
+}
+
+{
+  const rootDir = path.join(testDir, '2')
+  const session = cgenSession('populator', {
+    rootDir,
+    ext_public: [".ytjs", ".yatt", ".html"],
+    debug: {
+      declaration: debug, cache: debug
+    }
+  })
+
+  test("ext_public as array", async () => {
+    const entry = await get_template_declaration(session, path.resolve(rootDir, 'index.ytjs'))
+    if (! entry) {
+      throw new Error(`Can't find index.yatt`)
+    }
+
+    assertEquals(widget_text(entry_part(entry, '')), `Index\n`)
+
+    assertEquals(widget_text((await find_widget(session, entry.template, ['foo']))?.widget)
+      , `FOO\n`)
+
+    assertEquals(widget_text((await find_widget(session, entry.template, ['bar']))?.widget)
+      , `BAR\n`)
+
+    assertEquals(widget_text((await find_widget(session, entry.template, ['baz']))?.widget)
+      , `BAZ\n`)
   })
 }

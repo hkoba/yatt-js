@@ -28,8 +28,10 @@ export function* candidatesForLookup(
     const absFromDir = Path.resolve(fromDir) + Path.sep
 
     for (const gen of genList) {
-      yield {
-        ...gen(debug, absFromDir, partPath, ext),
+      for (const ext of Array.isArray(extMayList) ? extMayList : [extMayList]) {
+        yield {
+          ...gen(debug, absFromDir, partPath, ext),
+        }
       }
     }
   }

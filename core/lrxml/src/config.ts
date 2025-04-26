@@ -1,6 +1,6 @@
 export interface LrxmlParams {
   namespace: string[]
-  ext_public: string
+  ext_public: string | string[]
   ext_private: string
   rootDir?: string
   default_part: string
@@ -22,7 +22,7 @@ export function IsLrxmlParams(arg: LrxmlConfig | LrxmlParams): arg is LrxmlParam
 export function lrxmlParams(
   config: LrxmlConfig & {doc_root?: string}
 ): LrxmlParams {
-  let {
+  const {
     namespace = ["yatt"],
     ext_public = ".ytjs",
     ext_private = ".ytcomp", // component
