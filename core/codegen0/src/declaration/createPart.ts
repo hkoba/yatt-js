@@ -237,7 +237,7 @@ export function declarationBuilderSession(
 
   const buildParams = yattParams(rest_config);
 
-  const sourceCache = new SourceRegistry(config)
+  const sourceCache = config.sourceCache ? config.sourceCache : new SourceRegistry(config)
 
   const builder_session: BuilderBaseSession = {
     builders, varTypeMap,
