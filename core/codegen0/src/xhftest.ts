@@ -70,15 +70,14 @@ export type TestItemError = TestItemBase & {
   CON_CLASS?: string
  */
 
-export function runtests(files: string[], baseConfig: YattConfig): Promise<void>[] {
-  const tests = []
+export function runtests(files: string[], baseConfig: YattConfig): void {
 
   for (const fn of files) {
-    console.log('=====', fn)
+    // console.log('=====', fn)
     const xhf_content = readFileSync(fn, {encoding: "utf-8"})
     const xhf_stream = parseAsObjectList(xhf_content, {header: true})
     const header = xhf_stream.next()?.value as Header
-    console.log('header: ', header)
+    // console.log('header: ', header)
     
     const baseCgen = cgenSession('populator', baseConfig)
     
@@ -108,8 +107,7 @@ export function runtests(files: string[], baseConfig: YattConfig): Promise<void>
     for (const item of testItems) {
       // console.log(item)
 
-      let $this: DirHandler | undefined
-      tests.push(test(`${item.TITLE} [compile]`, async () => {
+      test(`${item.TITLE}`, async () => {
         const cgen = freshCGenSession(baseCgen)
         if (item.kind === 'error') {
           try {
@@ -121,42 +119,38 @@ export function runtests(files: string[], baseConfig: YattConfig): Promise<void>
               assertMatch(error.message, new RegExp(item.ERROR))
             }
           }
-        }
+        } else if (item.kind === 'output') {
+          const $this = await refresh_populator(
+            item.FILE, {...cgen, $yatt}
+          )
+          if (! $this) {
+            throw new Error(`SKIP`)
+          }
+          const CON = {
+            buffer: "",
+            append(str: string) {
+              this.buffer += str;
+            },
+            appendUntrusted(str?: string) {
+              if (str == null) return;
+              this.buffer += $yatt.runtime.escape(str)
+            },
+            appendRuntimeValue(val: any) {
+              this.buffer += $yatt.runtime.escape(val)
+            }
+          }
 
-        $this = await refresh_populator(
-          item.FILE, {...cgen, $yatt}
-        )
-      }))
+          if (item.kind === 'output') {
 
-      tests.push(test(`${item.TITLE}`, () => {
-        if (! $this) {
-          throw new Error(`SKIP`)
-        }
-        const CON = {
-          buffer: "",
-          append(str: string) {
-            this.buffer += str;
-          },
-          appendUntrusted(str?: string) {
-            if (str == null) return;
-            this.buffer += $yatt.runtime.escape(str)
-          },
-          appendRuntimeValue(val: any) {
-            this.buffer += $yatt.runtime.escape(val)
+            $this.render_(CON, {})
+
+            assertEquals(CON.buffer, item.OUT)
+          
           }
         }
-
-        if (item.kind === 'output') {
-
-          $this.render_(CON, {})
-
-          assertEquals(CON.buffer, item.OUT)
-        }
-
-      }))
+      })
     }
   }
-  return tests
 }
 
 export function parseTestItemSpec(spec: ItemSpec, fileNo: number, prevItem?: TestItem): [string, TestItem | undefined] {
@@ -211,5 +205,5 @@ if (import.meta.main) {
 
   const args = process.argv.slice(2)
 
-  Promise.all(runtests(args, {}))
+  runtests(args, {})
 }
