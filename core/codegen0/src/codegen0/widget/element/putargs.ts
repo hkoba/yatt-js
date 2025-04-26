@@ -50,10 +50,11 @@ export async function generate_putargs(
       ctx.NIMPL()
     }
     else {
+      // positional arguments
       // 'foo' "bar"
       // entity, nest
-      console.dir(argSpec, {colors: true, depth: null});
-      ctx.NIMPL()
+      // console.dir(argSpec, {colors: true, depth: null});
+      ctx.NIMPL(argSpec)
     }
   }
 
