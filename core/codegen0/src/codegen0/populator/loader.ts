@@ -12,7 +12,7 @@ import {generate_populator_for_declentry} from './generate.ts'
 
 import type {runtime} from '../../yatt.ts'
 
-interface typeof$yatt {
+export interface typeof$yatt {
   runtime: typeof runtime
   $public: {[k: string]: DirHandler}
 }

@@ -9,8 +9,10 @@ import {parseAsObjectList} from '@yatt/xhf'
 
 import type {YattConfig} from './config.ts'
 
-import { cgenSession, freshCGenSession } from "./codegen0/context.ts"
-import { refresh_populator, type DirHandler, type Connection } from "./codegen0/populator/loader.ts"
+import { cgenSession, freshCGenSession, type CGenBaseSession } from "./codegen0/context.ts"
+import {
+  refresh_populator, type DirHandler, type Connection, type typeof$yatt
+} from "./codegen0/populator/loader.ts"
 import { SourceRegistry, SourceConfig } from "./declaration/registry.ts" 
 import { runtime } from "./yatt.ts"
 
@@ -97,40 +99,13 @@ export function runtests(files: string[], baseConfig: YattConfig): void {
 
         switch (item.kind) {
           case 'error': {
-            try {
-              await refresh_populator(
-                item.FILE, {...cgen, $yatt}
-              )
-            } catch (error) {
-              if (error instanceof Error) {
-                assertMatch(error.message, new RegExp(item.ERROR))
-              }
-            }
+            assertMatch(await doErrorTest(item, $yatt, baseCgen)
+              , new RegExp(item.ERROR))
             break;
           }
           case 'output': {
-            const $this = await refresh_populator(
-              item.FILE, {...cgen, $yatt}
-            )
-            if (! $this) {
-              fail(`FAILED to compile: ${item.TITLE}`)
-            }
-            const CON = {
-              buffer: "",
-              append(str: string) {
-                this.buffer += str;
-              },
-              appendUntrusted(str?: string) {
-                if (str == null) return;
-                this.buffer += $yatt.runtime.escape(str)
-              },
-              appendRuntimeValue(val: any) {
-                this.buffer += $yatt.runtime.escape(val)
-              }
-            }
-            $this.render_(CON, {})
-
-            assertEquals(CON.buffer, item.OUT)
+            assertEquals(await doOutputTest(item, $yatt, baseCgen)
+              , item.OUT)
             break;
           }
           default: {
@@ -143,6 +118,58 @@ export function runtests(files: string[], baseConfig: YattConfig): void {
   }
 }
 
+export async function doErrorTest(
+  item: TestItemError & {kind: 'error'},
+  $yatt: typeof$yatt,
+  baseCgen: CGenBaseSession
+): Promise<string> {
+  const cgen = freshCGenSession(baseCgen)
+
+  try {
+    await refresh_populator(
+      item.FILE, {...cgen, $yatt}
+    )
+  } catch (error) {
+    if (! (error instanceof Error)) {
+      throw error
+    }
+    return error.message
+  }
+
+  throw new Error(`Failed to detect error: ${item.TITLE}`)
+}
+
+export async function doOutputTest(
+  item: TestItemOk & {kind: 'output'},
+  $yatt: typeof$yatt,
+  baseCgen: CGenBaseSession
+): Promise<string> {
+  const cgen = freshCGenSession(baseCgen)
+
+  const $this = await refresh_populator(
+    item.FILE, {...cgen, $yatt}
+  )
+  if (! $this) {
+    fail(`FAILED to compile: ${item.TITLE}`)
+  }
+  const CON = {
+    buffer: "",
+    append(str: string) {
+      this.buffer += str;
+    },
+    appendUntrusted(str?: string) {
+      if (str == null) return;
+      this.buffer += $yatt.runtime.escape(str)
+    },
+    appendRuntimeValue(val: any) {
+      this.buffer += $yatt.runtime.escape(val)
+    }
+  }
+  $this.render_(CON, {})
+
+  return CON.buffer
+}
+
 export function loadTestItems(fn: string, config: SourceConfig): {
   header: Header,
   testItems: TestItem[],
@@ -152,9 +179,9 @@ export function loadTestItems(fn: string, config: SourceConfig): {
   const xhf_stream = parseAsObjectList(xhf_content, {header: true})
   const header = xhf_stream.next()?.value as Header
   // console.log('header: ', header)
-    
+
   const sourceCache = new SourceRegistry(config);
-    
+
   const now = Date.now()
   let fileNo = 0
   const testItems: TestItem[] = []
@@ -233,12 +260,40 @@ if (import.meta.main) {
   const process = await import('node:process')
 
   const args = process.argv.slice(2)
+  const baseConfig = {
+    ext_public: ['.ytjs', '.yatt', '.html']
+  }
 
   for (const fn of args) {
-    const {header, testItems} = loadTestItems(fn, {})
-    console.log(header)
+    const {header, testItems, sourceCache} = loadTestItems(fn, {})
+    const baseCgen = cgenSession('populator', {
+      ...header,
+      ...baseConfig,
+      sourceCache
+    })
+
+    const $yatt = {
+      runtime, $public: {}
+    }
+
     for (const item of testItems) {
       console.log(item)
+      switch (item.kind) {
+        case 'error': {
+          assertMatch(await doErrorTest(item, $yatt, baseCgen)
+            , new RegExp(item.ERROR))
+          break;
+        }
+        case 'output': {
+          assertEquals(await doOutputTest(item, $yatt, baseCgen)
+            , item.OUT)
+          break;
+        }
+        default: {
+          // NEVER
+          break;
+        }
+      }
     }
   }
 }
