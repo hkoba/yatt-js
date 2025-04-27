@@ -9,9 +9,6 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "build": "npm run build --workspaces",
-    "watch": "npm run watch --workspaces",
-    "test": "tap"
   },
   "workspaces": [
     "core/lrxml",
@@ -19,9 +16,6 @@
     "adapter/express",
     "util/xhf"
   ],
-  "tap": {
-    "disable-coverage": true
-  },
   "dependencies": {
     "typescript": "^5.4.5"
   }
