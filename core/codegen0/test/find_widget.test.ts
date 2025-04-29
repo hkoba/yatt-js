@@ -9,7 +9,7 @@ import * as process from "node:process"
 import {rootname} from '../src/path.ts'
 
 
-import {cgenSession} from '../src/codegen0/context.ts'
+import {cgenSettings, freshCGenSession} from '../src/codegen0/context.ts'
 import { get_template_declaration
   , type DeclState, type Widget } from '../src/declaration/index.ts'
 
@@ -29,13 +29,13 @@ const debug = parseInt(process.env.DEBUG ?? '', 10) || 0
 
 {
   const rootDir = path.join(testDir, '1')
-  const session = cgenSession('populator', {
+  const session = freshCGenSession(cgenSettings('populator', {
     rootDir,
     ext_public: ".yatt",
     debug: {
       declaration: debug, cache: debug
     }
-  })
+  }))
 
   test("index => foo", async () => {
     const entry = await get_template_declaration(session, path.resolve(rootDir, 'index.yatt'))
@@ -74,13 +74,13 @@ const debug = parseInt(process.env.DEBUG ?? '', 10) || 0
 
 {
   const rootDir = path.join(testDir, '2')
-  const session = cgenSession('populator', {
+  const session = freshCGenSession(cgenSettings('populator', {
     rootDir,
     ext_public: [".ytjs", ".yatt", ".html"],
     debug: {
       declaration: debug, cache: debug
     }
-  })
+  }))
 
   test("ext_public as array", async () => {
     const entry = await get_template_declaration(session, path.resolve(rootDir, 'index.ytjs'))

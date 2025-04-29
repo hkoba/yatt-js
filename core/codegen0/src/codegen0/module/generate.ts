@@ -12,9 +12,9 @@ import {
 import {templatePath} from '../../path.ts'
 
 import {
-  type CGenSession,
-  type CGenBaseSession,
-  cgenSession,
+  type TargetedCGenSession,
+  type CGenRequestSession,
+  cgenSettings, freshCGenSession,
   CodeGenContextClass,
   finalize_codefragment
 } from '../context.ts'
@@ -39,7 +39,7 @@ export async function generate_module(
 ): Promise<TranspileOutput>
 {
 
-  const session = cgenSession('module', origConfig)
+  const session = freshCGenSession(cgenSettings('module', origConfig))
 
   // const entFnsFile = config.entityDefinitionsFile;
   //
@@ -66,7 +66,7 @@ export async function generate_module(
 
 export async function generate_module_for_declentry(
   entry: DeclState,
-  baseSession: CGenBaseSession
+  baseSession: CGenRequestSession
 ): Promise<{outputText: string, sourceMapText: string}> {
 
   const {source, template} = entry
@@ -78,8 +78,10 @@ export async function generate_module_for_declentry(
     baseSession.params.documentRoot
   );
 
-  const session: CGenSession = {
-    ...baseSession, templateName, source
+  const session: TargetedCGenSession = {
+    ...baseSession,
+    importDict: {},
+    templateName, source
   }
 
   const program: CodeFragment[] = []

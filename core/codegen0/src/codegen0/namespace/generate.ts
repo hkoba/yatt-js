@@ -3,8 +3,8 @@
 import {parse_template} from '../../deps.ts'
 
 import {
-  type CGenSession, type CGenBaseSession,
-  cgenSession,
+  type TargetedCGenSession, type CGenRequestSession,
+  cgenSettings, freshCGenSession,
   CodeGenContextClass,
   finalize_codefragment
 } from '../context.ts'
@@ -44,7 +44,7 @@ export async function generate_namespace(
 ): Promise<TranspileOutput>
 {
 
-  const session = cgenSession('namespace', origConfig)
+  const session = freshCGenSession(cgenSettings('namespace', origConfig))
 
   const absFile = Path.resolve(filename)
 
@@ -78,7 +78,7 @@ export async function generate_namespace(
 
 export async function generate_namespace_for_declentry(
   entry: DeclState,
-  baseSession: CGenBaseSession
+  baseSession: CGenRequestSession
 ): Promise<{outputText: string, sourceMapText: string}> {
   const {source, template} = entry
 
@@ -89,7 +89,7 @@ export async function generate_namespace_for_declentry(
   const templateName: string[] = [baseSession.params.templateNamespace,
     ...templatePath(filename, baseSession.params.rootDir)];
 
-  const session: CGenSession = {
+  const session: TargetedCGenSession = {
     ...baseSession,
     templateName, source
   }

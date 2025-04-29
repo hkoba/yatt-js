@@ -9,7 +9,7 @@ import type {YattConfig} from '../config.ts'
 import {
   type Widget,
   type Entity,
-  type BuilderBaseSession,
+  type BuilderRequestSession,
   type TemplateDeclaration,
   get_template_declaration
 } from '../declaration/index.ts'
@@ -23,7 +23,7 @@ import {candidatesForLookup} from '../declaration/partFolder.ts'
 // --lookup_only
 //
 export async function find_widget(
-  session: BuilderBaseSession, template: TemplateDeclaration, partPath: string[]
+  session: BuilderRequestSession, template: TemplateDeclaration, partPath: string[]
 ): Promise<{widget: Widget, template: TemplateDeclaration} | undefined>
 {
   const [head, ...rest] = partPath
@@ -58,7 +58,7 @@ export async function find_widget(
 }
 
 export function find_entity(
-  session: BuilderBaseSession, template: TemplateDeclaration, name: string
+  session: BuilderRequestSession, template: TemplateDeclaration, name: string
 ): {entity: Entity, template: TemplateDeclaration} | string | undefined {
   if (template.partMap.entity.has(name)) {
     const entity = template.partMap.entity.get(name)!

@@ -12,7 +12,7 @@ import { yattParams } from '../config.ts'
 import type {
   YattBuildConfig,
   BuilderMap, BuilderContext,
-  BuilderBaseSession,
+  BuilderRequestSession,
   DeclarationProcessor,
   DeclState
 } from './context.ts'
@@ -224,7 +224,7 @@ export function builtin_builders(): BuilderMap {
 
 export function declarationBuilderSession(
   config: YattBuildConfig
-): BuilderBaseSession {
+): BuilderRequestSession {
 
   const rootDir = config.rootDir ?? ".";
   const {
@@ -239,7 +239,7 @@ export function declarationBuilderSession(
 
   const sourceCache = config.sourceCache ? config.sourceCache : new SourceRegistry(config)
 
-  const builder_session: BuilderBaseSession = {
+  const builder_session: BuilderRequestSession = {
     builders, varTypeMap,
     declCache,
     sourceCache,
@@ -254,7 +254,7 @@ export function declarationBuilderSession(
 import { SourceRegistry } from "./registry.ts";
 
 export async function get_template_declaration(
-  session: BuilderBaseSession,
+  session: BuilderRequestSession,
   realPath: string,
   source?: string,
   modTimeMs?: number
@@ -296,7 +296,7 @@ export async function get_template_declaration(
 export function build_template_declaration(
   filename: string,
   source: string,
-  configOrSession: YattBuildConfig | BuilderBaseSession
+  configOrSession: YattBuildConfig | BuilderRequestSession
 ): TemplateDeclaration {
 
   const builder_session = isBuilderSession(configOrSession)
@@ -315,7 +315,7 @@ export function build_template_declaration(
 
 export function populateTemplateDeclaration(
   filename: string, source: string,
-  builder_session: BuilderBaseSession, rawPartList: RawPart[]
+  builder_session: BuilderRequestSession, rawPartList: RawPart[]
 ): TemplateDeclaration {
   const ctx = new BuilderContextClass({filename, source, ...builder_session})
 

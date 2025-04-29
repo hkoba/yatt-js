@@ -6,7 +6,7 @@ import type {
 
 
 import {
-  type CGenSession, CodeGenContextClass, finalize_codefragment
+  type TargetedCGenSession, CodeGenContextClass
 } from '../context.ts'
 
 import type {CodeFragment} from '../codefragment.ts'
@@ -15,7 +15,7 @@ import {generate_widget_signature} from '../widget/generate.ts'
 
 export function generate_template_interface(
   template: TemplateDeclaration,
-  session: CGenSession
+  session: TargetedCGenSession
 ): CodeFragment[] {
 
   const program: CodeFragment[] = []

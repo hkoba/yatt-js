@@ -2,11 +2,12 @@ import type {YattConfig} from '../config.ts'
 
 import type {
   YattBuildConfig,
-  TemplateDeclaration, BuilderBaseSession, Part, Widget, Entity
+  TemplateDeclaration, BuilderSettings, Part, Widget, Entity
 } from '../declaration/index.ts'
 
 import {
-  BuilderContextClass, declarationBuilderSession
+  BuilderContextClass, declarationBuilderSession,
+  type BuilderRequestItems
 } from '../declaration/index.ts'
 
 export type {Part, Widget, Entity} from '../declaration/index.ts'
@@ -24,21 +25,23 @@ export type YattCGenConfig = YattBuildConfig & {
   macro?: MacroDict
 }
 
-export type CGenBaseSession  = BuilderBaseSession & YattCGenConfig & {
+export type CGenSettings  = BuilderSettings & YattCGenConfig & {
   cgenStyle: CodeKind
   macro: MacroDict
   importDict?: {[k: string]: string}
 }
 
-export type CGenSession = CGenBaseSession & SessionTarget & {
+export type CGenRequestSession = CGenSettings & BuilderRequestItems
+
+export type TargetedCGenSession = CGenRequestSession & SessionTarget & {
   templateName: string[]
 }
 
-export function cgenSession(
+export function cgenSettings(
   cgenStyle: CodeKind, origConfig: YattConfig | YattCGenConfig
-): CGenBaseSession {
+): CGenSettings {
   const builder_session = declarationBuilderSession(origConfig)
-  const session: CGenBaseSession = {
+  const session: CGenSettings = {
     ...builder_session,
     cgenStyle,
     macro: Object.assign({}, builtinMacros, origConfig.macro ?? {}),
@@ -47,8 +50,8 @@ export function cgenSession(
   return session;
 }
 
-export function freshCGenSession(base: CGenBaseSession)
-: CGenBaseSession {
+export function freshCGenSession(base: CGenSettings)
+: CGenRequestSession {
   const fresh = {...base, visited: new Set<string>}
   return fresh
 }
@@ -60,7 +63,7 @@ export type CodeGenContext<T extends Part> = CodeGenContextClass<T>
 
 export class CodeGenContextClass<
   PartT extends Part,
-  S extends CGenSession = CGenSession
+  S extends TargetedCGenSession = TargetedCGenSession
 > extends BuilderContextClass<S> {
 
     public hasThis: boolean;

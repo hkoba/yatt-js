@@ -16,8 +16,8 @@ import {resolve} from 'node:path'
 import {templatePath} from '../../path.ts'
 
 import {
-  type CGenSession, type CGenBaseSession,
-  cgenSession,
+  type CGenRequestSession, type TargetedCGenSession,
+  cgenSettings, freshCGenSession,
   CodeGenContextClass,
   finalize_codefragment
 } from '../context.ts'
@@ -32,7 +32,7 @@ import {generate_template_interface} from './interface.ts'
 
 export async function ensure_generate_populator(
   realPath: string,
-  baseSession: CGenBaseSession & {cgenStyle: 'populator'},
+  baseSession: CGenRequestSession & {cgenStyle: 'populator'},
   outputTextDict: {[k: string]: string}
 ) {
 
@@ -57,7 +57,9 @@ export async function generate_populator(
 
   //origConfig: YattConfig | YattParams
 
-  const session = cgenSession('populator', config)
+  const session = freshCGenSession(cgenSettings('populator', {
+    ...config
+  }))
 
   const entry = await get_template_declaration(
     session, resolve(filename), source
@@ -78,7 +80,7 @@ export async function generate_populator(
 
 export async function generate_populator_for_declentry(
   entry: DeclState,
-  baseSession: CGenBaseSession
+  baseSession: CGenRequestSession
 ): Promise<{outputText: string, sourceMapText: string}> {
 
   const {source, template} = entry
@@ -90,8 +92,9 @@ export async function generate_populator_for_declentry(
     baseSession.params.documentRoot
   );
 
-  const session: CGenSession = {
+  const session: TargetedCGenSession = {
     ...baseSession, templateName, source
+    , importDict: {}
   }
 
   const program: CodeFragment[] = []

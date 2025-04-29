@@ -9,7 +9,7 @@ import {parseAsObjectList} from '@yatt/xhf'
 
 import type {YattConfig} from './config.ts'
 
-import { cgenSession, freshCGenSession, type CGenBaseSession } from "./codegen0/context.ts"
+import { cgenSettings, freshCGenSession, type CGenSettings } from "./codegen0/context.ts"
 import {
   refresh_populator, type DirHandler, type Connection, type typeof$yatt
 } from "./codegen0/populator/loader.ts"
@@ -81,7 +81,7 @@ export function runtests(files: string[], baseConfig: YattConfig): void {
 
     const {header, sourceCache, testItems} = loadTestItems(fn, {})
 
-    const baseCgen = cgenSession('populator', {
+    const baseCgen = cgenSettings('populator', {
       ...header,
       ...baseConfig,
       sourceCache
@@ -121,7 +121,7 @@ export function runtests(files: string[], baseConfig: YattConfig): void {
 export async function doErrorTest(
   item: TestItemError & {kind: 'error'},
   $yatt: typeof$yatt,
-  baseCgen: CGenBaseSession
+  baseCgen: CGenSettings
 ): Promise<string> {
   const cgen = freshCGenSession(baseCgen)
 
@@ -142,7 +142,7 @@ export async function doErrorTest(
 export async function doOutputTest(
   item: TestItemOk & {kind: 'output'},
   $yatt: typeof$yatt,
-  baseCgen: CGenBaseSession
+  baseCgen: CGenSettings
 ): Promise<string> {
   const cgen = freshCGenSession(baseCgen)
 
@@ -284,7 +284,7 @@ if (import.meta.main) {
 
   for (const fn of args) {
     const {header, testItems, sourceCache} = loadTestItems(fn, {})
-    const baseCgen = cgenSession('populator', {
+    const baseCgen = cgenSettings('populator', {
       ...header,
       ...baseConfig,
       sourceCache

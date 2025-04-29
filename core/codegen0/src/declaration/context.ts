@@ -25,9 +25,9 @@ export type YattBuildConfig = YattConfig & {
   entFns?: {[k: string]: any}
 }
 
-export function isBuilderSession(arg: YattBuildConfig | BuilderBaseSession)
-: arg is BuilderBaseSession {
-  return (arg as BuilderBaseSession).params != null
+export function isBuilderSession(arg: YattBuildConfig | BuilderRequestSession)
+: arg is BuilderRequestSession {
+  return (arg as BuilderRequestSession).params != null
 }
 
 export type BuilderMap = Map<string, DeclarationProcessor>;
@@ -42,25 +42,30 @@ export interface DeclarationProcessor {
 // Session は３階層にすべきか…
 // single-file, visited(per request), shared(persistent)
 
-export type BuilderBaseSession = BaseSession & {
+export type BuilderSettings = {
   builders: BuilderMap
   params: YattParams
   varTypeMap: VarTypeMap
   declCache: DeclTree
   sourceCache: SourceRegistry
-  visited: Set<string> // XXX: Base から外して freshCGenSession を整理せよ
   entFns: {[k: string]: any}
 }
 
-export type BuilderSession = BuilderBaseSession & SessionTarget
+export type BuilderRequestItems = {
+  visited: Set<string>
+}
+
+export type BuilderRequestSession = BuilderSettings & BuilderRequestItems
+
+export type TargetedBuilderSession = BuilderRequestSession & SessionTarget
 
 export type DeclTree = Map<string, TemplateDeclaration>
 export type DeclEntry = {modTimeMs: number, template: TemplateDeclaration}
 export type DeclState = DeclEntry & {source: string, updated: boolean}
 
-export type BuilderContext = BuilderContextClass<BuilderSession>
+export type BuilderContext = BuilderContextClass<TargetedBuilderSession>
 
-export class BuilderContextClass<S extends BuilderSession>
+export class BuilderContextClass<S extends TargetedBuilderSession>
 extends ScanningContext<S> {
   public debug: number = 0
   stash: Map<[string, string], any>;

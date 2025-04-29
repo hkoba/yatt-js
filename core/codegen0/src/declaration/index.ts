@@ -23,8 +23,9 @@ export type {
   YattBuildConfig,
   DeclState,
   BuilderContext,
-  BuilderSession,
-  BuilderBaseSession,
+  BuilderSettings,
+  BuilderRequestSession,
+  BuilderRequestItems,
   BuilderMap,
   DeclarationProcessor
 } from './context.ts'

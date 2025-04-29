@@ -6,7 +6,7 @@ import {
 } from '../../declaration/index.ts'
 
 import type {
-  CGenBaseSession
+  CGenRequestSession
 } from '../context.ts'
 
 import {generate_populator_for_declentry} from './generate.ts'
@@ -29,7 +29,7 @@ export interface Connection {
   appendRuntimeValue(val: any): void;
 }
 
-export type LoaderSession = CGenBaseSession & {
+export type LoaderSession = CGenRequestSession & {
   $yatt: typeof$yatt
 }
 

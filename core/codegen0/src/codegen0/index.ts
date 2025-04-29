@@ -10,4 +10,4 @@ export {refresh_populator} from './populator/loader.ts'
 
 export {runFile} from './populator/runner.ts'
 
-export {cgenSession, freshCGenSession} from './context.ts'
+export {cgenSettings, freshCGenSession} from './context.ts'

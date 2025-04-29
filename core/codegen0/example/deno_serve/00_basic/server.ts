@@ -1,6 +1,6 @@
 #!/usr/bin/env -S deno run -NRE
 
-import {cgenSession, freshCGenSession, refresh_populator, runtime} from '@yatt/codegen0'
+import {cgenSettings, freshCGenSession, refresh_populator, runtime} from '@yatt/codegen0'
 
 import {resolve} from 'node:path'
 
@@ -11,7 +11,7 @@ const config = {
   }
 }
 
-const baseCgen = cgenSession('populator', config)
+const baseCgen = cgenSettings('populator', config)
 
 const $yatt = {
   runtime,

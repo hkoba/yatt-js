@@ -1,6 +1,6 @@
 import * as Path from 'node:path'
 
-import type {BuilderBaseSession} from './context.ts'
+import type {BuilderRequestSession} from './context.ts'
 
 // partPath = ['foo', 'bar']
 // 1. foo.ytjs:<!yatt:widget bar>
@@ -8,7 +8,7 @@ import type {BuilderBaseSession} from './context.ts'
 
 // 1. foo.ytjs:<!yatt:widget bar>
 export function* candidatesForLookup(
-  session: BuilderBaseSession, fromDir: string, partPath: string[]
+  session: BuilderRequestSession, fromDir: string, partPath: string[]
 ): Generator<{realPath: string, name: string}> {
 
   const debug = session.params.debug.declaration ?? 0
