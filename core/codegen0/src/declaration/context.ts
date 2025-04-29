@@ -1,12 +1,11 @@
 import {
-  type BaseSession,
   type AttItem,
   ScanningContext
 } from '../deps.ts'
 
 import type {YattParams, YattConfig} from '../config.ts'
 
-import {SourceRegistry, type SourceLoader} from './registry.ts'
+import type {SourceRegistry, SourceLoader} from './registry.ts'
 
 import type { Part } from './part.ts'
 
@@ -49,7 +48,9 @@ export type BuilderSettings = {
   declCache: DeclTree
   sourceCache: SourceRegistry
   entFns: {[k: string]: any}
+  templateFolderMap: Map<string, string>
 }
+
 
 export type BuilderRequestItems = {
   visited: Set<string>
@@ -100,13 +101,5 @@ extends ScanningContext<S> {
 
   copy_array<T>(ary: T[]): T[] {
     return Object.assign([], ary)
-  }
-
-  dirname(path: string): string {
-    return path.replace(/[^\/]+$/, '')
-  }
-
-  baseModName(path: string): string {
-    return path.replace(/(^.*\/)?/, '').replace(/\.\w+$/, '')
   }
 }

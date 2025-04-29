@@ -13,42 +13,44 @@ import type {CodeFragment} from '../codefragment.ts'
 
 import {generate_widget_signature} from '../widget/generate.ts'
 
-export function generate_template_interface(
-  template: TemplateDeclaration,
+export function generate_reference_interface(
   session: TargetedCGenSession
 ): CodeFragment[] {
 
   const program: CodeFragment[] = []
 
-  program.push(`interface typeof$yatt {
-  $public: typeof$yatt$public
-};
+  const importTree = gatherImports(session)
 
-interface typeof$yatt$public {
-  index: typeof$yatt$public$index
-};
+  program.push(`interface typeof$yatt {\n`);
 
-interface Connection {
-  append(str: string): void;
-  appendUntrusted(str?: string | number): void;
-  appendRuntimeValue(val: any): void;
-};
-`)
-
-  program.push(`export interface typeof$yatt$public$index {\n`)
-
-  for (const part of template) {
-    switch (part.kind) {
-      case "widget": {
-        const ctx = new CodeGenContextClass(template, part, session);
-        const {signature} = generate_widget_signature(ctx)
-        program.push(signature, ";\n")
-        break;
+  for (const [folder, templateList] of Object.entries(importTree)) {
+    program.push(` \$${folder}: {\n`);
+    for (const template of templateList) {
+      program.push(`    ${template.modName}: {\n`)
+      for (const part of template) {
+        switch (part.kind) {
+          case "widget": {
+            const ctx = new CodeGenContextClass(template, part, session);
+            const {signature} = generate_widget_signature(ctx)
+            program.push(`      `, signature, ";\n")
+            break;
+          }
+        }
       }
+      program.push(`    }\n`)
     }
+    program.push(`  }\n`);
   }
-
   program.push('};\n')
 
   return program
+}
+
+function gatherImports(session: TargetedCGenSession) {
+  const result: {[k: string]: TemplateDeclaration[]} = {}
+  for (const template of Object.values(session.importDict)) {
+    result[template.folder] ??= []
+    result[template.folder].push(template)
+  }
+  return result
 }

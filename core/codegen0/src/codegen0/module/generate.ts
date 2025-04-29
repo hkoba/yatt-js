@@ -134,7 +134,7 @@ export async function generate_module_for_declentry(
   if (importModules.length) {
     const ext = '.mts';
     program.splice(importListPos, 0, ...importModules.map(
-      (m) => `import * as ${m} from './${m}${ext}'\n`
+      (m) => `import * as ${m.modName} from './${m.folder}${ext}'\n`
     ))
   }
 

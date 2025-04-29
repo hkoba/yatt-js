@@ -87,12 +87,16 @@ function generate_function_prefix(
   if (ctx.session.params.templateNamespace) {
     // XXX: 嘘実装
     prefix.push(ctx.session.params.templateNamespace,
-                ctx.baseModName(template.path))
+                template.modName)
   } else {
-    if (ctx.hasThis) {
-      prefix.push('$this')
+    if (template.path.length === 1) {
+      if (ctx.hasThis) {
+        prefix.push('$this')
+      }
+    } else {
+      ctx.addImport(template)
+      prefix.push('$yatt', '$'+template.folder, template.modName)
     }
-    prefix.push(ctx.addImport(template.path))
   }
   if (! prefix.length) {
     return ''

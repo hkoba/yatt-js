@@ -42,6 +42,8 @@ import {add_args, type ArgAdder} from './addArgs.ts'
 
 import { BaseProcessor } from './base.ts'
 
+import {internTemplateFolder} from './partFolder.ts'
+
 export class WidgetBuilder implements DeclarationProcessor {
   readonly kind: string = 'widget'
   constructor(
@@ -245,6 +247,7 @@ export function declarationBuilderSession(
     sourceCache,
     entFns,
     visited: new Set,
+    templateFolderMap: new Map,
     params: buildParams
   }
 
@@ -276,11 +279,17 @@ export async function get_template_declaration(
   const template = session.declCache.get(realPath)
 
   if (template && sourceEntry && !updated) {
+    if (debug >= 2) {
+      console.log(`found up-to-date sourceEntry of ${realPath}`)
+    }
     const {modTimeMs, source} = sourceEntry
     return {source, template, modTimeMs, updated: false}
   }
 
   if (sourceEntry) {
+    if (debug >= 2) {
+      console.log(`build new template decl for: ${realPath}`)
+    }
     const {modTimeMs, source} = sourceEntry
     const template = build_template_declaration(realPath, source, session)
     session.declCache.set(realPath, template)
@@ -378,7 +387,7 @@ export function populateTemplateDeclaration(
     // XXX: find from vfs
   })
 
-  const folder = ctx.dirname(filename)
+  const folder = internTemplateFolder(filename, builder_session)
   return new TemplateDeclaration(filename, folder, partMap, routeMap, partOrder)
 }
 

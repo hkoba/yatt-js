@@ -6,6 +6,7 @@ import type { YattConfig } from '../../config.ts'
 
 import {
   get_template_declaration,
+  baseModName,
   type DeclState
 } from '../../declaration/index.ts'
 
@@ -28,7 +29,7 @@ import {generate_action} from '../action/generate.ts'
 
 import {type CodeFragment, typeAnnotation} from '../codefragment.ts'
 
-import {generate_template_interface} from './interface.ts'
+import {generate_reference_interface} from './interface.ts'
 
 export async function ensure_generate_populator(
   realPath: string,
@@ -101,14 +102,25 @@ export async function generate_populator_for_declentry(
 
   const program: CodeFragment[] = []
 
-  program.push(generate_template_interface(template, session))
+  program.push(typeAnnotation(`interface Connection {
+  append(str: string): void;
+  appendUntrusted(str?: string | number): void;
+  appendRuntimeValue(val: any): void;
+};
+`))
+
+  const reference: CodeFragment = {
+    kind: "type", annotation: []
+  }
+
+  program.push(reference)
 
   // XXX: element path => typename mapping
   program.push(
     'export function populate($yatt',
     typeAnnotation(': typeof$yatt'),
     ')',
-    typeAnnotation(': typeof$yatt$public$index'),
+    // typeAnnotation(': typeof$yatt$public$index'),
     ' {\n')
   program.push('const $this = {\n')
 
@@ -145,6 +157,8 @@ export async function generate_populator_for_declentry(
   program.push('};\n')
   program.push('return $this;\n');
   program.push('}\n')
+
+  reference.annotation = generate_reference_interface(session)
 
   return finalize_codefragment(source, filename, program, {
     ts: true

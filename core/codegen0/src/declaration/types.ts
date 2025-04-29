@@ -1,3 +1,6 @@
+import {baseModName} from './partFolder.ts'
+import {dirname} from 'node:path'
+
 import type {
   PartBase, PartKind, Part, Widget, Action, Entity
 } from './part.ts';
@@ -8,6 +11,8 @@ export type {
 export type PartType = Widget | Action | Entity
 
 export class TemplateDeclaration {
+  public modName: string;
+  public realDir: string;
 
   constructor(
     public path: string,
@@ -15,7 +20,11 @@ export class TemplateDeclaration {
     public partMap: PartMapType,
     public routeMap: RouteMapType,
     public partOrder: [PartKind, string][] // kind, name
-  ) {}
+  ) {
+    const dir = dirname(path)
+    this.realDir = dir === '.' ? '' : dir; // '' for virtual(onmemory) case.
+    this.modName = baseModName(path)
+  }
 
   *[Symbol.iterator](): Generator<PartType> {
     yield* this.parts()

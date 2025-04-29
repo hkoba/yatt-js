@@ -1,6 +1,31 @@
 import * as Path from 'node:path'
 
-import type {BuilderRequestSession} from './context.ts'
+import type {BuilderRequestSession, BuilderSettings} from './context.ts'
+
+export function baseModName(path: string): string {
+  const base = Path.basename(path)
+  const ext = Path.extname(path)
+  if (ext === "") {
+    return base
+  } else {
+    return base.substring(0, base.length - ext.length)
+  }
+}
+
+export function internTemplateFolder(path: string, settings: BuilderSettings): string {
+  const dir = Path.dirname(path)
+  if (! settings.templateFolderMap.size) {
+    const nick = 'public'
+    settings.templateFolderMap.set(dir, nick)
+    return nick
+  } else if (! settings.templateFolderMap.has(dir)) {
+    const nick = Path.basename(dir)
+    settings.templateFolderMap.set(dir, nick)
+    return nick
+  } else {
+    return settings.templateFolderMap.get(dir)!
+  }
+}
 
 // partPath = ['foo', 'bar']
 // 1. foo.ytjs:<!yatt:widget bar>

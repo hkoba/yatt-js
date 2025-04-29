@@ -1,9 +1,13 @@
+import {dirname} from 'node:path'
+
 import type {YattConfig} from '../config.ts'
 
 import type {
   YattBuildConfig,
   TemplateDeclaration, BuilderSettings, Part, Widget, Entity
 } from '../declaration/index.ts'
+
+import {baseModName, internTemplateFolder} from '../declaration/index.ts'
 
 import {
   BuilderContextClass, declarationBuilderSession,
@@ -34,7 +38,7 @@ export type CGenRequestSession = CGenSettings & BuilderRequestItems
 
 export type TargetedCGenSession = CGenRequestSession & SessionTarget & {
   templateName: string[]
-  importDict: {[k: string]: string}
+  importDict: {[k: string]: TemplateDeclaration}
 }
 
 export function cgenSettings(
@@ -85,16 +89,10 @@ export class CodeGenContextClass<
       return entFnPrefix(this.session.params)
     }
 
-    addImport(pathName: string) {
-      if (this.session.importDict[pathName] == null) {
-        const thatDir = this.dirname(pathName)
-        const thisDir = this.dirname(this.session.filename ?? '')
-        if (thisDir !== thatDir) {
-          this.NIMPL(`thisDir ${thisDir} != thatDir ${thatDir}`)
-        }
-        this.session.importDict[pathName] = this.baseModName(pathName)
+    addImport(template: TemplateDeclaration) {
+      if (this.session.importDict[template.path] == null) {
+        this.session.importDict[template.path] = template
       }
-      return this.session.importDict[pathName]
     }
 }
 

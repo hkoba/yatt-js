@@ -39,3 +39,5 @@ export type {
 export {SourceRegistry} from './registry.ts'
 export type {SourceLoader, SourceConfig} from './registry.ts'
 
+
+export {baseModName, internTemplateFolder} from './partFolder.ts'

@@ -32,7 +32,7 @@ export async function find_widget(
     return {widget, template}
   }
 
-  for (const cand of candidatesForLookup(session, template.folder, partPath)) {
+  for (const cand of candidatesForLookup(session, template.realDir, partPath)) {
     const {realPath, name} = cand;
 
     const entry = await get_template_declaration(session, realPath)
