@@ -4,7 +4,7 @@ import type {LrxmlConfig} from '../config.ts'
 import type { RangeLine, Range, ParserSession, ParserBaseSession } from '../context.ts'
 import { ParserContext } from '../context.ts'
 
-import { tokenize, type Token, type Text, type Comment, type PI } from './tokenize.ts'
+import { tokenize, type Token, type Text, type Comment, type PI, type TagClose } from './tokenize.ts'
 
 import type { Part } from '../multipart/parse.ts'
 
@@ -173,12 +173,20 @@ function parse_tokens(
 
         if (! end.is_empty_element) {
           // <yatt:tag> or <:yatt:tag>
-          const body = elem.children = []
+          const body: BodyNode[] = elem.children = []
+          if (end.lineEndLength) {
+            body.push(lineEndNode(end))
+          }
           parse_tokens(ctx, part, lex, depth+1, body, tok.name, elem)
         }
-        else if (elem.kind === "attelem") {
-          // <:yatt:else/> ...
-          sink = elem.children = []
+        else {
+          if (elem.kind === "attelem") {
+            // <:yatt:else/> ...
+            sink = elem.children = []
+          }
+          if (end.lineEndLength) {
+            sink.push(lineEndNode(end))
+          }
         }
 
         break;
@@ -197,6 +205,15 @@ function parse_tokens(
     ctx.throw_error(`Missing close tag ${close}`)
   }
   
+}
+
+function lineEndNode(end: TagClose): BodyNode {
+  return {
+    kind: "text", lineEndLength: end.lineEndLength,
+    line: end.line,
+    start: end.end - end.lineEndLength,
+    end: end.end
+  }
 }
 
 function parse_lcmsg(ctx: ParserContext, lex: Generator<Token>)

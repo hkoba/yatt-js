@@ -74,7 +74,7 @@ export function parse_multipart_context(ctx: ParserContext): Part[] {
           filename: ctx.session.filename,
           namespace, kind, subkind, attlist, payload: []
         }
-        partList.push([{line: tok.start, start: tok.start}, part])
+        partList.push([{line: tok.line, start: tok.start}, part])
         break;
       }
       default: {

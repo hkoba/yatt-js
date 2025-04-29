@@ -64,8 +64,8 @@ assertEquals(res, [
   [
     [['yatt', 'foo'],
      ['x', ['y', "3"], ['yatt', 'bar', 'aa']],
-     ['aiueo\n'],
-     [['yatt', 'baz', ['kk\n']]]
+      ['\n', 'aiueo\n'],
+      [['yatt', 'baz', ['\n','kk\n']]]
     ]
   ]
 ])})
