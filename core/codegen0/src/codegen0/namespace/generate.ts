@@ -91,7 +91,8 @@ export async function generate_namespace_for_declentry(
 
   const session: TargetedCGenSession = {
     ...baseSession,
-    templateName, source
+    templateName, source,
+    importDict: {} // Not used
   }
 
   // const _fileCtx = new BuilderContextClass(session)

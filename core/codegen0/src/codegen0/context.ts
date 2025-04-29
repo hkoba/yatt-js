@@ -28,13 +28,13 @@ export type YattCGenConfig = YattBuildConfig & {
 export type CGenSettings  = BuilderSettings & YattCGenConfig & {
   cgenStyle: CodeKind
   macro: MacroDict
-  importDict?: {[k: string]: string}
 }
 
 export type CGenRequestSession = CGenSettings & BuilderRequestItems
 
 export type TargetedCGenSession = CGenRequestSession & SessionTarget & {
   templateName: string[]
+  importDict: {[k: string]: string}
 }
 
 export function cgenSettings(
@@ -86,9 +86,6 @@ export class CodeGenContextClass<
     }
 
     addImport(pathName: string) {
-      if (this.session.importDict == null) {
-        this.throw_error(`BUG! call of addImport for ${pathName}`)
-      }
       if (this.session.importDict[pathName] == null) {
         const thatDir = this.dirname(pathName)
         const thisDir = this.dirname(this.session.filename ?? '')
