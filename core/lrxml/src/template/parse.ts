@@ -173,6 +173,12 @@ function parse_tokens(
           parent.attlist.push(elem)
         }
 
+        if (tok.is_option && ! end.is_empty_element) {
+          // console.log(`may drop_leading_ws?`, tok, end, sink)
+          drop_leading_ws(ctx, sink)
+          // console.log(` =>`, sink)
+        }
+
         if (! end.is_empty_element) {
           // <yatt:tag> or <:yatt:tag>
           const body: BodyNode[] = elem.children = []
@@ -211,6 +217,15 @@ function parse_tokens(
   }
 
   return lastTok
+}
+
+function drop_leading_ws(ctx: ParserContext, sink: BodyNode[]): void {
+  while (sink.length) {
+    const last = sink[sink.length-1]
+    if (/^\s*$/.test(ctx.range_text(last))) {
+      sink.pop()
+    }
+  }
 }
 
 function lineEndNode(end: TagClose): BodyNode {
