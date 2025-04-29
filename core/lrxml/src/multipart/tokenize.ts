@@ -42,8 +42,8 @@ export type ChunkGenerator = Generator<Chunk, any, any>;
 export function* tokenize_multipart(
   source: string, config: {filename?: string} & LrxmlConfig
 ) {
-  const {filename, ..._config} = config;
-  let ctx = parserContext({filename, source, config: _config})
+  const {filename = "dummy.ytjs", ..._config} = config;
+  const ctx = parserContext({filename, source, config: _config})
   yield* tokenize_multipart_context(ctx)
 }
 

@@ -80,6 +80,7 @@ export async function generate_module_for_declentry(
 
   const session: TargetedCGenSession = {
     ...baseSession,
+    filename,
     importDict: {},
     templateName, source
   }

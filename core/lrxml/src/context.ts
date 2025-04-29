@@ -23,7 +23,7 @@ export type BaseSession = {
 }
 
 export type SessionTarget = {
-  filename?: string
+  filename: string
   source: string
 }
 
@@ -339,7 +339,7 @@ function trim_input(match: RegExpExecArray | null) {
 }
 
 export function parserSession(v: {
-  source: string, filename?: string, config: LrxmlConfig
+  source: string, filename: string, config: LrxmlConfig
 }) : ParserSession {
 
   return {
@@ -349,7 +349,7 @@ export function parserSession(v: {
 }
 
 export function parserContext(v: {
-  source: string, filename?: string, config: LrxmlConfig
+  source: string, filename: string, config: LrxmlConfig
 }): ParserContext {
 
   return new ParserContext(parserSession(v))

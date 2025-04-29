@@ -12,7 +12,6 @@ import {
 import {
   type DeclState,
   get_template_declaration,
-  BuilderContextClass
   // , Widget, Entity
 } from '../../declaration/index.ts'
 import {generate_widget} from '../widget/generate.ts'
@@ -91,6 +90,7 @@ export async function generate_namespace_for_declentry(
 
   const session: TargetedCGenSession = {
     ...baseSession,
+    filename,
     templateName, source,
     importDict: {} // Not used
   }

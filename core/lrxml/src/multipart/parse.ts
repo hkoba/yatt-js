@@ -37,7 +37,7 @@ export type Part = AnyToken & PartBase
 export function parse_multipart(
   source: string, config: {filename?: string} & LrxmlConfig
 ): [Part[], ParserSession] {
-  const {filename, ..._config} = config;
+  const {filename = "dummy.ytjs", ..._config} = config;
   const ctx = parserContext({filename, source, config: _config})
   return [parse_multipart_context(ctx), ctx.session]
 }

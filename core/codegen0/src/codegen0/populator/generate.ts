@@ -93,7 +93,9 @@ export async function generate_populator_for_declentry(
   );
 
   const session: TargetedCGenSession = {
-    ...baseSession, templateName, source
+    ...baseSession,
+    filename,
+    templateName, source
     , importDict: {}
   }
 

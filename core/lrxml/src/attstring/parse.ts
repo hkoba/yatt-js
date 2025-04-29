@@ -47,7 +47,8 @@ export function parse_attstring(outerCtx: ParserContext, range: RangeLine): AttS
 if (import.meta.main) {
   const process = await import("node:process")
   for (const str of process.argv.slice(2)) {
-    let ctx = parserContext({
+    const ctx = parserContext({
+      filename: "dummy.ytjs",
       source: str, config: {}
     })
 

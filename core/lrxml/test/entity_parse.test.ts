@@ -12,7 +12,8 @@ import {
 {
   const test = (source: string, expect: any) => {
     cross_test(source, () => {
-      let ctx = parserContext({
+      const ctx = parserContext({
+        filename: "dummy.ytjs",
         source, config: {}
       })
       const node = parse_entpath(ctx);
