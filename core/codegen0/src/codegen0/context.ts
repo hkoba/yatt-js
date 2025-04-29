@@ -5,7 +5,9 @@ import type {
   TemplateDeclaration, BuilderBaseSession, Part, Widget, Entity
 } from '../declaration/index.ts'
 
-import { BuilderContextClass, declarationBuilderSession } from '../declaration/index.ts'
+import {
+  BuilderContextClass, declarationBuilderSession
+} from '../declaration/index.ts'
 
 export type {Part, Widget, Entity} from '../declaration/index.ts'
 
@@ -32,8 +34,9 @@ export type CGenSession = CGenBaseSession & SessionTarget & {
   templateName: string[]
 }
 
-export function cgenSession(cgenStyle: CodeKind, origConfig: YattConfig | YattCGenConfig)
-: CGenBaseSession {
+export function cgenSession(
+  cgenStyle: CodeKind, origConfig: YattConfig | YattCGenConfig
+): CGenBaseSession {
   const builder_session = declarationBuilderSession(origConfig)
   const session: CGenBaseSession = {
     ...builder_session,
@@ -55,8 +58,10 @@ export type EntityGenContext = CodeGenContext<Entity>
 
 export type CodeGenContext<T extends Part> = CodeGenContextClass<T>
 
-export class CodeGenContextClass<PartT extends Part, S extends CGenSession = CGenSession>
-  extends BuilderContextClass<S> {
+export class CodeGenContextClass<
+  PartT extends Part,
+  S extends CGenSession = CGenSession
+> extends BuilderContextClass<S> {
 
     public hasThis: boolean;
 

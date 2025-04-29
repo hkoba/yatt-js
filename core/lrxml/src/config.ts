@@ -13,7 +13,9 @@ export interface LrxmlParams {
 
 export type LrxmlConfig = Partial<LrxmlParams>;
 
-export function IsLrxmlParams(arg: LrxmlConfig | LrxmlParams): arg is LrxmlParams {
+export function IsLrxmlParams(
+  arg: LrxmlConfig | LrxmlParams
+): arg is LrxmlParams {
   return arg.namespace != null && arg.ext_public != null
     && arg.ext_private != null && arg.default_part != null
     && arg.debug != null

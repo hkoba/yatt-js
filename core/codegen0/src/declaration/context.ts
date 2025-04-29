@@ -34,7 +34,9 @@ export type BuilderMap = Map<string, DeclarationProcessor>;
 
 export interface DeclarationProcessor {
   readonly kind: string;
-  createPart(ctx: BuilderContext, attlist: AttItem[]): [Part, AttItem[]] | undefined
+  createPart(
+    ctx: BuilderContext, attlist: AttItem[]
+  ): [Part, AttItem[]] | undefined
 }
 
 // Session は３階層にすべきか…
@@ -58,7 +60,8 @@ export type DeclState = DeclEntry & {source: string, updated: boolean}
 
 export type BuilderContext = BuilderContextClass<BuilderSession>
 
-export class BuilderContextClass<S extends BuilderSession> extends ScanningContext<S> {
+export class BuilderContextClass<S extends BuilderSession>
+extends ScanningContext<S> {
   public debug: number = 0
   stash: Map<[string, string], any>;
   constructor(session: S,

@@ -1,4 +1,5 @@
-import { LrxmlParams, lrxmlParams, LrxmlConfig } from './config.ts'
+import type {LrxmlParams, LrxmlConfig } from './config.ts'
+import { lrxmlParams } from './config.ts'
 
 import {
   lineNumber, extract_line, extract_prefix_spec, extract_suffix_spec
@@ -120,7 +121,9 @@ export class ScanningContext<S extends ParserBaseSession> {
 
   throw_error(message: string, options?: {index?: number}): never {
     const index = this.start + (options?.index ?? this.index);
-    const [_lastNl, lineNo, colNo] = extract_prefix_spec(this.session.source, index)
+    const [_lastNl, lineNo, colNo] = extract_prefix_spec(
+      this.session.source, index
+    )
     const fileInfo = this.session.filename ? ` at ${this.session.filename}` : ""
     const longMessage = `${message}${fileInfo} line ${lineNo} column ${colNo}`
     throw new Error(longMessage)
@@ -146,9 +149,13 @@ export class ScanningContext<S extends ParserBaseSession> {
     return {line: token.line, start: token.start, end}
   }
 
-  token_error(token: AnyToken, message: string, options?: {index?: number}): never {
+  token_error(
+    token: AnyToken, message: string, options?: {index?: number}
+  ): never {
     const index = token.start + (options?.index ?? 0);
-    const [lastNl, lineNo, colNo] = extract_prefix_spec(this.session.source, index)
+    const [lastNl, lineNo, colNo] = extract_prefix_spec(
+      this.session.source, index
+    )
     const tokenLine = extract_line(this.session.source, lastNl, colNo)
     let fileInfo = this.session.filename ? ` at ${this.session.filename}` : ""
     fileInfo += ` line ${lineNo} column ${colNo}`
@@ -200,7 +207,9 @@ export class ParserContext extends ScanningContext<ParserSession> {
   }
 
   narrowed(range: RangeLine): ParserContext {
-    let subCtx = new ParserContext(this.session, range.start, range.start, range.end, this)
+    const subCtx = new ParserContext(
+      this.session, range.start, range.start, range.end, this
+    )
     subCtx.debug = this.debug
     subCtx.line = range.line
     return subCtx
@@ -257,13 +266,17 @@ export class ParserContext extends ScanningContext<ParserSession> {
     this.index += num
   }
 
-  matched_range(from: GlobalMatch, to: RegExpExecArray, morestr?: string): Range {
+  matched_range(
+    from: GlobalMatch, to: RegExpExecArray, morestr?: string
+  ): Range {
     const start = from.match.index
     const end = to.index + to[0].length + (morestr ? morestr.length : 0)
     return {start, end}
   }
 
-  contained_string_range(from: GlobalMatch, str: string | undefined): Range | undefined {
+  contained_string_range(
+    from: GlobalMatch, str: string | undefined
+  ): Range | undefined {
     if (str == null) {
       return undefined
     }
@@ -273,8 +286,10 @@ export class ParserContext extends ScanningContext<ParserSession> {
   }
 
   tab(from: GlobalMatch, to?: RegExpExecArray, morestr?: string): RangeLine {
-    const matched = to ? this.matched_range(from, to, morestr) :
-      {start: from.match.index, end: from.lastIndex + (morestr ? morestr.length : 0)}
+    const matched = to ? this.matched_range(from, to, morestr) : {
+      start: from.match.index,
+      end: from.lastIndex + (morestr ? morestr.length : 0)
+    }
     const end = matched.end
     const line = this.line
     // Note: lines in prefix is not counted here
