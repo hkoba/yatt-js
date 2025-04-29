@@ -70,7 +70,6 @@ test("A declaration with simple names and its body with entity references", () =
       {kind: "entpath_open", line: 4, text: `&yatt`},
       {kind: "entity", line: 4, text: `:y;`},
       {kind: "text", line: 4, text: `\n`},
-      {kind: "text", line: 5, text: `\n`}
     ]
   }
 ])})
