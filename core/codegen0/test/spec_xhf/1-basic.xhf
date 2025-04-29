@@ -38,7 +38,6 @@ OUT:
  <h2>Hello</h2>
  3 x 8 = 24
  world!
- 
 
 TITLE: one template, with body
 IN:
@@ -60,7 +59,7 @@ PARAM[
 ]
 OUT:
  <h2>Hello world!</h2>
- 8 x 3 = ??
+ 8 x 3 = 24
  
 # ^Here is trailing newline.
 

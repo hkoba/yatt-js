@@ -68,6 +68,9 @@ export function parse_multipart_context(ctx: ParserContext): Part[] {
         break;
       }
       case "decl_begin": {
+        if (partList.length) {
+          fixup_part_payload(partList[partList.length-1][1])
+        }
         const [namespace, kind, ...subkind] = tok.detail.split(/:/);
         const [attlist, _end] = parse_attlist(ctx, lex, "decl_end")
         const part: PartBase = {
@@ -82,7 +85,22 @@ export function parse_multipart_context(ctx: ParserContext): Part[] {
       }
     }
   }
+
+  if (partList.length) {
+    fixup_part_payload(partList[partList.length-1][1])
+  }
+
   return add_range<PartBase>(partList, ctx.end)
+}
+
+function fixup_part_payload(part: PartBase): void {
+  if (part.payload.length <= 0) return;
+
+  // Last continuous newlines in the part are replaced to single newline.
+  const lastTok = part.payload[part.payload.length - 1]
+  if (lastTok.kind === 'text') {
+    lastTok.data = lastTok.data.replace(/(?:\r?\n)+$/, "\n")
+  }
 }
 
 function add_range<T>(list: [Start, T][], end: number): (T & Range & {line: number})[] {

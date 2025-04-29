@@ -81,6 +81,10 @@ function lineEndLength(text: string): number {
   }
 }
 
+function tokenTrimming(tok: Payload): number {
+  return tok.end - tok.start - tok.data.length
+}
+
 export function* tokenize(session: ParserSession, payloadList: Payload[]): Generator<Token,any,any>
   {
   let outerCtx = new ParserContext(session);
@@ -89,7 +93,7 @@ export function* tokenize(session: ParserSession, payloadList: Payload[]): Gener
     if (tok.kind === "comment") {
       yield tok
     } else if (tok.kind === "text") {
-      let ctx = outerCtx.narrowed(tok)
+      let ctx = outerCtx.narrowed(tok, tokenTrimming(tok))
       let globalMatch
       while ((globalMatch = ctx.global_match(re))) {
         const prefix = ctx.prefix_of(globalMatch)

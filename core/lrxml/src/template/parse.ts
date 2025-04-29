@@ -103,10 +103,11 @@ function parse_tokens(
   ctx: ParserContext, part: Part, lex: Generator<Token>,
   depth: number,
   sink: BodyNode[], close?: string, parent?: (ElementNode | AttElement)
-): void {
+): TagClose | undefined {
 
   let cur;
   let is_closed;
+  let lastTok: TagClose | undefined
   while (!(cur = lex.next()).done) {
     const tok = cur.value
     ctx.index = tok.start
@@ -141,6 +142,7 @@ function parse_tokens(
           if (!nx || nx.kind !== 'tag_close')
             ctx.throw_error(`tag is not closed by '>'`)
 
+          lastTok = nx
           is_closed = true
           break;
         }
@@ -177,7 +179,10 @@ function parse_tokens(
           if (end.lineEndLength) {
             body.push(lineEndNode(end))
           }
-          parse_tokens(ctx, part, lex, depth+1, body, tok.name, elem)
+          const closeTok = parse_tokens(ctx, part, lex, depth+1, body, tok.name, elem)
+          if (closeTok != null && closeTok.lineEndLength) {
+            sink.push(lineEndNode(closeTok))
+          }
         }
         else {
           if (elem.kind === "attelem") {
@@ -204,7 +209,8 @@ function parse_tokens(
   if (close && ! is_closed) {
     ctx.throw_error(`Missing close tag ${close}`)
   }
-  
+
+  return lastTok
 }
 
 function lineEndNode(end: TagClose): BodyNode {

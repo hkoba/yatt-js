@@ -206,9 +206,10 @@ export class ParserContext extends ScanningContext<ParserSession> {
     }
   }
 
-  narrowed(range: RangeLine): ParserContext {
+  narrowed(range: RangeLine, trimRight?: number): ParserContext {
     const subCtx = new ParserContext(
-      this.session, range.start, range.start, range.end, this
+      this.session, range.start, range.start,
+      range.end - (trimRight ?? 0), this
     )
     subCtx.debug = this.debug
     subCtx.line = range.line
