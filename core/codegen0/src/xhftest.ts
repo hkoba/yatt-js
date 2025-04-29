@@ -276,10 +276,12 @@ function filename2widgetname(path: string): string {
 
 if (import.meta.main) {
   const process = await import('node:process')
+  const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
 
   const args = process.argv.slice(2)
   const baseConfig = {
-    ext_public: ['.ytjs', '.yatt', '.html']
+    ext_public: ['.ytjs', '.yatt', '.html'],
+    debug: { declaration: debugLevel }
   }
 
   for (const fn of args) {
