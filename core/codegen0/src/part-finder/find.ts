@@ -14,7 +14,11 @@ import {
   get_template_declaration
 } from '../declaration/index.ts'
 
+import type {CGenRequestSession} from '../codegen0/context.ts'
+
 import {candidatesForLookup} from '../declaration/partFolder.ts'
+
+import {ensure_generated} from '../codegen0/generate.ts'
 
 //
 // DEBUG=1 src/part-finder/find.ts --libDirs=test/input/ex1/ytmpl  test/input/ex1/public/subgroup1/foo.ytjs foo:bar
@@ -23,9 +27,11 @@ import {candidatesForLookup} from '../declaration/partFolder.ts'
 // --lookup_only
 //
 export async function find_widget(
-  session: BuilderRequestSession, template: TemplateDeclaration, partPath: string[]
+  session: CGenRequestSession, template: TemplateDeclaration, partPath: string[]
 ): Promise<{widget: Widget, template: TemplateDeclaration} | undefined>
 {
+  const debug = session.params.debug.declaration ?? 0;
+
   const [head, ...rest] = partPath
   if (rest.length === 0 && template.partMap.widget.has(head)) {
     const widget = template.partMap.widget.get(head)!
@@ -38,19 +44,31 @@ export async function find_widget(
     const entry = await get_template_declaration(session, realPath)
 
     if (! entry) {
-      if ((session.params.debug.declaration ?? 0) >= 2) {
+      if (debug >= 2) {
         console.log(`template not found at: ${realPath}`)
       }
       continue
     }
 
-
-    const {template} = entry
+    const {template, updated} = entry
+    if (updated) {
+      if (debug >= 2) {
+        console.log(`Calling ensure_generated: ${template.path}`)
+      }
+      await ensure_generated(entry, session);
+      if (debug >= 2) {
+        console.log(`=> output.length: ${session.output.length}`)
+      }
+    } else {
+      if (debug >= 2) {
+        console.log(`No need to generate: ${template.path}`)
+      }
+    }
 
     if (template.partMap.widget.has(name)) {
       return {widget: template.partMap.widget.get(name)!, template}
     } else {
-      if ((session.params.debug.declaration ?? 0) >= 2) {
+      if (debug >= 2) {
         console.log(`widget ${name} not found in template ${realPath}`)
       }
     }
@@ -81,9 +99,12 @@ if (import.meta.main) {
 
     const {parse_long_options} = await import('../deps.ts')
     const {
-      declarationBuilderSession,
       build_template_declaration
     } = await import("../declaration/index.ts")
+
+    const {
+      freshCGenSession, cgenSettings
+    } = await import("../codegen0/context.ts")
 
     const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
     const config: YattConfig & {lookup_only?: string, entity?: boolean} = {
@@ -98,7 +119,7 @@ if (import.meta.main) {
 
     const source = Fs.readFileSync(filename, {encoding: "utf-8"})
 
-    const session = declarationBuilderSession(config)
+    const session = freshCGenSession(cgenSettings('populator', config))
 
     const template = build_template_declaration(filename, source, config)
 
