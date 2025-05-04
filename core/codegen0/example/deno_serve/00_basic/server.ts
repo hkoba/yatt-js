@@ -1,5 +1,7 @@
 #!/usr/bin/env -S deno run -NRE
 
+/// <reference lib="deno.ns" />
+
 import {cgenSettings, freshCGenSession, refresh_populator, runtime} from '@yatt/codegen0'
 
 import {resolve} from 'node:path'
