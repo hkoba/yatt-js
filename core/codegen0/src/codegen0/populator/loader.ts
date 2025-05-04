@@ -2,7 +2,8 @@
 
 import {
   get_template_declaration,
-  type TemplateDeclaration
+  type TemplateDeclaration,
+  type OutputRecord
 } from '../../declaration/index.ts'
 
 import type {
@@ -14,14 +15,20 @@ import {generate_populator_for_declentry} from './generate.ts'
 import type {runtime} from '../../yatt.ts'
 
 export interface typeof$yatt {
-  runtime: typeof runtime
-  $public: {[k: string]: DirHandler}
+  runtime: typeof runtime;
+  [key: `$${string}`]: HandlerSetFolder
+}
+
+export type HandlerSetFolder = {
+  [key: string]: HandlerSet
+}
+
+export type HandlerSet = {
+  [key: `render_${string}`]: Renderer
 }
 
 // XXX: more precise type
-export interface DirHandler {
-  render_(CON: Connection, $params: {[k: string]: any}): Promise<void>
-}
+export type Renderer = (CON: Connection, $params: {[k: string]: any}) => Promise<void>;
 
 export interface Connection {
   append(str: string): void;
@@ -35,7 +42,7 @@ export type LoaderSession = CGenRequestSession & {
 
 export async function refresh_populator(
   realPath: string, session: LoaderSession
-): Promise<{$this: DirHandler, template: TemplateDeclaration} | undefined> {
+): Promise<{$this: HandlerSet, template: TemplateDeclaration} | undefined> {
 
   const debug = session.params.debug.declaration
 
@@ -48,6 +55,9 @@ export async function refresh_populator(
     return
   }
 
+  const {folder, modName} = entry.template
+
+  let $this: HandlerSet | undefined
   if (entry.updated) {
     if (debug) {
       console.log(`entry is updated: `, realPath)
@@ -55,24 +65,56 @@ export async function refresh_populator(
 
     const output = await generate_populator_for_declentry(entry, session);
 
-    const script = output.outputText
+    if (debug) {
+      console.log(`related.length:`, session.output.length)
+    }
 
-    const {populate} = await import(`data:text/typescript,${script}`)
+    for (const related of session.output) {
+      await load_output(related, session)
+    }
 
-    session.$yatt.$public[realPath] = populate(session.$yatt)
+    $this = await load_output({
+      folder, modName, output
+    }, session)
+
   } else {
     if (debug) {
       console.log(`use cached handler`)
     }
+
+    $this = ensure_folder(session.$yatt, `$${folder}`)[modName]
   }
 
   if (debug) {
     console.log(`session.$yatt.$public: `, session.$yatt.$public)
   }
 
-  const $this = session.$yatt.$public[realPath]
-
   if ($this) {
     return {$this, template: entry.template}
   }
+}
+
+export async function load_output(
+  output: OutputRecord, session: LoaderSession
+): Promise<HandlerSet> {
+
+  const {folder, modName} = output
+
+  const script = output.output.outputText
+
+  if (session.params.debug.codegen) {
+    console.log(`=======================`)
+    console.log(`folder:$${folder}, modName=${modName}\n`, script)
+  }
+
+  const {populate} = await import(`data:text/typescript,${script}`)
+
+  const templateFolder = ensure_folder(session.$yatt, `$${folder}`)
+
+  return templateFolder[modName] = populate(session.$yatt)
+}
+
+function ensure_folder($yatt: typeof$yatt, folderName: `$${string}`): HandlerSetFolder {
+  $yatt[folderName] ??= {}
+  return $yatt[folderName]
 }

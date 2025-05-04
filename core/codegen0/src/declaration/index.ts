@@ -27,7 +27,8 @@ export type {
   BuilderRequestSession,
   BuilderRequestItems,
   BuilderMap,
-  DeclarationProcessor
+  DeclarationProcessor,
+  OutputRecord
 } from './context.ts'
 
 export type {
