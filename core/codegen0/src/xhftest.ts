@@ -11,7 +11,7 @@ import type {YattConfig} from './config.ts'
 
 import { cgenSettings, freshCGenSession, type CGenSettings } from "./codegen0/context.ts"
 import {
-  refresh_populator, type DirHandler, type Connection, type typeof$yatt
+  refresh_populator, type Connection, type typeof$yatt
 } from "./codegen0/populator/loader.ts"
 import { SourceRegistry, SourceConfig } from "./declaration/registry.ts" 
 import { runtime } from "./yatt.ts"
@@ -95,7 +95,7 @@ export function runtests(files: string[], baseConfig: YattConfig): void {
       // console.log(item)
 
       test(`${item.TITLE}`, async () => {
-        const cgen = freshCGenSession(baseCgen)
+        // const cgen = freshCGenSession(baseCgen)
 
         switch (item.kind) {
           case 'error': {

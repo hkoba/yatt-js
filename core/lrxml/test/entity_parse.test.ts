@@ -63,7 +63,7 @@ function noRange(item: any): Array<any> | Object {
     return item.map(i => noRange(i))
   }
 
-  let result: {[k: string]: any} = {}
+  const result: {[k: string]: any} = {}
   for (const [k, v] of Object.entries(item)) {
     if (k === 'start' || k === 'end' || k === 'innerRange' || k === 'line')
       continue
