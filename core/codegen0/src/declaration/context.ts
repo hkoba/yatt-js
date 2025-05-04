@@ -14,6 +14,7 @@ import type { VarTypeMap } from './vartype.ts'
 import type { TemplateDeclaration } from './types.ts'
 import type { SessionTarget } from "@yatt/lrxml";
 
+import type {OutputItem} from '../codegen0/output.ts'
 
 export type YattBuildConfig = YattConfig & {
   builders?: BuilderMap
@@ -54,6 +55,14 @@ export type BuilderSettings = {
 
 export type BuilderRequestItems = {
   visited: Set<string>
+  output: OutputRecord[]
+}
+
+// XXX: ../codegen0/output.ts: TranspileOutput と統合する？
+export type OutputRecord = {
+  folder: string
+  modName: string
+  output: OutputItem
 }
 
 export type BuilderRequestSession = BuilderSettings & BuilderRequestItems

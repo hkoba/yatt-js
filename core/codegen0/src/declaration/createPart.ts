@@ -247,6 +247,7 @@ export function declarationBuilderSession(
     sourceCache,
     entFns,
     visited: new Set,
+    output: [],
     templateFolderMap: new Map,
     params: buildParams
   }

@@ -56,7 +56,11 @@ export function cgenSettings(
 
 export function freshCGenSession(base: CGenSettings)
 : CGenRequestSession {
-  const fresh = {...base, visited: new Set<string>}
+  const fresh = {
+    ...base
+    , visited: new Set<string>
+    , output: []
+  }
   return fresh
 }
 
