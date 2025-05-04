@@ -6,8 +6,9 @@ export async function loadIfModified(
     path: string, modTimeMs?: number, debug?: number
 ): Promise<RegistryEntry | undefined> {
 
+  let fh
   try {
-    await using fh = await open(path)
+    fh = await open(path)
     let stat = await fh.stat()
 
     if (modTimeMs == null) {
@@ -34,6 +35,8 @@ export async function loadIfModified(
     } else if (debug) {
       console.log(`loadIfModified: NotFound: ${path}`, err)
     }
+  } finally {
+    await fh?.close()
   }
 }
 
