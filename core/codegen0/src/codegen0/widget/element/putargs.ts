@@ -33,7 +33,7 @@ export async function generate_putargs(
       // name='foo' name="bar"
       const formalName = argSpec.label.value
       if (! formalArgs.has(formalName)) {
-        ctx.token_error(argSpec, `No such argument: ${formalName}`)
+        ctx.token_error(argSpec, `Unknown arg '${formalName}'`)
       }
       const formal = formalArgs.get(formalName)!
       if (actualArgs.has(formalName)) {
