@@ -4,10 +4,14 @@ import {cgenSettings, freshCGenSession, refresh_populator, runtime} from '@yatt/
 
 import {resolve} from 'node:path'
 
+const __dirname = new URL('.', import.meta.url).pathname
+
 const config = {
-  rootDir: resolve('public'),
+  rootDir: resolve(__dirname, 'public'),
+  ext_public: ['.ytjs', '.yatt'],
   debug: {
-    declaration: 1
+    declaration: 1,
+    codegen: 1
   }
 }
 
@@ -34,10 +38,11 @@ async function handler(req: Request): Promise<Response> {
   // console.log(cgen, '----------------')
 
   const fn = pathname.substring(1) + '.yatt'
-  console.log(`GET: ${fn}`)
+  const targetFile = resolve(config.rootDir, fn)
+  console.log(`GET: ${fn} => ${targetFile}`)
 
   const entry = await refresh_populator(
-    resolve(config.rootDir, fn), {...cgen, $yatt}
+    targetFile, {...cgen, $yatt}
     // , {private: false}
   )
 
@@ -46,6 +51,8 @@ async function handler(req: Request): Promise<Response> {
   }
 
   const {$this} = entry
+
+  console.log('$this:', $this)
 
   const CON = {
     buffer: "",
