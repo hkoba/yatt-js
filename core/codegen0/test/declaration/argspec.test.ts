@@ -42,14 +42,14 @@ import type { YattParams } from "../../src/config.ts";
     , (s) => parse_arg_spec(dummyCtx(s), s, 'text', dummyRange(s))
     , {
       typeName: 'text',
-      defaultSpec: ['?', "my default value", [{start: 5, end: 21, kind: "text", value: "my default value"}]]
+      defaultSpec: {dflag: '?', text: "my default value", children: [{start: 5, end: 21, kind: "text", value: "my default value"}]}
     });
 
   test('value!'
     , (s) => parse_arg_spec(dummyCtx(s), s, 'text', dummyRange(s))
     , {
       typeName: 'value',
-      defaultSpec: ['!', "", []]
+      defaultSpec: {dflag: '!', text: "", children: []}
     }
   )
 }

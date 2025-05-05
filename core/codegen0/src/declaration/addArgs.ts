@@ -1,5 +1,5 @@
 import { parse_attstring } from "../../../lrxml/src/attstring/parse.ts";
-import { parserContext, RangeLine } from "../../../lrxml/src/context.ts";
+import type { RangeLine } from "../../../lrxml/src/context.ts";
 import {type AttItem, isBareLabeledAtt, isIdentOnly, hasLabel, hasQuotedStringValue} from '../deps.ts'
 import {attInnerRange} from '@yatt/lrxml'
 
@@ -26,7 +26,7 @@ export function parse_arg_spec(
     return { typeName: defaultType }
   } else {
     const typeName = match.index ? str.substring(0, match.index) : defaultType;
-    const dflag = match[0]
+    const dflag = match[0] as DefaultFlag
     const start = range.start + match.index + 1
     const end = range.end
     const defaultValue = str.substring(match.index + 1);
@@ -36,8 +36,8 @@ export function parse_arg_spec(
       console.log(`parse_arg_spec defaultValue "${defaultValue}"`)
       console.log(`<=>`, parserCtx.range_text({start, end}))
     }
-    const kids = parse_attstring(parserCtx, {line: range.line, start, end})
-    return { typeName, defaultSpec: [dflag as DefaultFlag, defaultValue, kids] }
+    const children = parse_attstring(parserCtx, {line: range.line, start, end})
+    return { typeName, defaultSpec: {dflag, text: defaultValue, children} }
   }
 }
 

@@ -24,7 +24,7 @@ export function generate_argdecls<T extends Part>(
 
     const typeAnot: CodeFragment[] = []
     typeAnot.push(nameCode)
-    if (!(varSpec.defaultSpec && varSpec.defaultSpec[0] === "!")) {
+    if (!(varSpec.defaultSpec && varSpec.defaultSpec.dflag === "!")) {
       typeAnot.push("?")
     }
     typeAnot.push(`: `, varTypeExpr(ctx, varSpec))
@@ -32,12 +32,17 @@ export function generate_argdecls<T extends Part>(
     types.push(typeAnot)
 
     if (varSpec.defaultSpec) {
-      const [dflag, _defaultExpr, children] = varSpec.defaultSpec
+      const {dflag, children} = varSpec.defaultSpec
       const cond = generate_dflag_condition(name, dflag)
-      const as_cast = generate_attstring_as_cast_to(ctx, scope, varSpec, children)
-      defaultInits.push(`if (`, cond, `) {`, name, ` = `, as_cast, `}`)
+      if (dflag === "!") {
+        defaultInits.push(`if (`, cond, `) { throw new Error('Argument '+${name}+' is undef!')`, `}`)
+      } else {
+        const as_cast = generate_attstring_as_cast_to(ctx, scope, varSpec, children)
+        defaultInits.push(`if (`, cond, `) {`, name, ` = `, as_cast, `}`)
+      }
     }
   }
+
   return {defaultInits, argDecls: [
     ["{",
     joinAsArray(', ', args),
@@ -55,12 +60,12 @@ function generate_dflag_condition(
 ): CodeFragment[] {
   switch (dflag) {
     case "|": {
-      return [name]
+      return [`! `, name]
     }
     case "?": {
       return [name, ` == null || `, name, ` === ""`]
     }
-    case "/": {
+    case "/": case "!": {
       return [name, ` == null`]
     }
     default: {

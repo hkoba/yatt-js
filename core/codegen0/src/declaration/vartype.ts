@@ -37,12 +37,18 @@ export type VariableBase = {
   typeName: string
   varName:  string
   argNo?:   number
-  defaultSpec?: [DefaultFlag, string, AttStringItem[]]
+  defaultSpec?: DefaultSpec
   attItem?: AttItem
   from_route: boolean
   is_body_argument: boolean
   is_escaped: boolean
   is_callable: boolean
+}
+
+export type DefaultSpec = {
+  dflag: DefaultFlag
+  text: string
+  children: AttStringItem[]
 }
 
 export type DefaultFlag = "?" | "|" | "/" | "!"
@@ -71,7 +77,7 @@ export type Variable = SimpleVar | WidgetVar | DelegateVar
 
 export type VarTypeSpec = {
   typeName: string,
-  defaultSpec?: [DefaultFlag, string, AttStringItem[]]
+  defaultSpec?: DefaultSpec
 }
 
 export function builtin_vartypemap(): VarTypeMap {
