@@ -1,4 +1,7 @@
+import { parse_attstring } from "../../../lrxml/src/attstring/parse.ts";
+import { parserContext, RangeLine } from "../../../lrxml/src/context.ts";
 import {type AttItem, isBareLabeledAtt, isIdentOnly, hasLabel, hasQuotedStringValue} from '../deps.ts'
+import {attInnerRange} from '@yatt/lrxml'
 
 import type { BuilderContext } from './context.ts'
 
@@ -14,7 +17,8 @@ export type ArgAdder = {
 }
 
 export function parse_arg_spec(
-  _ctx: BuilderContext, str: string, defaultType: string
+  ctx: BuilderContext, str: string, defaultType: string,
+  range: RangeLine
 ): VarTypeSpec {
   // XXX: typescript type extension
   const match = /([\/\|\?!])/.exec(str)
@@ -23,8 +27,17 @@ export function parse_arg_spec(
   } else {
     const typeName = match.index ? str.substring(0, match.index) : defaultType;
     const dflag = match[0]
+    const start = range.start + match.index + 1
+    const end = range.end
     const defaultValue = str.substring(match.index + 1);
-    return { typeName, defaultSpec: [dflag as DefaultFlag, defaultValue] }
+    // XXX: 
+    const parserCtx = ctx.parserContext()
+    if (ctx.session.params.debug.declaration) {
+      console.log(`parse_arg_spec defaultValue "${defaultValue}"`)
+      console.log(`<=>`, parserCtx.range_text({start, end}))
+    }
+    const kids = parse_attstring(parserCtx, {line: range.line, start, end})
+    return { typeName, defaultSpec: [dflag as DefaultFlag, defaultValue, kids] }
   }
 }
 
@@ -37,7 +50,7 @@ export function add_args(
       yield v
     }
   })();
-
+  
   return add_args_cont(ctx, part, gen)
 }
 
@@ -52,13 +65,12 @@ export function add_args_cont(
     if (isBareLabeledAtt(att)) {
       //: name = SOMETHING
       const name = att.label.value
-      if (att.kind === "bare" || att.kind === "sq" || att.kind === "dq"
-          || att.kind === "identplus") {
+      if (att.kind === "bare" || att.kind === "sq" || att.kind === "dq") {
         //: name="type?default"
         if (ctx.debug) {
           console.log(`kind ${att.kind}: ${name} = ${att.value}`)
         }
-        const spec = parse_arg_spec(ctx, att.value, "text")
+        const spec = parse_arg_spec(ctx, att.value, "text", attInnerRange(ctx.parserContext(), att))
         const v = build_simple_variable(ctx, name, spec, {
           attItem: att, argNo: part.argMap.size
         })

@@ -39,6 +39,14 @@ export function attKindIsQuotedString(kind: string): boolean {
   return kind === "sq" || kind === "dq";
 }
 
+export function attInnerRange(
+  ctx: ParserContext,
+  token: AttItem | {kind: "bare" | "sq" | "dq"} & TokenContent
+): RangeLine {
+  return attKindIsQuotedString(token.kind) ?
+    ctx.range_of(token, 1, -1) : ctx.range_of(token);
+}
+
 export function isLabelTerm(term: Term)
 : term is Label {
   return term.kind === "identplus" || term.kind === "nest"
@@ -186,8 +194,7 @@ function term_string<U extends TokenT<string>>(
   ctx: ParserContext, _lex: Generator<U,any,any>,
   token: {kind: "bare" | "sq" | "dq"} & TokenContent
 ): StringTerm {
-  const innerRange = attKindIsQuotedString(token.kind) ?
-    ctx.range_of(token, 1, -1) : ctx.range_of(token);
+  const innerRange = attInnerRange(ctx, token);
   const value = ctx.range_text(innerRange)
   const children = parse_attstring(ctx, innerRange)
   return {

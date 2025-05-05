@@ -6,6 +6,7 @@ import type {BuilderContext} from './context.ts'
 import {build_delegate_variable_adder} from './delegate.ts'
 
 import {add_args, type ArgAdder} from './addArgs.ts'
+import { AttStringItem } from "../../../lrxml/src/attstring/parse.ts";
 
 export type VarTypeMap = {
   simple: Map<string, SimpleVariableBuilder>;
@@ -36,7 +37,7 @@ export type VariableBase = {
   typeName: string
   varName:  string
   argNo?:   number
-  defaultSpec?: [DefaultFlag, string]
+  defaultSpec?: [DefaultFlag, string, AttStringItem[]]
   attItem?: AttItem
   from_route: boolean
   is_body_argument: boolean
@@ -70,7 +71,7 @@ export type Variable = SimpleVar | WidgetVar | DelegateVar
 
 export type VarTypeSpec = {
   typeName: string,
-  defaultSpec?: [DefaultFlag, string]
+  defaultSpec?: [DefaultFlag, string, AttStringItem[]]
 }
 
 export function builtin_vartypemap(): VarTypeMap {

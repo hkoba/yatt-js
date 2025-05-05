@@ -15,6 +15,7 @@ import type { TemplateDeclaration } from './types.ts'
 import type { SessionTarget } from "@yatt/lrxml";
 
 import type {OutputItem} from '../codegen0/output.ts'
+import { ParserContext, ParserSession } from "../../../lrxml/src/context.ts";
 
 export type YattBuildConfig = YattConfig & {
   builders?: BuilderMap
@@ -89,6 +90,16 @@ extends ScanningContext<S> {
     if (session.params.debug.declaration !== undefined) {
       this.debug = session.params.debug.declaration
     }
+  }
+
+  parserContext(): ParserContext {
+    const session: ParserSession = {
+      patterns: {},
+      params: this.session.params,
+      filename: this.session.filename,
+      source: this.session.source
+    }
+    return new ParserContext(session, this.index, this.start, this.end)
   }
 
   is_body_argument(name: string): boolean {
