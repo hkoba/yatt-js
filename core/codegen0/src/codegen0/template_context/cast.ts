@@ -7,8 +7,28 @@ import type {CodeFragment} from '../codefragment.ts'
 
 import type {Variable} from '../../declaration/vartype.ts'
 
-import {generate_as_cast_to_text} from './text.ts'
-import {generate_as_cast_to_list} from './list.ts'
+import type {AttStringItem} from '@yatt/lrxml'
+
+import {generate_as_cast_to_text, generate_as_text} from './text.ts'
+import {generate_as_cast_to_list, generate_as_list} from './list.ts'
+
+export function generate_attstring_as_cast_to<T extends Part>(
+  ctx: CodeGenContext<T>, scope: VarScope, variable: Variable,
+  children: AttStringItem[]
+): CodeFragment {
+  switch (variable.typeName) {
+    case 'text': {
+      return generate_as_text(ctx, scope, children)
+    }
+    case 'list': {
+      return generate_as_list(ctx, scope, children)
+    }
+    case 'scalar':
+    default: {
+      ctx.NIMPL()
+    }
+  }
+}
 
 export function generate_as_cast_to<T extends Part>(
   ctx: CodeGenContext<T>, scope: VarScope, variable: Variable, term: Term
