@@ -99,6 +99,18 @@ export async function generate_putargs(
       }
     }
   }
+
+  // console.log(`formal: `, formalArgs)
+  // console.log(`actual: `, actualArgs)
+
+  for (const [name, formal] of formalArgs.entries()) {
+    if (actualArgs.has(name))
+      continue;
+    if (formal.defaultSpec?.dflag === "!") {
+      ctx.token_error(node, `Argument '${name}' is missing`)
+    }
+  }
+
   // XXX: node.footer
   return joinAsArray(', ', Array.from(actualArgs.values()))
 
