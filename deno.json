@@ -1,4 +1,7 @@
 {
+  "compilerOptions": {
+    "lib": ["dom", "dom.iterable", "dom.asynciterable", "deno.ns"]
+  },
   "workspace": [
     "core/lrxml",
     "core/codegen0",
