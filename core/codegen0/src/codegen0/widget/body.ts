@@ -64,12 +64,14 @@ export async function generate_body(
       case "entity":
         program.push(' ', as_print(ctx, generate_entity(ctx, scope, node, {
           need_runtime_escaping: true
-        })), ';');
+        })));
         break;
       default:
         ctx.NEVER();
     }
   }
+
+  // console.log(`body program:`, program)
 
   return program;
 }
