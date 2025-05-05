@@ -17,6 +17,8 @@ export async function generate_putargs(
 ): Promise<CodeFragment>
 {
   const formalArgs = calleeWidget.argMap;
+  const positionalArgs = formalArgs.entries()
+  let nextArg
   const actualArgs: Map<string, CodeFragment> = new Map
   for (const argSpec of node.attlist) {
     if (isBareLabeledAtt(argSpec) && argSpec.kind === "identplus") {
@@ -49,10 +51,17 @@ export async function generate_putargs(
       // <:yatt:name>...</:yatt:name>
       ctx.NIMPL()
     }
-    else {
+    else if (!(nextArg = positionalArgs.next()).done) {
       // positional arguments
       // 'foo' "bar"
       // entity, nest
+      const [name, formal] = nextArg.value
+      actualArgs.set(name, [
+        `${name}: `,
+        generate_as_cast_to(ctx, scope, formal, argSpec)
+      ])
+    }
+    else {
       // console.dir(argSpec, {colors: true, depth: null});
       ctx.NIMPL(argSpec)
     }
