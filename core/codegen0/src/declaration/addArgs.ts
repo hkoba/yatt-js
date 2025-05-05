@@ -65,7 +65,7 @@ export function add_args_cont(
     if (isBareLabeledAtt(att)) {
       //: name = SOMETHING
       const name = att.label.value
-      if (att.kind === "bare" || att.kind === "sq" || att.kind === "dq") {
+      if (att.kind === "bare" || att.kind === "sq" || att.kind === "dq" || att.kind === "identplus") {
         //: name="type?default"
         if (ctx.debug) {
           console.log(`kind ${att.kind}: ${name} = ${att.value}`)
