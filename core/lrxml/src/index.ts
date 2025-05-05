@@ -32,7 +32,7 @@ export {
 } from './template/index.ts'
 
 export type {AttItem, AttValue} from './attlist/parse.ts'
-export { attValue } from './attlist/parse.ts'
+export { attValue, attInnerRange } from './attlist/parse.ts'
 
 export type { AttStringItem } from './attstring/parse.ts'
 export { parse_attstring } from './attstring/parse.ts'

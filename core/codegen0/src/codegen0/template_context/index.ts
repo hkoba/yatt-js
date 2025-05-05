@@ -9,3 +9,4 @@ export type Argument =
 export type Statement =
   {kind: 'statement', items: CodeFragment, source?: Node}
 
+export {generate_attstring_as_cast_to, generate_as_cast_to} from './cast.ts'

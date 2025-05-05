@@ -11,3 +11,5 @@ export {refresh_populator} from './populator/loader.ts'
 export {runFile} from './populator/runner.ts'
 
 export {cgenSettings, freshCGenSession} from './context.ts'
+
+export {generate_as_cast_to} from './template_context/index.ts'

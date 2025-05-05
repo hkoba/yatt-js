@@ -28,8 +28,6 @@ export function generate_widget_signature(
     , new VarScope(ctx.part.varMap, new VarScope(ctx.part.argMap))
   )
 
-  const argDecls = generate_argdecls(ctx, scope, ctx.part);
-
   const implicitArgs: CodeFragment[] = [];
   const bodyPreamble: CodeFragment  = []
   if (ctx.hasThis) {
@@ -50,7 +48,10 @@ export function generate_widget_signature(
   const conVar = build_simple_variable(ctx, 'CON', {typeName: "scalar"}, {})
   scope.set('CON', conVar)
 
-  // XXX: default value
+  const {argDecls, defaultInits} = generate_argdecls(ctx, scope, ctx.part);
+
+  bodyPreamble.push(...defaultInits)
+
   // XXX: tmpl name
   program.push(
     "(", joinAsArray(', ', implicitArgs.concat(argDecls)), ")"

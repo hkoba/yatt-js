@@ -66,7 +66,7 @@ export async function generate_putargs(
     if (BODY != null) {
       switch (BODY.typeName) {
         case "widget": {
-          const argDecls = generate_argdecls(ctx, scope, BODY.widget);
+          const {argDecls} = generate_argdecls(ctx, scope, BODY.widget);
           const bodyProgram = await generate_body(ctx, scope, node.children);
           const conT = ctx.session.params.connectionTypeName
           actualArgs.set(

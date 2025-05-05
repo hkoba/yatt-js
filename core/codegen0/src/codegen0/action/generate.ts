@@ -22,7 +22,7 @@ export function generate_action(ctx: CodeGenContext<Action>): CodeFragment {
     , new VarScope(ctx.part.varMap, new VarScope(ctx.part.argMap))
   )
 
-  const argDecls = generate_argdecls(ctx, scope, ctx.part);
+  const {argDecls} = generate_argdecls(ctx, scope, ctx.part);
 
   const implicitArgs = []
   let bodyPreamble = ""

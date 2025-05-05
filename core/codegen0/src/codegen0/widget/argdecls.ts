@@ -3,12 +3,18 @@ import type {VarScope} from '../varscope.ts'
 import {varTypeExpr} from './vartype.ts'
 
 import {type CodeFragment, joinAsArray} from '../codefragment.ts'
+import { DefaultFlag } from "../../declaration/vartype.ts";
+
+import {generate_attstring_as_cast_to} from '../template_context/index.ts'
 
 export function generate_argdecls<T extends Part>(
-  ctx: CodeGenContext<T>, _scope: VarScope, widget: T
-): CodeFragment[] {
+  ctx: CodeGenContext<T>, scope: VarScope, widget: T
+): {argDecls: CodeFragment[], defaultInits: CodeFragment[]} {
   const args: CodeFragment[] = []
   const types: CodeFragment[] = []
+
+  const defaultInits: CodeFragment[] = []
+
   for (const [name, varSpec] of widget.argMap.entries()) {
     // XXX: default value
     const nameCode: CodeFragment = {
@@ -25,8 +31,14 @@ export function generate_argdecls<T extends Part>(
 
     types.push(typeAnot)
 
+    if (varSpec.defaultSpec) {
+      const [dflag, _defaultExpr, children] = varSpec.defaultSpec
+      const cond = generate_dflag_condition(name, dflag)
+      const as_cast = generate_attstring_as_cast_to(ctx, scope, varSpec, children)
+      defaultInits.push(`if (`, cond, `) {`, name, ` = `, as_cast, `}`)
+    }
   }
-  return [
+  return {defaultInits, argDecls: [
     ["{",
     joinAsArray(', ', args),
     "}",
@@ -35,5 +47,24 @@ export function generate_argdecls<T extends Part>(
       joinAsArray('; ', types),
       "}"
     ]}]
-  ]
+  ]}
+}
+
+function generate_dflag_condition(
+  name: string, dflag: DefaultFlag
+): CodeFragment[] {
+  switch (dflag) {
+    case "|": {
+      return [name]
+    }
+    case "?": {
+      return [name, ` == null || `, name, ` === ""`]
+    }
+    case "/": {
+      return [name, ` == null`]
+    }
+    default: {
+      throw new Error(`Invalid dflag: ${dflag}`)
+    }
+  }
 }
