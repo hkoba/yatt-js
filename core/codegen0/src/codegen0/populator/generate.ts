@@ -6,7 +6,6 @@ import type { YattConfig } from '../../config.ts'
 
 import {
   get_template_declaration,
-  baseModName,
   type DeclState
 } from '../../declaration/index.ts'
 
@@ -20,6 +19,7 @@ import {
   type CGenRequestSession, type TargetedCGenSession,
   cgenSettings, freshCGenSession,
   CodeGenContextClass,
+  IndentScope, indent,
   finalize_codefragment
 } from '../context.ts'
 
@@ -122,40 +122,49 @@ export async function generate_populator_for_declentry(
     ')',
     // typeAnnotation(': typeof$yatt$public$index'),
     ' {\n')
-  program.push('const $this = {\n')
+  {
+    using _fun_body = new IndentScope(session)
 
-  let count = 0
-  for (const part of template) {
-    if (count > 0) {
-      program.push(', ')
-    }
-    switch (part.kind) {
-      case "action": {
-        const ctx = new CodeGenContextClass(template, part, session, {hasThis: true});
-        program.push(generate_action(ctx))
-        break
-      }
-      case "entity": {
-        const ctx = new CodeGenContextClass(template, part, session, {hasThis: true});
-        program.push(generate_entity(ctx))
-        break
-      }
-      case "widget": {
-        if (part.raw_part == null)
-          continue;
-        const ctx = new CodeGenContextClass(template, part, session, {hasThis: true});
-        const ast = parse_template(session, part.raw_part)
-        program.push(await generate_widget(ctx, ast))
-        break
-      }
-      default:
+    program.push(indent(session), "const $this = \{\n")
+    {
+      using indent$this = new IndentScope(session)
+
+      let count = 0
+      for (const part of template) {
+        indent$this.reset()
+        program.push(indent(session)) // , `/*${session.indentLevel}*/`
+        if (count > 0) {
+          program.push(', \n')
+          program.push(indent(session))
+        }
+        switch (part.kind) {
+          case "action": {
+            const ctx = new CodeGenContextClass(template, part, session, {hasThis: true});
+            program.push(generate_action(ctx))
+            break
+          }
+          case "entity": {
+            const ctx = new CodeGenContextClass(template, part, session, {hasThis: true});
+            program.push(generate_entity(ctx))
+            break
+          }
+          case "widget": {
+            if (part.raw_part == null)
+              continue;
+            const ctx = new CodeGenContextClass(template, part, session, {hasThis: true});
+            const ast = parse_template(session, part.raw_part)
+            program.push(await generate_widget(ctx, ast))
+            break
+          }
+          default:
         // just ignore...
+        }
+        ++count;
+      }
     }
-    ++count;
+    program.push(indent(session), "\};\n")
+    program.push(indent(session), 'return $this;\n');
   }
-
-  program.push('};\n')
-  program.push('return $this;\n');
   program.push('}\n')
 
   reference.annotation = generate_reference_interface(session)

@@ -1,5 +1,8 @@
 import type {BodyNode} from '../../deps.ts'
 import type {WidgetGenContext} from '../context.ts'
+import {
+  IndentScope, indent
+} from '../context.ts'
 import {VarScope} from '../varscope.ts'
 
 import {generate_argdecls} from './argdecls.ts'
@@ -70,9 +73,13 @@ export async function generate_widget(ctx: WidgetGenContext, nodeList: BodyNode[
 
   program.push(" {", bodyPreamble, "\n")
 
-  program.push(await generate_body(ctx, scope, nodeList));
+  {
+    using _body = new IndentScope(ctx.session)
+    program.push(indent(ctx.session))
+    program.push(await generate_body(ctx, scope, nodeList));
+  }
 
-  program.push("}\n");
+  program.push(indent(ctx.session), "}\n");
 
   return program;
 }

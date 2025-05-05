@@ -59,13 +59,12 @@ export async function generate_element(
   const argsExpr = await generate_putargs(ctx, scope, node, calleeWidget);
 
   return [
-    " ",
     callExpr,
     "(",
     joinAsArray(', ', implicitArgs),
     ", {",
     argsExpr,
-    "});"
+    "}); "
   ]
 }
 

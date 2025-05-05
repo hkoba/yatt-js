@@ -2,6 +2,7 @@ import type {Node} from '../../deps.ts'
 import type {WidgetGenContext} from '../context.ts'
 import type {VarScope} from '../varscope.ts'
 import {escapeAsStringLiteral} from '../escape.ts'
+import {indent} from '../context.ts'
 
 import {generate_element} from './element/generate.ts'
 import {generate_entity} from './entity/generate.ts'
@@ -17,10 +18,14 @@ export async function generate_body(
 ): Promise<CodeFragment>
 {
   const program: CodeFragment = []
+  let pendingIndent = false
   for (const node of nodeList) {
+    if (node.kind === 'comment') continue
+    if (pendingIndent) {
+      program.push(indent(ctx.session))
+      pendingIndent = false
+    }
     switch (node.kind) {
-      case "comment":
-        break;
       case "attelem":
       case "lcmsg": {
         ctx.NIMPL(node);
@@ -47,8 +52,10 @@ export async function generate_body(
           items: escapeAsStringLiteral(ctx.range_text(node)),
         }))
 
-        if (node.lineEndLength)
+        if (node.lineEndLength) {
           program.push("\n");
+          pendingIndent = true;
+        }
         break;
       }
       case "element":

@@ -4,12 +4,16 @@ import { generate_module_for_declentry } from "./module/generate.ts";
 import { generate_namespace_for_declentry } from "./namespace/generate.ts";
 import { generate_populator_for_declentry } from "./populator/generate.ts";
 
+import { IndentScope } from './context.ts'
+
 export async function ensure_generated(
   entry: DeclState,
   session: CGenRequestSession
 ): Promise<void> {
 
   console.log(`generating ${entry.template.path}`)
+  using _top = new IndentScope(session, 0)
+
   const output = await generate_for_declentry(entry, session);
   session.output.push({
     folder: entry.template.folder,

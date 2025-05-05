@@ -34,7 +34,9 @@ export type CGenSettings  = BuilderSettings & YattCGenConfig & {
   macro: MacroDict
 }
 
-export type CGenRequestSession = CGenSettings & BuilderRequestItems
+export type CGenRequestSession = CGenSettings & BuilderRequestItems & {
+  indentLevel: number
+}
 
 export type TargetedCGenSession = CGenRequestSession & SessionTarget & {
   templateName: string[]
@@ -60,6 +62,7 @@ export function freshCGenSession(base: CGenSettings)
     ...base
     , visited: new Set<string>
     , output: []
+    , indentLevel: 0
   }
   return fresh
 }
@@ -98,6 +101,30 @@ export class CodeGenContextClass<
         this.session.importDict[template.path] = template
       }
     }
+}
+
+export function indent(session: CGenRequestSession): string {
+  return "  ".repeat(session.indentLevel)
+}
+
+export class IndentScope {
+  savedIndentLevel: number
+  constructor(public session: CGenRequestSession, newLevel?: number) {
+    this.savedIndentLevel = session.indentLevel
+    if (newLevel != null) {
+      session.indentLevel = newLevel
+    } else {
+      session.indentLevel++
+    }
+  }
+
+  reset(): void {
+    this.session.indentLevel = this.savedIndentLevel + 1
+  }
+
+  [Symbol.dispose]() {
+    this.session.indentLevel = this.savedIndentLevel
+  }
 }
 
 export {finalize_codefragment} from './codefragment.ts'
