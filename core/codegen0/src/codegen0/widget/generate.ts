@@ -31,8 +31,9 @@ export function generate_widget_signature(
   const implicitArgs: CodeFragment[] = [];
   const bodyPreamble: CodeFragment  = []
   if (ctx.hasThis) {
+    const modName = ctx.session.cgenStyle === 'populator' ? '$this' : ctx.session.templateName.join('.')
     implicitArgs.push(['this',
-      typeAnnotation(`: typeof ${ctx.session.templateName.join('.')}`)
+      typeAnnotation(`: typeof ${modName}`)
     ])
     if (ctx.session.cgenStyle !== 'populator') {
       bodyPreamble.push(`const $this = this;`);

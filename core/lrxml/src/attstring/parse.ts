@@ -4,10 +4,11 @@ declare global {
   interface ImportMeta {main: boolean}
 }
 
-import {parserContext, ParserContext, Range, RangeLine} from '../context.ts'
+import {parserContext} from '../context.ts'
+import type {ParserContext, Range, RangeLine} from '../context.ts'
 
 import {
-  EntNode,
+  type EntNode,
   parse_entpath,
   re_entity_open
 } from '../entity/parse.ts'

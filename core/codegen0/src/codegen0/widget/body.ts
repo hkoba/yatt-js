@@ -48,7 +48,7 @@ export async function generate_body(
       }
       case "text": {
         program.push(as_print(ctx, {
-          kind: 'argument', 
+          kind: 'argument',
           items: escapeAsStringLiteral(ctx.range_text(node)),
         }))
 
@@ -62,7 +62,7 @@ export async function generate_body(
         program.push(await generate_element(ctx, scope, node));
         break;
       case "entity":
-        program.push(' ', as_print(ctx, generate_entity(ctx, scope, node, {
+        program.push(as_print(ctx, generate_entity(ctx, scope, node, {
           need_runtime_escaping: true
         })));
         break;
