@@ -11,7 +11,7 @@ export async function ensure_generated(
   session: CGenRequestSession
 ): Promise<void> {
 
-  console.log(`generating ${entry.template.path}`)
+  // console.log(`generating ${entry.template.path}`)
   using _top = new IndentScope(session, 0)
 
   const output = await generate_for_declentry(entry, session);

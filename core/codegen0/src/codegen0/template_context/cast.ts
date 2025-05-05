@@ -3,7 +3,7 @@ import type {Term} from '../../deps.ts'
 import type {CodeGenContext, Part} from '../context.ts'
 import type {VarScope} from '../varscope.ts'
 
-import type {CodeFragment} from '../codefragment.ts'
+import {joinAsArray, type CodeFragment} from '../codefragment.ts'
 
 import type {Variable} from '../../declaration/vartype.ts'
 
@@ -18,14 +18,14 @@ export function generate_attstring_as_cast_to<T extends Part>(
 ): CodeFragment {
   switch (variable.typeName) {
     case 'text': {
-      return generate_as_text(ctx, scope, children)
+      return joinAsArray('+', generate_as_text(ctx, scope, children))
     }
+    case 'scalar': /* XXX: 暫定 */
     case 'list': {
       return generate_as_list(ctx, scope, children)
     }
-    case 'scalar':
     default: {
-      ctx.NIMPL()
+      ctx.NIMPL(variable)
     }
   }
 }
