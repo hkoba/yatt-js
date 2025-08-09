@@ -118,7 +118,7 @@ export async function generate_putargs(
     argSpec: AttItem, formalName: string, actualName: string
   ) {
     if (! formalArgs.has(formalName)) {
-      ctx.token_error(argSpec, `Unknown arg: '${formalName}'`)
+      ctx.token_error(argSpec, `Unknown arg '${formalName}'`)
     }
     const formal = formalArgs.get(formalName)!
     const actual = scope.lookup(actualName)
