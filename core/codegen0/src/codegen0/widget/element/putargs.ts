@@ -2,7 +2,7 @@ import {
   type Node, type AttItem, isIdentOnly, isBareLabeledAtt, hasStringValue
 } from '../../../deps.ts'
 import type {WidgetGenContext, Widget} from '../../context.ts'
-import type {VarScope} from '../../varscope.ts'
+import {VarScope} from '../../varscope.ts'
 import {generate_argdecls} from '../argdecls.ts'
 import {generate_body} from '../body.ts'
 
@@ -75,8 +75,9 @@ export async function generate_putargs(
     if (BODY != null) {
       switch (BODY.typeName) {
         case "widget": {
-          const {argDecls} = generate_argdecls(ctx, scope, BODY.widget);
-          const bodyProgram = await generate_body(ctx, scope, node.children);
+          const bodyScope = new VarScope(BODY.widget.argMap, scope);
+          const {argDecls} = generate_argdecls(ctx, bodyScope, BODY.widget);
+          const bodyProgram = await generate_body(ctx, bodyScope, node.children);
           const conT = ctx.session.params.connectionTypeName
           actualArgs.set(
             BODY_NAME,
