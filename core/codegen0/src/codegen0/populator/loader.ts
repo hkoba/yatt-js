@@ -102,7 +102,7 @@ export async function load_output(
 
   const script = output.output.outputText
 
-  if (session.params.debug.codegen >= 2) {
+  if ((session.params.debug.codegen ?? 0) >= 2) {
     console.log(`=======================`)
     console.log(`folder:$${folder}, modName=${modName}\n`, script)
   }
