@@ -141,7 +141,8 @@ OUT:
    </head>
  <body>
    <h2>foobar</h2>
- Hello world!
+   Hello world!
+ 
  </body>
  </html>
 # XXX: 改行に不満あり
