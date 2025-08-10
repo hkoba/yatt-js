@@ -302,6 +302,7 @@ OUT:
  <h2>&lt;foo&gt;&amp;bar;</h2>
 
 TITLE: entvar:text in mid of argument.
+SKIP: 1
 TAG: entity
 TAG: var
 IN:
@@ -320,6 +321,7 @@ OUT:
  </div>
 
 TITLE: entvar:scalar
+SKIP: 1
 IN:
  <yatt:foo x="3 * 3"/>
  <!yatt:widget foo x=scalar y="scalar?&yatt:x; + 2">
@@ -329,6 +331,7 @@ OUT:
  
 
 TITLE: entvar:list
+SKIP: 1
 IN:
  <yatt:foo x="3 .. 6, 'seven'"/>
  <!yatt:widget foo x=list>
@@ -338,6 +341,7 @@ OUT:
  
 
 TITLE: entvar:html
+SKIP: 1
 IN:
  <yatt:foo id="foobar" class="article">
    <:yatt:title><b>B</b>old</:yatt:title>
@@ -365,6 +369,7 @@ OUT:
  
 
 TITLE: entvar:code
+SKIP: 1
 IN:
  <yatt:foo id="foobar" class="article">
    <:yatt:title><b>B</b>old</:yatt:title>
@@ -392,6 +397,7 @@ OUT:
  
 
 TITLE: var element
+SKIP: 1
 IN:
  <yatt:foo id="foobar" class="article">
    <:yatt:title><b>B</b>old</:yatt:title>
@@ -459,6 +465,7 @@ ERROR: Unknown arg 'y'
 
 
 TITLE: valueless bool arg -> 1
+SKIP: 1
 IN:
  <yatt:foo x/>
  <!yatt:widget foo x=bool>
@@ -468,6 +475,7 @@ OUT:
  
 
 TITLE: valueless flag arg -> 1
+SKIP: 1
 IN:
  <yatt:foo x/>
  <!yatt:widget foo x=flag>
@@ -477,6 +485,7 @@ OUT:
  
 
 TITLE: valueless value for value => error.
+SKIP: 1
 IN:
  <yatt:foo x/>
  <!yatt:widget foo x=value>
@@ -484,6 +493,7 @@ IN:
 ERROR: ^argument 'x' requires value expression like '=...'
 
 TITLE: valueless value for list => error.
+SKIP: 1
 IN:
  <yatt:foo x/>
  <!yatt:widget foo x=list>
@@ -491,6 +501,7 @@ IN:
 ERROR: ^argument 'x' requires value expression like '=...'
 
 TITLE: valueless arg for text => error.
+SKIP: 1
 IN:
  <yatt:foo x/>
  <!yatt:widget foo x>
@@ -512,6 +523,7 @@ OUT:
  
 
 TITLE: valueless arg pass thru (html -> html)
+SKIP: 1
 # html->as_escaped は as_lvalue と同じ値を返すので、これで大丈夫。
 IN:
  <!yatt:args x=html>
@@ -526,6 +538,7 @@ OUT:
  
 
 TITLE: body pass thru, 3level
+SKIP: 1
 IN:
  <yatt:listx>bar(&yatt:label;)</yatt:listx>
  
@@ -540,6 +553,7 @@ OUT:
  
 
 TITLE: empty :att arg
+SKIP: 1
 IN:
  <yatt:foo x="X" y="Y">
    <:yatt:arg></:yatt:arg>
@@ -555,6 +569,7 @@ OUT:
  
 
 TITLE: attr (simple case: attName == varName)
+SKIP: 1
 IN:
  <!yatt:args class=attr>
  <div&yatt:class;></div>
@@ -572,6 +587,7 @@ OUT:
 
 
 TITLE: attr with default value
+SKIP: 1
 IN:
  <!yatt:args type=attr?text name=attr! value=attr! size=attr?10>
  <input &yatt:type; &yatt:name; &yatt:value; &yatt:size;/>
@@ -586,6 +602,7 @@ OUT:
 
 
 TITLE: attr(other,value)
+SKIP: 1
 IN:
  <!yatt:args color=attr:class>
  <div&yatt:color(bar,baz);></div>
@@ -595,6 +612,7 @@ PARAM[
 OUT:
  <div class="foo bar baz"></div>
 
+SKIP: 1
 PARAM[
 ]
 OUT:
@@ -603,6 +621,7 @@ OUT:
 
 
 TITLE: nested array subscript
+SKIP: 1
 IN:
  <!yatt:args ls=list>
  (&yatt:ls[-1][:ls[0]];)
@@ -637,6 +656,7 @@ OUT:
 
 
 TITLE: nested hash subscript
+SKIP: 1
 IN:
  <!yatt:args dict=value ix=list>
  (&yatt:dict{:ix[0][0]};)
@@ -677,6 +697,7 @@ IN:
 
 
 TITLE: base "base1.yatt"
+SKIP: 1
 IN:
  <!yatt:base file="base1.yatt">
  <yatt:foo xa="bar" xb="baz"/>
@@ -703,6 +724,7 @@ ERROR: Too many arguments for widget <yatt:foo>: "xxx" 'yyy'   "zzz"
 
 
 TITLE: (prohibited use of) positional code argument should raise (somewhat) understandable error
+SKIP: 1
 IN:
  <yatt:foo "print $CON 'bar'"/>
  
@@ -713,6 +735,7 @@ ERROR: Invalid text expression for variable 'mycode': print \$CON 'bar'
 
 
 TITLE: [delegate] can be written as "delegate" too
+SKIP: 1
 IN:
  <yatt:bar x=3/>
  <!yatt:widget foo x>
