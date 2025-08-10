@@ -6,7 +6,25 @@ import {
   , count_newlines
 } from './utils/count_lines.ts'
 
-import { getCallSites } from 'node:util';
+import type { CallSiteObject } from 'node:util';
+
+// Workaround for bun 1.2
+let getCallSites: undefined | ((level?:number) => CallSiteObject[]);
+
+(async () => {
+  const util = await import('node:util');
+  getCallSites = util.getCallSites
+})()
+
+export function getCallerInfo(level: number = 0): string | undefined {
+  if (getCallSites == null) {
+    return undefined
+  }
+  const callSites = getCallSites(level + 3);
+  console.log(callSites);
+  const callSite = callSites[callSites.length-1];
+  return `${callSite.functionName} file ${callSite.scriptName} line ${callSite.lineNumber}`;
+}
 
 export type Range = {start: number, end: number}
 export type RangeLine = {line: number} & Range
@@ -177,8 +195,7 @@ export class ScanningContext<S extends ParserBaseSession> {
   }
 
   NEVER(item?: any): never {
-    const [_, callSite] = getCallSites();
-    const callerInfo = `${callSite.functionName} file ${callSite.scriptName} line ${callSite.lineNumber}`;
+    const callerInfo = getCallerInfo() ?? ""
     if (item !== undefined) {
       const json = JSON.stringify(item)
       this.throw_error(`BUG! why reached here(${callerInfo}): ${json}`)
@@ -188,8 +205,7 @@ export class ScanningContext<S extends ParserBaseSession> {
   }
 
   NIMPL(item?: any): never {
-    const [_, callSite] = getCallSites();
-    const callerInfo = `${callSite.functionName} file ${callSite.scriptName} line ${callSite.lineNumber}`;
+    const callerInfo = getCallerInfo() ?? ""
     if (item !== undefined) {
       const json = JSON.stringify(item)
       this.throw_error(`Unhandled element(${callerInfo}): ${json}`)
