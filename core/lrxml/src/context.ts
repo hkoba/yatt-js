@@ -6,6 +6,8 @@ import {
   , count_newlines
 } from './utils/count_lines.ts'
 
+import { getCallSites } from 'node:util';
+
 export type Range = {start: number, end: number}
 export type RangeLine = {line: number} & Range
 export type AnyToken = {kind: string} & RangeLine
@@ -175,20 +177,24 @@ export class ScanningContext<S extends ParserBaseSession> {
   }
 
   NEVER(item?: any): never {
+    const [_, callSite] = getCallSites();
+    const callerInfo = `${callSite.functionName} file ${callSite.scriptName} line ${callSite.lineNumber}`;
     if (item !== undefined) {
       const json = JSON.stringify(item)
-      this.throw_error(`BUG! why reached here: ${json}`)
+      this.throw_error(`BUG! why reached here(${callerInfo}): ${json}`)
     } else {
-      this.throw_error("BUG! why reached here!")
+      this.throw_error("BUG! why reached here(${callerInfo})!")
     }
   }
 
   NIMPL(item?: any): never {
+    const [_, callSite] = getCallSites();
+    const callerInfo = `${callSite.functionName} file ${callSite.scriptName} line ${callSite.lineNumber}`;
     if (item !== undefined) {
       const json = JSON.stringify(item)
-      this.throw_error(`Unhandled element: ${json}`)
+      this.throw_error(`Unhandled element(${callerInfo}): ${json}`)
     } else {
-      this.throw_error("Not yet implemented")
+      this.throw_error("Not yet implemented(${callerInfo})")
     }
   }
 }
