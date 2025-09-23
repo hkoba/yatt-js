@@ -216,7 +216,7 @@ export function loadTestItems(fn: string, config: SourceConfig): {
     const [realfile, testItem] = parseTestItemSpec(item, fileNo, testItems[testItems.length-1])
 
     if (item.IN != null) {
-      sourceCache.setFile(realfile, item.IN, now)
+      sourceCache.setFile(realfile, item.IN, now, item.TITLE)
     }
 
     if (testItem) {

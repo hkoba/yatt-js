@@ -5,7 +5,7 @@ export interface SourceConfig {
   files?: {[path: string]: string} | Map<string, string>
 }
 
-export type RegistryEntry = {modTimeMs: number, source: string}
+export type RegistryEntry = {modTimeMs: number, source: string, note?: any}
 
 export type SourceLoader = (path: string, modTimeMs?: number, debug?: number) => Promise<RegistryEntry | undefined>
 
@@ -38,11 +38,11 @@ export class SourceRegistry {
     }
   }
 
-  setFile(path: string, source: string, modTimeMs?: number): RegistryEntry {
+  setFile(path: string, source: string, modTimeMs?: number, note?: any): RegistryEntry {
     if (modTimeMs == null) {
       modTimeMs = Date.now()
     }
-    this.entries.set(path, {source, modTimeMs})
+    this.entries.set(path, {source, modTimeMs, note})
     return {source, modTimeMs}
   }
 
