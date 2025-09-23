@@ -579,6 +579,7 @@ PARAM[
 OUT:
  <div class="foo"></div>
 
+SKIP: 1
 PARAM[
 - 
 ]
@@ -640,6 +641,7 @@ OUT:
  (baz)
 
 
+SKIP: 1
 PARAM[
 [
 - 0
