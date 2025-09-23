@@ -85,7 +85,7 @@ export async function refresh_populator(
     $this = ensure_folder(session.$yatt, `$${folder}`)[modName]
   }
 
-  if (debug) {
+  if (debug >= 3) {
     console.log(`session.$yatt.$public: `, session.$yatt.$public)
   }
 

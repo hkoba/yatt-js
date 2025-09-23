@@ -59,7 +59,7 @@ export function add_args_cont(
 ): ArgAdder | undefined {
 
   for (const att of gen) {
-    if (ctx.debug >= 2) {
+    if (ctx.debug >= 3) {
       console.log('add args from: ', att)
     }
     if (isBareLabeledAtt(att)) {
