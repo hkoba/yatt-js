@@ -14,29 +14,28 @@ import { tokenize_multipart_context } from './tokenize.ts'
 
 import { type AttItem, parse_attlist} from '../attlist/parse.ts'
 
+export type Content = Boundary | Payload
+
 export type Payload = AnyToken & {kind: "text", data: string} |
   AnyToken & {kind: "comment", data: string, innerRange: Range}
 
 // yatt:widget:html
 // ↓
 // namespace: 'yatt'
-// kind: 'widget'
-// subkind: ['html']
+// kind: 'boundary'
+// decltype: ['widget', 'html']
 
-export type PartBase = {
+export type Boundary = {
   filename?: string
   namespace: string
-  kind: string
-  subkind: string[]
+  kind: 'boundary'
+  decltype: string[]
   attlist: AttItem[]
-  payload: Payload[]
-}
-
-export type Part = AnyToken & PartBase 
+} & AnyToken
 
 export function parse_multipart(
   source: string, config: {filename?: string} & LrxmlConfig
-): [Part[], ParserSession] {
+): [Content[], ParserSession] {
   const {filename = "dummy.ytjs", ..._config} = config;
   const ctx = parserContext({filename, source, config: _config})
   return [parse_multipart_context(ctx), ctx.session]
@@ -44,40 +43,34 @@ export function parse_multipart(
 
 type Start = {line: number, start: number}
 
-export function parse_multipart_context(ctx: ParserContext): Part[] {
-  const partList: [Start, PartBase][] = []
+export function parse_multipart_context(ctx: ParserContext): Content[] {
+  const itemList: Content[] = []
   const lex = tokenize_multipart_context(ctx)
   for (const tok of lex) {
     switch (tok.kind) {
       case "text": {
-        push_payload(ctx, partList, {
-          kind: tok.kind, data: ctx.range_text(tok),
-          ...ctx.token_range(tok)
-        })
+        itemList.push({kind: tok.kind, data: ctx.range_text(tok), ...tok});
         break;
       }
       case "comment": {
         if (tok.innerRange == null) {
           ctx.NEVER()
         }
-        push_payload(ctx, partList, {
-          kind: tok.kind, data: ctx.range_text(tok),
-          innerRange: tok.innerRange,
-          ...ctx.token_range(tok)
-        })
+        const {kind, line, start, end, innerRange} = tok
+        itemList.push({kind, line, start, end, innerRange, data: ctx.range_text(tok)});
         break;
       }
       case "decl_begin": {
-        if (partList.length) {
-          fixup_part_payload(partList[partList.length-1][1])
-        }
-        const [namespace, kind, ...subkind] = tok.detail.split(/:/);
-        const [attlist, _end] = parse_attlist(ctx, lex, "decl_end")
-        const part: PartBase = {
+        const {line, start} = tok
+        const [namespace, ...decltype] = tok.detail.split(/:/);
+        const [attlist, end] = parse_attlist(ctx, lex, "decl_end")
+        const boundary: Boundary = {
+          kind: 'boundary',
           filename: ctx.session.filename,
-          namespace, kind, subkind, attlist, payload: []
+          namespace, decltype, attlist,
+          line, start, end: end.end
         }
-        partList.push([{line: tok.line, start: tok.start}, part])
+        itemList.push(boundary)
         break;
       }
       default: {
@@ -86,47 +79,7 @@ export function parse_multipart_context(ctx: ParserContext): Part[] {
     }
   }
 
-  if (partList.length) {
-    fixup_part_payload(partList[partList.length-1][1])
-  }
-
-  return add_range<PartBase>(partList, ctx.end)
-}
-
-function fixup_part_payload(part: PartBase): void {
-  if (part.payload.length <= 0) return;
-
-  // Last continuous newlines in the part are replaced to single newline.
-  const lastTok = part.payload[part.payload.length - 1]
-  if (lastTok.kind === 'text') {
-    lastTok.data = lastTok.data.replace(/(?:\r?\n)+$/, "\n")
-  }
-}
-
-function add_range<T>(list: [Start, T][], end: number): (T & Range & {line: number})[] {
-  const result: (T & Range & {line: number})[] = []
-  let [cur, ...rest] = list
-  for (const nx of rest) {
-    const range = {...cur[0], end: nx[0].start}
-    result.push({...range, ...cur[1]})
-    cur = nx
-  }
-  if (cur != null) {
-    const range = {...cur[0], end}
-    result.push({...range, ...cur[1]})
-  }
-  return result
-}
-
-function push_payload(ctx: ParserContext, partList: [Start, PartBase][], payload: Payload) {
-  if (! partList.length) {
-    // May fill default kind/namespace
-    partList.push([{start: 0, line: 1}, {
-      filename: ctx.session.filename,
-      kind: "", namespace: "", subkind: [], attlist: [], payload: []
-    }])
-  }
-  partList[partList.length-1][1].payload.push(payload)
+  return itemList
 }
 
 // console.log(this)
