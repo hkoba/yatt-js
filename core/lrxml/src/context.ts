@@ -21,7 +21,7 @@ export function getCallerInfo(level: number = 0): string | undefined {
     return undefined
   }
   const callSites = getCallSites(level + 3);
-  console.log(callSites);
+  // console.log(callSites);
   const callSite = callSites[callSites.length-1];
   return `${callSite.functionName} file ${callSite.scriptName} line ${callSite.lineNumber}`;
 }
@@ -200,7 +200,7 @@ export class ScanningContext<S extends ParserBaseSession> {
       const json = JSON.stringify(item)
       this.throw_error(`BUG! why reached here(${callerInfo}): ${json}`)
     } else {
-      this.throw_error("BUG! why reached here(${callerInfo})!")
+      this.throw_error(`BUG! why reached here(${callerInfo})!`)
     }
   }
 
@@ -210,7 +210,7 @@ export class ScanningContext<S extends ParserBaseSession> {
       const json = JSON.stringify(item)
       this.throw_error(`Unhandled element(${callerInfo}): ${json}`)
     } else {
-      this.throw_error("Not yet implemented(${callerInfo})")
+      this.throw_error(`Not yet implemented(${callerInfo})`)
     }
   }
 }
