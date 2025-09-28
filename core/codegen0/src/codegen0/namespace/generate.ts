@@ -106,19 +106,19 @@ export async function generate_namespace_for_declentry(
   for (const [kind, name] of template.partOrder) {
     switch (kind) {
       case "action": {
-        const part = template.partMap[kind].get(name)
+        const part = template.partMap[kind].get(name)!
         const ctx = new CodeGenContextClass(template, part, session);
         program.push(generate_action(ctx))
         break
       }
       case "entity": {
-        const part = template.partMap[kind].get(name)
+        const part = template.partMap[kind].get(name)!
         const ctx = new CodeGenContextClass(template, part, session);
         program.push(generate_entity(ctx))
         break
       }
       case "widget": {
-        const part = template.partMap[kind].get(name)
+        const part = template.partMap[kind].get(name)!
         const ctx = new CodeGenContextClass(template, part, session, {hasThis: true});
         const ast = parse_template(session, part.payloads)
         program.push(`export function `, await generate_widget(ctx, ast))

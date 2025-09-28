@@ -2,7 +2,7 @@ import { type AttItem, hasQuotedStringValue, isBareLabeledAtt } from '../deps.ts
 
 import { DeclarationProcessor, type BuilderContext } from './context.ts'
 
-export class BaseProcessor implements DeclarationProcessor {
+export class BaseProcessor {
   readonly kind = 'base'
   createPart(ctx: BuilderContext, attlist: AttItem[]): undefined {
     for (const att of attlist) {

@@ -52,7 +52,7 @@ export async function generate_putargs(
       if (! formalArgs.has(argName)) {
         ctx.token_error(argSpec, `Unknown arg '${argName}'`)
       }
-      formalVar = formalArgs.get(argName)
+      formalVar = formalArgs.get(argName)!
     }
     if (actualArgs.has(argName)) {
       ctx.token_error(argSpec, `Duplicate argument: ${argName}`)

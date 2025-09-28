@@ -30,7 +30,7 @@ export function generate_reference_interface(
       for (const [kind, name] of template.partOrder) {
         switch (kind) {
           case "widget": {
-            const part = template.partMap[kind].get(name)
+            const part = template.partMap[kind].get(name)!
             const ctx = new CodeGenContextClass(template, part, session);
             const {signature} = generate_widget_signature(ctx)
             program.push(`      `, signature, ";\n")

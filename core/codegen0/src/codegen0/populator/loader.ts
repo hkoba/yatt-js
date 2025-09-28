@@ -44,7 +44,7 @@ export async function refresh_populator(
   realPath: string, session: LoaderSession
 ): Promise<{$this: HandlerSet, template: TemplateDeclaration} | undefined> {
 
-  const debug = session.params.debug.declaration
+  const debug = session.params.debug.declaration ?? 0
 
   const entry = await get_template_declaration(session, realPath);
 

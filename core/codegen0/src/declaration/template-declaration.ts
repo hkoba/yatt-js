@@ -215,7 +215,7 @@ export function populateTemplateDeclaration(
         const [kind, ...subkind] = content.decltype
         // XXX: subkind を使ってない
         if (ctx.session.builders.has(kind)) {
-          const builder = ctx.session.builders.get(kind)
+          const builder = ctx.session.builders.get(kind)!
           const [part, attlist] = builder.createPart(ctx, ctx.copy_array(content.attlist))
           if (partMap[part.kind].has(part.name)) {
             // XXX: Better diag

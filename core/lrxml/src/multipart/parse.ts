@@ -74,7 +74,7 @@ export function parse_multipart_context(ctx: ParserContext): Content[] {
   for (const tok of lex) {
     switch (tok.kind) {
       case "text": {
-        itemList.push({kind: tok.kind, data: ctx.range_text(tok), ...tok});
+        itemList.push({...tok, kind: tok.kind, data: ctx.range_text(tok)});
         break;
       }
       case "comment": {

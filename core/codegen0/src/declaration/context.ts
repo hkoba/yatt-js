@@ -40,7 +40,7 @@ export interface DeclarationProcessor {
   readonly kind: string;
   createPart(
     ctx: BuilderContext, attlist: AttItem[]
-  ): [Part, AttItem[]] | undefined
+  ): [Part, AttItem[]]
 }
 
 // Session は３階層にすべきか…
