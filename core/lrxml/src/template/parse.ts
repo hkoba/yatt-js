@@ -79,6 +79,25 @@ export function isBareLabeledAtt(att: AttItem | AttElement): att is AttLabeledBy
   return hasLabel(att) && att.label.kind === 'identplus'
 }
 
+export function maybeArgName(att: AttItem | AttElement)
+: [string, boolean] | undefined {
+  if (hasLabel(att)) {
+    if (att.label.kind !== 'identplus') return;
+    return [att.label.value, att.label.has_three_colon]
+  } else {
+    if (att.kind !== 'identplus') return;
+    return [att.value, false]
+  }
+}
+
+export function maybePassThruVarName(att: AttItem | AttElement)
+: string | undefined {
+  if (att.kind !== 'identplus' || att.has_three_colon) {
+    return
+  }
+  return att.value
+}
+
 function ensure_session_has_patterns(session: ParserSession | ParserBaseSession)
 : ParserSession {
   if ((session as ParserSession).patterns != null) {

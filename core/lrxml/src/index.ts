@@ -28,7 +28,8 @@ export {
   parse_template,
   hasStringValue, hasQuotedStringValue, hasNestedLabel, hasLabel,
   hasNestedTerm,
-  isBareLabeledAtt, isIdentOnly
+  isBareLabeledAtt, isIdentOnly,
+  maybePassThruVarName, maybeArgName
 } from './template/index.ts'
 
 export type {AttItem, AttValue} from './attlist/parse.ts'

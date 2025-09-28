@@ -1,14 +1,21 @@
 import {
-  type Node, type AttItem, isIdentOnly, isBareLabeledAtt, hasStringValue
+  type Node, type AttItem, isIdentOnly, hasQuotedStringValue,
+  maybePassThruVarName, maybeArgName
 } from '../../../deps.ts'
 import type {WidgetGenContext, Widget} from '../../context.ts'
 import {VarScope} from '../../varscope.ts'
+import {isEscapedVariable} from '../../../declaration/vartype.ts'
+import type {Variable} from '../../../declaration/vartype.ts'
 import {generate_argdecls} from '../argdecls.ts'
 import {generate_body} from '../body.ts'
 
 import {type CodeFragment, joinAsArray} from '../../codefragment.ts'
 
 import {generate_as_cast_to} from '../../template_context/cast.ts'
+
+function elementPath(node: Node & {kind: 'element'}): string {
+  return node.path.join(":")
+}
 
 export async function generate_putargs(
   ctx: WidgetGenContext, scope: VarScope, node: Node & {kind: 'element'}
@@ -18,52 +25,78 @@ export async function generate_putargs(
 {
   const formalArgs = calleeWidget.argMap;
   const positionalArgs = formalArgs.entries()
-  let nextArg
   const actualArgs: Map<string, CodeFragment> = new Map
   for (const argSpec of node.attlist) {
-    if (isBareLabeledAtt(argSpec) && argSpec.kind === "identplus") {
-      // XXX: typecheck!
-      // name=name
-      passThrough(argSpec, argSpec.label.value, argSpec.value)
-    }
-    else if (isIdentOnly(argSpec)) {
-      // XXX: typecheck!
-      // name
-      passThrough(argSpec, argSpec.value, argSpec.value)
-    }
-    else if (isBareLabeledAtt(argSpec) && hasStringValue(argSpec)) {
-      // name='foo' name="bar"
-      const formalName = argSpec.label.value
-      if (! formalArgs.has(formalName)) {
-        ctx.token_error(argSpec, `Unknown arg '${formalName}'`)
+    // formal
+    let argName: string | undefined
+    let formalVar: Variable | undefined
+    let is_spread: boolean | undefined
+    const nameRec = maybeArgName(argSpec)
+    if (! nameRec) {
+      const nextArg = positionalArgs.next()
+      if (nextArg.done) {
+        ctx.token_error(argSpec, `Too many arguments for widget <${elementPath(node)}>`)
       }
-      const formal = formalArgs.get(formalName)!
-      if (actualArgs.has(formalName)) {
-        ctx.token_error(argSpec, `Duplicate argument: ${formalName}`)
+      [argName, formalVar] = nextArg.value
+      if (formalVar.is_body_argument) {
+        const args = ctx.range_text({
+          start: argSpec.start, end: node.attlist[node.attlist.length-1].end
+        })
+        ctx.token_error(argSpec, `Too many arguments for widget <${elementPath(node)}>: ${args}`)
       }
-      actualArgs.set(formalName, [
-        {kind: 'name', code: formalName, source: argSpec.label},
+    } else {
+      [argName, is_spread] = nameRec
+      if (is_spread) {
+        ctx.token_error(argSpec, `spread(:::) is useless here`)
+      }
+      if (! formalArgs.has(argName)) {
+        ctx.token_error(argSpec, `Unknown arg '${argName}'`)
+      }
+      formalVar = formalArgs.get(argName)
+    }
+    if (actualArgs.has(argName)) {
+      ctx.token_error(argSpec, `Duplicate argument: ${argName}`)
+    }
+
+    // console.log('nameRec', nameRec, 'formal', formalVar, `argSpec for ${argName}`, argSpec)
+
+    let passThru: string | undefined
+    let actualVar: Variable | undefined
+    if ((passThru = maybePassThruVarName(argSpec)) && (actualVar = scope.lookup(passThru))) {
+      // formalVar escaped and not actualVar escaped
+      actualArgs.set(argName, [
+        {kind: 'name', code: argName, source: argSpec},
         ": ",
-        generate_as_cast_to(ctx, scope, formal, argSpec)
+        (isEscapedVariable(formalVar) && !isEscapedVariable(actualVar)
+          ? generate_varref_as_escaped(ctx, argSpec, actualVar)
+          : {kind: 'name', code: passThru, source: argSpec})
       ])
+    }
+    else if (argSpec.kind === 'bare' || hasQuotedStringValue(argSpec)) {
+      actualArgs.set(argName, [
+        {kind: 'name', code: argName, source: argSpec.label},
+        ": ",
+        generate_as_cast_to(ctx, scope, formalVar, argSpec)
+      ])
+    }
+    else if (argSpec.kind === 'entity') {
+      actualArgs.set(argName, [
+        {kind: 'name', code: argName},
+        ": ",
+        generate_as_cast_to(ctx, scope, formalVar, argSpec)
+      ])
+    }
+    else if (isIdentOnly(argSpec) && formalVar.typeName === 'boolean') {
+      // 1
+      ctx.NIMPL()
     }
     else if (argSpec.kind === "attelem") {
       // <:yatt:name>...</:yatt:name>
       ctx.NIMPL()
     }
-    else if (!(nextArg = positionalArgs.next()).done) {
-      // positional arguments
-      // 'foo' "bar"
-      // entity, nest
-      const [name, formal] = nextArg.value
-      actualArgs.set(name, [
-        `${name}: `,
-        generate_as_cast_to(ctx, scope, formal, argSpec)
-      ])
-    }
     else {
-      // console.dir(argSpec, {colors: true, depth: null});
-      ctx.NIMPL(argSpec)
+      console.log('foobarbaz:', argSpec, 'passThru', passThru);
+      ctx.token_error(argSpec, `argument '${argName}' requires value expression like '=...'`)
     }
   }
 
@@ -100,10 +133,8 @@ export async function generate_putargs(
       }
     }
   }
-
-  // console.log(`formal: `, formalArgs)
+  // console.log(`calleeName: ${calleeWidget.name}, formal: `, formalArgs)
   // console.log(`actual: `, actualArgs)
-
   for (const [name, formal] of formalArgs.entries()) {
     if (actualArgs.has(name))
       continue;
@@ -114,25 +145,19 @@ export async function generate_putargs(
 
   // XXX: node.footer
   return joinAsArray(', ', Array.from(actualArgs.values()))
+}
 
-  function passThrough(
-    argSpec: AttItem, formalName: string, actualName: string
-  ) {
-    if (! formalArgs.has(formalName)) {
-      ctx.token_error(argSpec, `Unknown arg '${formalName}'`)
-    }
-    const formal = formalArgs.get(formalName)!
-    const actual = scope.lookup(actualName)
-    if (actual == null) {
-      ctx.token_error(argSpec, `No such variable: ${actualName}`)
-    }
-    if (formal.typeName !== actual.typeName) {
-      ctx.token_error(argSpec, `Variable type mismatch: ${formalName}
-Expected: ${formal.typeName} Got: ${actual.typeName}`)
-    }
-    if (actualArgs.has(formalName)) {
-      ctx.token_error(argSpec, `Duplicate argument: ${formalName}`)
-    }
-    actualArgs.set(formalName, `${formalName}: ${actualName}`)
+function generate_varref_as_escaped(
+  _ctx: WidgetGenContext,
+  node: Node, actualVar: Variable
+): CodeFragment {
+  if (actualVar.is_escaped) {
+    return {kind: 'name', code: actualVar.varName, source: node}
+  } else {
+    return [
+      '$yatt.runtime.escape(',
+      {kind: 'name', code: actualVar.varName, source: node},
+      ')'
+    ]
   }
 }

@@ -64,6 +64,10 @@ type ExprVar = { typeName: "expr"} & VariableBase; // XXX: function, closure, cb
 export type SimpleVar = TextVar | ListVar | ScalarVar | BooleanVar |
   HtmlVar | ExprVar
 
+export function isEscapedVariable(v: Variable): boolean {
+  return v.is_escaped
+}
+
 export type WidgetVar = {
   typeName: "widget", is_callable: true, widget: Widget
 } & VariableBase;
