@@ -130,29 +130,30 @@ export async function generate_populator_for_declentry(
       using indent$this = new IndentScope(session)
 
       let count = 0
-      for (const part of template) {
+      for (const [kind, name] of template.partOrder) {
         indent$this.reset()
         program.push(indent(session)) // , `/*${session.indentLevel}*/`
         if (count > 0) {
           program.push(', \n')
           program.push(indent(session))
         }
-        switch (part.kind) {
+        switch (kind) {
           case "action": {
+            const part = template.partMap[kind].get(name)
             const ctx = new CodeGenContextClass(template, part, session, {hasThis: true});
             program.push(generate_action(ctx))
             break
           }
           case "entity": {
+            const part = template.partMap[kind].get(name)
             const ctx = new CodeGenContextClass(template, part, session, {hasThis: true});
             program.push(generate_entity(ctx))
             break
           }
           case "widget": {
-            if (part.raw_part == null)
-              continue;
+            const part = template.partMap[kind].get(name)
             const ctx = new CodeGenContextClass(template, part, session, {hasThis: true});
-            const ast = parse_template(session, part.raw_part)
+            const ast = parse_template(session, part.payloads)
             program.push(await generate_widget(ctx, ast))
             break
           }

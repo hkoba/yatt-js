@@ -1,0 +1,329 @@
+#!/usr/bin/env -S deno run -RE
+
+import {
+  parse_multipart, type Content, type AttItem,
+  isIdentOnly,
+} from '../deps.ts'
+
+import { yattParams } from '../config.ts'
+
+import type {
+  YattBuildConfig,
+  BuilderMap, BuilderContext,
+  DeclaratorMap,
+  BuilderRequestSession,
+  DeclarationProcessor,
+  DeclState
+} from './context.ts'
+
+import {
+  BuilderContextClass,
+  isBuilderSession
+} from './context.ts'
+
+import { TaskGraph } from './taskgraph.ts'
+
+import type {
+  PartMapType
+  , RouteMapType
+} from './types.ts'
+
+import type {
+  TemplateDeclaration
+} from './types.ts'
+
+import {baseModName} from './partFolder.ts'
+import {dirname} from 'node:path'
+
+import type { PartKind, Part, Widget, Entity } from './part.ts'
+
+import {builtin_vartypemap} from './vartype.ts'
+
+import {add_args, type ArgAdder} from './addArgs.ts'
+
+import { BaseProcessor } from './base.ts'
+
+import {internTemplateFolder} from './partFolder.ts'
+
+import {add_route} from './attlist.ts'
+
+import {WidgetBuilder} from './part/widget.ts'
+import {ActionBuilder} from './part/action.ts'
+import {EntityBuilder} from './part/entity.ts'
+
+export function builtin_builders(): BuilderMap {
+  const builders = new Map
+  builders.set('args', new WidgetBuilder(false, true))
+  builders.set('widget', new WidgetBuilder(true, false))
+  builders.set('page', new WidgetBuilder(true, true))
+  builders.set('action', new ActionBuilder)
+  builders.set('entity', new EntityBuilder)
+  builders.set('', builders.get('args'))
+  return builders
+}
+
+export function builtin_declarators(): DeclaratorMap {
+  const declarators = new Map;
+  declarators.set('base', new BaseProcessor)
+  // XXX: import
+  return declarators
+}
+
+export function declarationBuilderSession(
+  config: YattBuildConfig
+): BuilderRequestSession {
+
+  const rootDir = config.rootDir ?? ".";
+  const {
+    builders = builtin_builders(),
+    declarators = builtin_declarators(),
+    varTypeMap = builtin_vartypemap(),
+    declCache = new Map,
+    entFns = {},
+    ...rest_config
+  } = config
+
+  const buildParams = yattParams(rest_config);
+
+  const sourceCache = config.sourceCache ? config.sourceCache : new SourceRegistry(config)
+
+  const builder_session: BuilderRequestSession = {
+    builders, varTypeMap,
+    declarators,
+    declCache,
+    sourceCache,
+    entFns,
+    visited: new Set,
+    output: [],
+    templateFolderMap: new Map,
+    params: buildParams
+  }
+
+  return builder_session
+}
+
+import { SourceRegistry } from "./registry.ts";
+
+export async function get_template_declaration(
+  session: BuilderRequestSession,
+  realPath: string,
+  source?: string,
+  modTimeMs?: number
+): Promise<DeclState | undefined> {
+
+  const debug = session.params.debug.declaration ?? 0
+
+  if (debug) {
+    console.log(`get_template_declaration: ${realPath}`)
+  }
+
+  const {sourceEntry, updated} = await session.sourceCache.refresh(
+    realPath, session.visited.has(realPath), source, modTimeMs,
+    session.params.debug.cache ?? 0
+  )
+
+  session.visited.add(realPath)
+
+  const template = session.declCache.get(realPath)
+
+  if (template && sourceEntry && !updated) {
+    if (debug >= 2) {
+      console.log(`found up-to-date sourceEntry of ${realPath}`)
+    }
+    const {modTimeMs, source} = sourceEntry
+    return {source, template, modTimeMs, updated: false}
+  }
+
+  if (sourceEntry) {
+    if (debug >= 2) {
+      console.log(`build new template decl for: ${realPath}`)
+    }
+    const {modTimeMs, source} = sourceEntry
+    const template = build_template_declaration(realPath, source, session)
+    session.declCache.set(realPath, template)
+
+    return {source, template, modTimeMs, updated: true}
+  }
+
+  if (debug >= 2) {
+    console.log(`XXX: has sourceEntry(updated=${updated}):`, sourceEntry != null, `has template: `, template != null)
+  }
+}
+
+export function build_template_declaration(
+  filename: string,
+  source: string,
+  configOrSession: YattBuildConfig | BuilderRequestSession
+): TemplateDeclaration {
+
+  const builder_session = isBuilderSession(configOrSession)
+    ? configOrSession
+    : declarationBuilderSession(configOrSession)
+
+  const [contentList] = parse_multipart(
+    source, {...builder_session, filename}
+  )
+
+  return populateTemplateDeclaration(
+    filename, source,
+    builder_session, contentList
+  )
+}
+
+function ensure_default_part(
+  ctx: BuilderContext
+): Widget {
+  const builder: WidgetBuilder = ctx.session.builders.get('args') as WidgetBuilder
+  const [part] = builder.createPart(ctx, [], true)
+  return part
+}
+
+export function populateTemplateDeclaration(
+  filename: string, source: string,
+  builder_session: BuilderRequestSession, contentList: Content[]
+): TemplateDeclaration {
+  const ctx = new BuilderContextClass({filename, source, ...builder_session})
+
+  // For delegate type and ArgMacro
+  const partOrder: [PartKind, string][] = []
+  const partMap: PartMapType = {widget: new Map, action: new Map, entity: new Map};
+  const taskGraph = new TaskGraph<Widget>(ctx.debug);
+  const routeMap: RouteMapType = new Map
+
+  const declList = []
+  let currentPart: Part | undefined
+
+  for (const content of contentList) {
+    switch (content.kind) {
+      case "comment":
+      case "text": {
+        if (! currentPart) {
+          currentPart = ensure_default_part(ctx)
+          partMap[currentPart.kind].set(currentPart.name, currentPart)
+          partOrder.push([currentPart.kind, currentPart.name]);
+          add_args(ctx, currentPart, [])
+        }
+        currentPart.payloads.push(content)
+        break;
+      }
+
+      case "boundary": {
+        if (currentPart) {
+          finalize_part(ctx, currentPart)
+        }
+
+        const [kind, ...subkind] = content.decltype
+        // XXX: subkind を使ってない
+        if (ctx.session.builders.has(kind)) {
+          const builder = ctx.session.builders.get(kind)
+          const [part, attlist] = builder.createPart(ctx, ctx.copy_array(content.attlist))
+          if (partMap[part.kind].has(part.name)) {
+            // XXX: Better diag
+            ctx.throw_error(`Duplicate declaration ${part.kind} ${part.name}`);
+          }
+          currentPart = part
+          switch (part.kind) {
+            case "widget": partMap.widget.set(part.name, part); break;
+            case "action": partMap.action.set(part.name, part); break;
+            case "entity": partMap.entity.set(part.name, part); break;
+          }
+
+          partOrder.push([part.kind, part.name]);
+          if (part.route != null) {
+            add_route(ctx, routeMap, part.route, part);
+          }
+
+          const task: ArgAdder | undefined = add_args(ctx, part, attlist)
+          if (task) {
+            if (part.kind !== "widget") {
+              ctx.NIMPL()
+            }
+            taskGraph.delay_product(part.name, part as Widget, task, task.dep);
+            if (ctx.debug >= 2) {
+              console.log(`delayed delegate arg ${task.name} in widget :${part.name}, depends on widget :${task.dep}`)
+            }
+          }
+        }
+        else if (ctx.session.declarators.has(kind)) {
+          declList.push(content)
+        }
+        else {
+          const ns = ctx.session.params.namespace[0]
+          ctx.token_error(content, `Unknown declarator (<!${ns}:${content.decltype.join(":")} >)`);
+        }
+        break;
+      }
+    }
+  }
+
+  if (currentPart) {
+    finalize_part(ctx, currentPart)
+  }
+
+  // Resolve
+  taskGraph.do_all((dep: string) => {
+    const inSameTemplate = partMap.widget.has(dep)
+    if (inSameTemplate) {
+      return [inSameTemplate, partMap.widget.get(dep)!]
+    }
+    // XXX: find from vfs
+  })
+
+  const folder = internTemplateFolder(filename, builder_session)
+  const dir = dirname(filename)
+  // XXX: declList を使ってない
+  return {
+    path: filename,
+    realDir: dir === '.' ? '' : dir,
+    modName: baseModName(filename),
+    folder,
+    partMap, routeMap, partOrder
+  }
+}
+
+function finalize_part(
+  _ctx: BuilderContext, part: Part
+) {
+  if (part.payloads.length) {
+    const lastTok = part.payloads[part.payloads.length-1]
+    if (lastTok.kind === "text") {
+      lastTok.data = lastTok.data.replace(/(?:\r?\n)+$/, "\n")
+    }
+  }
+  // TODO: argmacro
+}
+
+if (import.meta.main) {
+  (async () => {
+    const process = await import("node:process")
+    const [...args] = process.argv.slice(2);
+    console.time('load lrxml');
+    const { parse_long_options } = await import('../deps.ts')
+    console.timeLog('load lrxml');
+    const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
+    const config = {
+      debug: { declaration: debugLevel },
+      entFns: {}
+    }
+    parse_long_options(args, {target: config})
+
+    const { readFileSync } = await import('node:fs')
+
+    console.time('run');
+    for (const fn of args) {
+      const template = build_template_declaration(
+        fn,
+        readFileSync(fn, { encoding: "utf-8" }),
+        config
+      )
+
+      const {partMap} = template;
+      for (const [name, map] of Object.entries(partMap)) {
+        console.log(`=== ${name} ===`)
+        console.dir(map, {colors: true, depth: null})
+        console.log('\n')
+      }
+    }
+    console.timeLog('run');
+  })()
+}

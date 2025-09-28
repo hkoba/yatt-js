@@ -105,23 +105,24 @@ export async function generate_module_for_declentry(
 
   const importListPos = program.length
 
-  for (const part of template) {
-    switch (part.kind) {
+  for (const [kind, name] of template.partOrder) {
+    switch (kind) {
       case "action": {
+        const part = template.partMap[kind].get(name)
         const ctx = new CodeGenContextClass(template, part, session);
         program.push(generate_action(ctx))
         break
       }
       case "entity": {
+        const part = template.partMap[kind].get(name)
         const ctx = new CodeGenContextClass(template, part, session);
         program.push(generate_entity(ctx))
         break
       }
       case "widget": {
-        if (part.raw_part == null)
-          continue;
+        const part = template.partMap[kind].get(name)
         const ctx = new CodeGenContextClass(template, part, session);
-        const ast = parse_template(session, part.raw_part)
+        const ast = parse_template(session, part.payloads)
         program.push(`export function `, await generate_widget(ctx, ast))
         break
       }

@@ -5,7 +5,9 @@ import {attInnerRange} from '@yatt/lrxml'
 
 import type { BuilderContext } from './context.ts'
 
-import {type Widget, type Part, makeWidget} from './part.ts'
+import type {Widget, Part} from './part.ts'
+
+import {makeWidget} from './part/widget.ts'
 
 import {
   type Variable, build_simple_variable

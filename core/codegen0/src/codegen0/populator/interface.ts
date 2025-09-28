@@ -27,9 +27,10 @@ export function generate_reference_interface(
     program.push(` \$${folder}: {\n`);
     for (const template of templateList) {
       program.push(`    ${template.modName}: {\n`)
-      for (const part of template) {
-        switch (part.kind) {
+      for (const [kind, name] of template.partOrder) {
+        switch (kind) {
           case "widget": {
+            const part = template.partMap[kind].get(name)
             const ctx = new CodeGenContextClass(template, part, session);
             const {signature} = generate_widget_signature(ctx)
             program.push(`      `, signature, ";\n")

@@ -19,6 +19,7 @@ import { ParserContext, ParserSession } from "../../../lrxml/src/context.ts";
 
 export type YattBuildConfig = YattConfig & {
   builders?: BuilderMap
+  declarators?: DeclaratorMap
   declCache?: DeclTree
   sourceCache?: SourceRegistry
   sourceLoader?: SourceLoader
@@ -33,6 +34,8 @@ export function isBuilderSession(arg: YattBuildConfig | BuilderRequestSession)
 
 export type BuilderMap = Map<string, DeclarationProcessor>;
 
+export type DeclaratorMap = Map<string, DeclarationProcessor>;
+
 export interface DeclarationProcessor {
   readonly kind: string;
   createPart(
@@ -45,6 +48,7 @@ export interface DeclarationProcessor {
 
 export type BuilderSettings = {
   builders: BuilderMap
+  declarators: DeclaratorMap
   params: YattParams
   varTypeMap: VarTypeMap
   declCache: DeclTree

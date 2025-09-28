@@ -3,10 +3,10 @@ export {
   get_template_declaration,
   declarationBuilderSession,
   builtin_builders
-} from './createPart.ts'
+} from './template-declaration.ts'
 
 export type {
-  Part, Widget, makeWidget, Action, Entity
+  Part, Widget, Action, Entity
 } from './part.ts'
 
 export type {

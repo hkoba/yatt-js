@@ -38,7 +38,7 @@ export function generate_action(ctx: CodeGenContext<Action>): CodeFragment {
     ") {" + bodyPreamble + "\n",
   )
 
-  for (const item of ctx.part.raw_part!.payload) {
+  for (const item of ctx.part.payloads) {
     if (item.kind === "text") {
       program.push(ctx.range_text(item))
     }

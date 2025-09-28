@@ -19,7 +19,7 @@ export function generate_entity(ctx: CodeGenContext<Entity>): CodeFragment {
 
   program.push("(", joinAsArray(', ', argDecls), ") {\n");
 
-  for (const item of ctx.part.raw_part!.payload) {
+  for (const item of ctx.part.payloads) {
     if (item.kind === "text") {
       program.push(ctx.range_text(item))
     }

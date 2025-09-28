@@ -22,7 +22,7 @@ const entry_part = (entry: DeclState, name: string): Widget | undefined => {
 }
 
 const widget_text = (widget: Widget | undefined): string | undefined => {
-  return widget?.raw_part?.payload[0].data
+  return widget?.payloads[0].data
 }
 
 const debug = parseInt(process.env.DEBUG ?? '', 10) || 0

@@ -1,4 +1,4 @@
-import type { RawPart, AttItem } from '../deps.ts'
+import type { Payload, AttItem } from '../deps.ts'
 
 import type { Variable } from './vartype.ts'
 
@@ -12,22 +12,13 @@ export type PartBase = {
   is_public: boolean
   argMap: Map<string, Variable>;
   varMap: Map<string, Variable>;
-  raw_part?: RawPart //
+  payloads: Payload[]
   route?: string | [string, string] // [method, route]
 }
 
 export type Widget = PartBase & {
   kind: "widget"
-}
-
-export function makeWidget(
-  name: string, isPublic: boolean, nameNode?: AttItem
-  , route?: string | [string, string]
-): Widget {
-  return {
-    kind: "widget", name, nameNode, is_public: isPublic,
-    argMap: new Map, varMap: new Map, route
-  }
+  implicit?: boolean
 }
 
 export type Action = PartBase & {

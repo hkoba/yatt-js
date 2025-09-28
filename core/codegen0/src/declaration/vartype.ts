@@ -1,5 +1,5 @@
 import type {AttItem} from '../deps.ts'
-import {type Part, type Widget, makeWidget} from './part.ts'
+import {type Part, type Widget} from './part.ts'
 
 import type {BuilderContext} from './context.ts'
 
@@ -7,6 +7,8 @@ import {build_delegate_variable_adder} from './delegate.ts'
 
 import {add_args, type ArgAdder} from './addArgs.ts'
 import { AttStringItem } from "../../../lrxml/src/attstring/parse.ts";
+
+import {makeWidget} from './part/widget.ts'
 
 export type VarTypeMap = {
   simple: Map<string, SimpleVariableBuilder>;

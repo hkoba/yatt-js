@@ -1,0 +1,51 @@
+{
+  "version": "4",
+  "specifiers": {
+    "jsr:@cross/runtime@1": "1.1.0",
+    "jsr:@cross/test@^0.0.9": "0.0.9",
+    "jsr:@std/assert@0.223": "0.223.0",
+    "jsr:@std/fmt@0.223": "0.223.0",
+    "npm:source-map@*": "0.7.4",
+    "npm:source-map@~0.7.4": "0.7.4",
+    "npm:typescript@*": "5.7.3"
+  },
+  "jsr": {
+    "@cross/runtime@1.1.0": {
+      "integrity": "f35a3b768a9de125277329483b684062ffc9ee86f4449cb8b3d614adcad64ffb"
+    },
+    "@cross/test@0.0.9": {
+      "integrity": "2aa8237a96a2f8f51ccc8fec71135616d223bf4f38dd89ba4f863037c85ddc56",
+      "dependencies": [
+        "jsr:@cross/runtime"
+      ]
+    },
+    "@std/assert@0.223.0": {
+      "integrity": "eb8d6d879d76e1cc431205bd346ed4d88dc051c6366365b1af47034b0670be24",
+      "dependencies": [
+        "jsr:@std/fmt"
+      ]
+    },
+    "@std/fmt@0.223.0": {
+      "integrity": "6deb37794127dfc7d7bded2586b9fc6f5d50e62a8134846608baf71ffc1a5208"
+    }
+  },
+  "npm": {
+    "source-map@0.7.4": {
+      "integrity": "sha512-l3BikUxvPOcn5E74dZiq5BGsTb5yEwhaTSzccU6t4sDOH8NWJCstKO5QT2CvtFoK6F0saL7p9xHAqHOlCPJygA=="
+    },
+    "typescript@5.7.3": {
+      "integrity": "sha512-84MVSjMEHP+FQRPy3pX9sTVV/INIex71s9TL2Gm5FG/WG1SqXeKyZ0k7/blY/4FdOzI12CBy1vGc4og/eus0fw=="
+    }
+  },
+  "workspace": {
+    "dependencies": [
+      "jsr:@cross/test@^0.0.9",
+      "jsr:@std/assert@0.223"
+    ],
+    "packageJson": {
+      "dependencies": [
+        "npm:source-map@~0.7.4"
+      ]
+    }
+  }
+}
