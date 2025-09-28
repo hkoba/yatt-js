@@ -23,7 +23,8 @@ export function parse_arg_spec(
   // XXX: typescript type extension
   const match = /([\/\|\?!])/.exec(str)
   if (match == null) {
-    return { typeName: defaultType }
+    const tn = str.trim()
+    return { typeName: tn.length > 0 ? tn : defaultType }
   } else {
     const typeName = match.index ? str.substring(0, match.index) : defaultType;
     const dflag = match[0] as DefaultFlag
