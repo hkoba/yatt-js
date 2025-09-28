@@ -3,7 +3,7 @@ import type {Variable} from '../../declaration/index.ts'
 
 export function varTypeExpr<T extends Part>(ctx: CodeGenContext<T>, vr: Variable): string {
   switch (vr.typeName) {
-    case "text":
+    case "text": case "html":
       return 'string';
     case "widget": {
       // [...vr.widget.argMap.values()].map((a) => {

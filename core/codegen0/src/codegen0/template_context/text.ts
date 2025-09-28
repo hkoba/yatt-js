@@ -31,6 +31,10 @@ export function generate_as_cast_to_text<T extends Part>(
   if (hasQuotedStringValue(term) || term.kind === "bare") {
     const fragments = generate_as_text(ctx, scope, term.children)
     return joinAsArray('+', fragments)
+  } else if (term.kind === 'entity') {
+    return generate_entity(ctx, scope, term, {
+      need_runtime_escaping: true
+    }).items
   } else {
     // console.log(term)
     ctx.NIMPL(term)
