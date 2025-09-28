@@ -699,7 +699,6 @@ IN:
 
 
 TITLE: base "base1.yatt"
-SKIP: 1
 IN:
  <!yatt:base file="base1.yatt">
  <yatt:foo xa="bar" xb="baz"/>
