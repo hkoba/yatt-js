@@ -7,15 +7,17 @@
 import {test} from "@cross/test"
 import {assertEquals} from '@std/assert'
 
-import { range_text, hasLabel, parse_multipart, tokenize } from '../src/index.ts'
+import { range_text, hasLabel, parse_multipart, tokenize, pair_boundary_and_payload } from '../src/index.ts'
+import type {Boundary, Payload, Content} from '../src/index.ts'
 
 const it = (source: string) => {
-  let [partList, session] = parse_multipart(source, {});
-  return Array.from(partList).map((part) => {
-    const tokens = tokenize(session, part.payload)
+  let [contentList, session] = parse_multipart(source, {});
+  
+  return pair_boundary_and_payload(contentList).map((pair) => {
+    const tokens = tokenize(session, pair.payloads)
     return {
-      part: part.kind,
-      attlist: part.attlist.map(att => {
+      part: pair.boundary.decltype[0],
+      attlist: pair.boundary.attlist.map(att => {
         if (hasLabel(att)) {
           return [att.label.kind, att.label.value,
                   att.kind, (att as any).value, [att.label.line, att.line]]
@@ -70,6 +72,7 @@ test("A declaration with simple names and its body with entity references", () =
       {kind: "entpath_open", line: 4, text: `&yatt`},
       {kind: "entity", line: 4, text: `:y;`},
       {kind: "text", line: 4, text: `\n`},
+      {kind: "text", line: 5, text: `\n`},
     ]
   }
 ])})

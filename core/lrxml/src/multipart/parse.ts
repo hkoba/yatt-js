@@ -26,12 +26,37 @@ export type Payload = AnyToken & {kind: "text", data: string} |
 // decltype: ['widget', 'html']
 
 export type Boundary = {
+  kind: 'boundary'
   filename?: string
   namespace: string
-  kind: 'boundary'
   decltype: string[]
   attlist: AttItem[]
 } & AnyToken
+
+export type BoundaryAndPayloads = {boundary: Boundary, payloads: Payload[]}
+
+export function pair_boundary_and_payload(
+  contentList: Content[]
+): BoundaryAndPayloads[] {
+  let result: BoundaryAndPayloads[] = []
+  for (const content of contentList) {
+    switch (content.kind) {
+      case "boundary": {
+        result.push({boundary: content, payloads: []})
+        break;
+      }
+      case "text":
+      case "comment": {
+        if (result.length === 0) {
+          throw new Error(`contents doesn't start from yatt declaration!`)
+        }
+        result[result.length-1].payloads.push(content)
+        break;
+      }
+    }
+  }
+  return result
+}
 
 export function parse_multipart(
   source: string, config: {filename?: string} & LrxmlConfig

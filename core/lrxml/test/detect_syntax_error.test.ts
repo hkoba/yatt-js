@@ -35,15 +35,17 @@ const error_input = path.join(__dirname, 'error_input')
       let gotError: string | undefined
       try {
         const source = readFileSync(realPath, { encoding: "utf-8" })
-        const [partList, session] = parse_multipart(source, {
+        const [contentList, session] = parse_multipart(source, {
           filename: fn, ...config
         })
 
-        for (const part of partList) {
+        for (const content of contentList) {
+          if (content.kind !== 'text')
+            continue
           if (config.debug?.parser) {
-            console.dir(part, {colors: true, depth: null})
+            console.dir(content, {colors: true, depth: null})
           }
-          const output = parse_template(session, part)
+          const output = parse_template(session, [content])
           if (config.debug?.parser) {
             console.dir(output, {colors: true, depth: null})
           }

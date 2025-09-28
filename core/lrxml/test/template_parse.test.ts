@@ -3,7 +3,7 @@
 import {test} from "@cross/test"
 import {assertEquals} from '@std/assert'
 
-import {parse_multipart, parse_template} from '../src/index.ts'
+import {parse_multipart, parse_template, pair_boundary_and_payload} from '../src/index.ts'
 import type {Node, Text, AttItem} from '../src/index.ts'
 
 {
@@ -15,10 +15,12 @@ import type {Node, Text, AttItem} from '../src/index.ts'
   type ResultItem = string | AttItem[] | string[] | undefined | ResultItem[]
   const it = (source: string) => {
     const config = { debug: {} }
-    const [partList, session] = parse_multipart(source, config)
-    return partList.map(part => {
+    const [contentList, session] = parse_multipart(source, config)
+    return contentList.map(content => {
+      if (content.kind !== 'text')
+        return;
       const result: ResultItem[] = []
-      for (const node of parse_template(session, part)) {
+      for (const node of parse_template(session, [content])) {
         if (node.kind !== "element")
           continue
 

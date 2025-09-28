@@ -26,11 +26,11 @@ import {parse_multipart, AttItem, hasLabel, isIdentOnly} from '../src/index.ts'
   }
 
   const it = (src: string) => {
-    const [partList, session] = parse_multipart(src, {});
+    const [contentList, session] = parse_multipart(src, {});
     // console.dir(partList, {depth: null, colors: true})
-    return partList.map((part) => {
+    return contentList.filter((c) => c.kind === 'boundary').map((content) => {
       // console.dir(part.attlist, {depth: null, colors: true});
-      return {kind: part.kind, attlist: part.attlist.map(unnest)}
+      return {kind: content.decltype[0], attlist: content.attlist.map(unnest)}
     })
   };
 
@@ -48,7 +48,6 @@ import {parse_multipart, AttItem, hasLabel, isIdentOnly} from '../src/index.ts'
 &yatt:y;
 
 `), [
-  {kind: "", attlist: []},
   {kind: "widget", attlist: ['foo', 'x', ['y', '?7']]},
 ])})
 

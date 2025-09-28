@@ -15,8 +15,8 @@ export {
 
 export {tokenize_multipart, tokenize_multipart_context} from './multipart/tokenize.ts'
 
-export type {Part as RawPart} from './multipart/parse.ts'
-export {parse_multipart, parse_multipart_context} from './multipart/parse.ts'
+export type {Content, Boundary, Payload, BoundaryAndPayloads} from './multipart/parse.ts'
+export {parse_multipart, parse_multipart_context, pair_boundary_and_payload} from './multipart/parse.ts'
 
 export type {
   Node, Term, AnonNode, BodyNode, AttElement,

@@ -6,7 +6,7 @@ import { ParserContext } from '../context.ts'
 
 import { tokenize, type Token, type Text, type Comment, type PI, type TagClose } from './tokenize.ts'
 
-import type { Part } from '../multipart/parse.ts'
+import type { Payload } from '../multipart/parse.ts'
 
 import type {
   AttItem, Term, Label, StringTerm,
@@ -107,19 +107,19 @@ function ensure_session_has_patterns(session: ParserSession | ParserBaseSession)
   }
 }
 
-export function parse_template(session: ParserSession | ParserBaseSession, part: Part): BodyNode[] {
+export function parse_template(session: ParserSession | ParserBaseSession, payload: Payload[]): BodyNode[] {
 
   const session__ = ensure_session_has_patterns(session)
 
-  const lex = tokenize(session__, part.payload)
+  const lex = tokenize(session__, payload)
   const ctx = new ParserContext(session__);
   const nodeList: BodyNode[] = [];
-  parse_tokens(ctx, part, lex, 0, nodeList);
+  parse_tokens(ctx, lex, 0, nodeList);
   return nodeList;
 }
 
 function parse_tokens(
-  ctx: ParserContext, part: Part, lex: Generator<Token>,
+  ctx: ParserContext, lex: Generator<Token>,
   depth: number,
   sink: BodyNode[], close?: string, parent?: (ElementNode | AttElement)
 ): TagClose | undefined {
@@ -204,7 +204,7 @@ function parse_tokens(
           if (end.lineEndLength) {
             body.push(lineEndNode(end))
           }
-          const closeTok = parse_tokens(ctx, part, lex, depth+1, body, tok.name, elem)
+          const closeTok = parse_tokens(ctx, lex, depth+1, body, tok.name, elem)
           if (closeTok != null && closeTok.lineEndLength) {
             sink.push(lineEndNode(closeTok))
           }
@@ -309,13 +309,15 @@ if (import.meta.main) {
 
       for (const fn of args) {
         const source = readFileSync(fn, { encoding: "utf-8" })
-        let [partList, session] = parse_multipart(source, {
+        let [contentList, session] = parse_multipart(source, {
           filename: fn, ...config
         })
         
-        for (const part of partList) {
-          console.dir(part, {colors: true, depth: null})
-          console.dir(parse_template(session, part), {colors: true, depth: null})
+        for (const content of contentList) {
+          console.dir(content, {colors: true, depth: null})
+          if (content.kind === 'boundary')
+            continue
+          console.dir(parse_template(session, [content]), {colors: true, depth: null})
         }
       }
     })()

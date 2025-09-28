@@ -201,16 +201,20 @@ if (import.meta.main) {
       
       for (const fn of args) {
         const source = readFileSync(fn, { encoding: "utf-8" })
-        let [partList, session] = parse_multipart(source, {
+        let [contentList, session] = parse_multipart(source, {
           filename: fn, ...config
         })
 
         process.stdout.write(JSON.stringify({FILENAME: fn}) + "\n")
-        for (const part of partList) {
-          process.stdout.write(JSON.stringify({part: part.kind, attlist: part.attlist}) + "\n")
-          for (const tok of tokenize(session, part.payload)) {
-            const text = session_range_text(session, tok)
-            process.stdout.write(JSON.stringify([tok, text]) + "\n")
+        for (const content of contentList) {
+          if (content.kind === 'boundary') {
+            process.stdout.write(JSON.stringify({part: content.decltype, attlist: content.attlist}) + "\n")
+          }
+          else if (content.kind === 'text') {
+            for (const tok of tokenize(session, [content])) {
+              const text = session_range_text(session, tok)
+              process.stdout.write(JSON.stringify([tok, text]) + "\n")
+            }
           }
         }
         process.stdout.write("\n")
