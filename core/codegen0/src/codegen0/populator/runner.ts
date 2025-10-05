@@ -16,6 +16,13 @@ import * as yatt from '../../yatt.ts'
 
 import {makeProgram} from '../../utils/compileTs.ts'
 
+import {type OutputRecord} from '../../declaration/context.ts'
+
+import type {LoaderSession, HandlerSet} from './loader.ts'
+import {ensure_folder} from './loader.ts'
+
+import {runtime} from '../../yatt.ts'
+
 export async function runFile(filename: string, params: {[k:string]: any}, config: YattConfig)
 : Promise<string> {
 
@@ -31,7 +38,54 @@ export async function runSource(
 ): Promise<string> {
 
   const output = await generate_populator(config.filename, source, config)
-  const script = output.outputText
+
+  const session: LoaderSession = {
+    ...output.session,
+    $yatt: {
+      runtime
+    }
+  }
+
+  for (const [_path, related] of output.session.output.entries()) {
+    await load_output(related, session)
+  }
+
+  const $this = await load_output({
+    folder: output.template.folder,
+    modName: output.template.modName,
+    output
+  }, session)
+
+  const CON = {
+    buffer: "",
+    append(str: string) {
+      this.buffer += str;
+    },
+    appendUntrusted(str?: string) {
+      if (str == null) return;
+      this.buffer += yatt.runtime.escape(str)
+    },
+    appendRuntimeValue(val: any) {
+      this.buffer += yatt.runtime.escape(val)
+    }
+  }
+
+  $this.render_(CON, params);
+
+  return CON.buffer;
+}
+
+async function load_output(
+  output: OutputRecord, session: LoaderSession
+): Promise<HandlerSet> {
+  const {folder, modName} = output
+
+  const script = output.output.outputText
+
+  if ((session.params.debug.codegen ?? 0) >= 2) {
+    console.log(`=======================`)
+    console.log(`folder:$${folder}, modName=${modName}\n`, script)
+  }
 
   const {outputText, outputMap, diagnostics} = makeProgram(script, [], {
     // fileName: resolve(config.filename), // XXX ファイル名を入れると outputMap がゼロになる！何で…？
@@ -56,38 +110,18 @@ export async function runSource(
         console.dir([kind, diag], {colors: true, depth: 3})
       }
     }
-    process.exit(1);
+    throw new Error(`compilation error`)
   } else {
     console.log(outputMap)
   }
 
   console.log(`outputText=${outputText}`)
 
-  const {populate} = await import(`data:text/javascript,${outputText}`)
+  const {populate} = await import(`data:text/typescript,${script}`)
 
-  const $yatt = {
-    $public: {}
-  }
+  const templateFolder = ensure_folder(session.$yatt, `$${folder}`)
 
-  const $this = populate($yatt)
-
-  const CON = {
-    buffer: "",
-    append(str: string) {
-      this.buffer += str;
-    },
-    appendUntrusted(str?: string) {
-      if (str == null) return;
-      this.buffer += yatt.runtime.escape(str)
-    },
-    appendRuntimeValue(val: any) {
-      this.buffer += yatt.runtime.escape(val)
-    }
-  }
-
-  $this.render_(CON, params);
-
-  return CON.buffer;
+  return templateFolder[modName] = populate(session.$yatt)
 }
 
 if (import.meta.main) {
@@ -96,7 +130,10 @@ if (import.meta.main) {
   const args = process.argv.slice(2)
   const debugLevel = parseInt(process.env.DEBUG ?? '', 10) || 0
   const config = {
-    debug: { declaration: debugLevel },
+    debug: {
+      declaration: debugLevel,
+      codegen: debugLevel,
+    },
     // ext: 'ytjs',
   }
   parse_long_options(args, {target: config});

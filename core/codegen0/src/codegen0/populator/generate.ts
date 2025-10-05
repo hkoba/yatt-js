@@ -94,6 +94,16 @@ export async function generate_populator_for_declentry(
         throw new Error(`No such item: ${template.path}`)
       }
 
+      if (! baseSession.output.has(template.path)) {
+        const output = await generate_populator_for_declentry(entry, baseSession);
+        baseSession.output.set(template.path, {
+          folder: template.folder, modName: template.modName,
+          output
+        })
+      }
+    }
+  }
+
   const filename = template.path
 
   const templateName = templatePath(
