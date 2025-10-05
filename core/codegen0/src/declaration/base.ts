@@ -1,25 +1,39 @@
 import { type AttItem, hasQuotedStringValue, isBareLabeledAtt } from '../deps.ts'
+import type {TemplateDeclaration} from './types.ts'
+import type { DeclarationProcessor, BuilderContext } from './context.ts'
 
-import { DeclarationProcessor, type BuilderContext } from './context.ts'
+import {get_template_declaration} from './template-declaration.ts'
 
-export class BaseProcessor {
-  readonly kind = 'base'
-  createPart(ctx: BuilderContext, attlist: AttItem[]): undefined {
+import {resolveTemplate} from './partFolder.ts'
+
+export class BaseProcessor implements DeclarationProcessor  {
+  readonly kind: 'base' = 'base'
+  async process(ctx: BuilderContext, template: TemplateDeclaration, attlist: AttItem[]): Promise<undefined> {
     for (const att of attlist) {
       if (! isBareLabeledAtt(att)) {
         // XXX: better diag
         ctx.throw_error(`base att label must be bare element`)
       }
-      if (att.label.value === "dir" || att.label.value === "file") {
-        if (! hasQuotedStringValue(att)) {
-          // XXX:
-          ctx.throw_error(`wrong base att value: ${att}`)
+      if (! hasQuotedStringValue(att)) {
+        ctx.throw_error(`wrong base att value: ${att}`)
+      }
+      if (att.label.value === "file") {
+        // XXX: @ processing
+        const baseFn = resolveTemplate(att.value, template)
+        const entry = await get_template_declaration(ctx.session, baseFn)
+        if (! entry) {
+          ctx.token_error(att, `No such template: ${att.value}: baseFn=${baseFn}`)
         }
-        ctx.append_stash([this.kind, ''], [att.label.value, '']); //XXX
-      } else {
+        template.base.push({
+          kind: 'template', modTimeMs: entry.modTimeMs, template: entry.template
+        })
+      }
+      else if (att.label.value === "dir") {
+        template.base.push({kind: 'folder', path: att.value})
+      }
+      else {
         ctx.throw_error(`Unknown base att: ${att.label.kind}`)
       }
     }
-    return;
   }
 }

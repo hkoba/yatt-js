@@ -1,8 +1,7 @@
 #!/usr/bin/env -S deno run -RE
 
 import {
-  parse_multipart, type Content, type AttItem,
-  isIdentOnly,
+  parse_multipart, type Content
 } from '../deps.ts'
 
 import { yattParams } from '../config.ts'
@@ -10,9 +9,7 @@ import { yattParams } from '../config.ts'
 import type {
   YattBuildConfig,
   BuilderMap, BuilderContext,
-  DeclaratorMap,
   BuilderRequestSession,
-  DeclarationProcessor,
   DeclState
 } from './context.ts'
 
@@ -58,15 +55,9 @@ export function builtin_builders(): BuilderMap {
   builders.set('page', new WidgetBuilder(true, true))
   builders.set('action', new ActionBuilder)
   builders.set('entity', new EntityBuilder)
+  builders.set('base', new BaseProcessor)
   builders.set('', builders.get('args'))
   return builders
-}
-
-export function builtin_declarators(): DeclaratorMap {
-  const declarators = new Map;
-  declarators.set('base', new BaseProcessor)
-  // XXX: import
-  return declarators
 }
 
 export function declarationBuilderSession(
@@ -76,7 +67,6 @@ export function declarationBuilderSession(
   const rootDir = config.rootDir ?? ".";
   const {
     builders = builtin_builders(),
-    declarators = builtin_declarators(),
     varTypeMap = builtin_vartypemap(),
     declCache = new Map,
     entFns = {},
@@ -89,7 +79,6 @@ export function declarationBuilderSession(
 
   const builder_session: BuilderRequestSession = {
     builders, varTypeMap,
-    declarators,
     declCache,
     sourceCache,
     entFns,
@@ -170,14 +159,6 @@ export function build_template_declaration(
   )
 }
 
-function ensure_default_part(
-  ctx: BuilderContext
-): Widget {
-  const builder: WidgetBuilder = ctx.session.builders.get('args') as WidgetBuilder
-  const [part] = builder.createPart(ctx, [], true)
-  return part
-}
-
 export function populateTemplateDeclaration(
   filename: string, source: string,
   builder_session: BuilderRequestSession, contentList: Content[]
@@ -190,7 +171,17 @@ export function populateTemplateDeclaration(
   const taskGraph = new TaskGraph<Widget>(ctx.debug);
   const routeMap: RouteMapType = new Map
 
-  const declList = []
+  const folder = internTemplateFolder(filename, builder_session)
+  const dir = dirname(filename)
+  const template: TemplateDeclaration = {
+    path: filename,
+    folder,
+    realDir: dir === '.' ? '' : dir,
+    modName: baseModName(filename),
+    partMap, routeMap, partOrder,
+    base: []
+  }
+
   let currentPart: Part | undefined
 
   for (const content of contentList) {
@@ -198,9 +189,8 @@ export function populateTemplateDeclaration(
       case "comment":
       case "text": {
         if (! currentPart) {
-          currentPart = ensure_default_part(ctx)
-          partMap[currentPart.kind].set(currentPart.name, currentPart)
-          partOrder.push([currentPart.kind, currentPart.name]);
+          const builder: WidgetBuilder = ctx.session.builders.get('args') as WidgetBuilder
+          [currentPart] = await builder.process(ctx, template, [], true)
           add_args(ctx, currentPart, [])
         }
         currentPart.payloads.push(content)
@@ -216,19 +206,12 @@ export function populateTemplateDeclaration(
         // XXX: subkind を使ってない
         if (ctx.session.builders.has(kind)) {
           const builder = ctx.session.builders.get(kind)!
-          const [part, attlist] = builder.createPart(ctx, ctx.copy_array(content.attlist))
-          if (partMap[part.kind].has(part.name)) {
-            // XXX: Better diag
-            ctx.throw_error(`Duplicate declaration ${part.kind} ${part.name}`);
+          const built = await builder.process(ctx, template, ctx.copy_array(content.attlist))
+          if (! built) {
+            continue
           }
-          currentPart = part
-          switch (part.kind) {
-            case "widget": partMap.widget.set(part.name, part); break;
-            case "action": partMap.action.set(part.name, part); break;
-            case "entity": partMap.entity.set(part.name, part); break;
-          }
-
-          partOrder.push([part.kind, part.name]);
+          const [part, attlist] = built
+          currentPart = part;
           if (part.route != null) {
             add_route(ctx, routeMap, part.route, part);
           }
@@ -243,9 +226,6 @@ export function populateTemplateDeclaration(
               console.log(`delayed delegate arg ${task.name} in widget :${part.name}, depends on widget :${task.dep}`)
             }
           }
-        }
-        else if (ctx.session.declarators.has(kind)) {
-          declList.push(content)
         }
         else {
           const ns = ctx.session.params.namespace[0]
@@ -269,16 +249,8 @@ export function populateTemplateDeclaration(
     // XXX: find from vfs
   })
 
-  const folder = internTemplateFolder(filename, builder_session)
-  const dir = dirname(filename)
   // XXX: declList を使ってない
-  return {
-    path: filename,
-    realDir: dir === '.' ? '' : dir,
-    modName: baseModName(filename),
-    folder,
-    partMap, routeMap, partOrder
-  }
+  return template
 }
 
 function finalize_part(

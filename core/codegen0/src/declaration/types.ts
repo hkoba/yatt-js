@@ -9,8 +9,8 @@ export type PartType = Widget | Action | Entity
 
 export type TemplateDeclaration = {
   modName: string;
+  path: string; // fullpath of template file
   realDir: string;
-  path: string;
   folder: string;
   partMap: PartMapType;
   routeMap: RouteMapType;

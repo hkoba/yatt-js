@@ -19,7 +19,6 @@ import { ParserContext, ParserSession } from "../../../lrxml/src/context.ts";
 
 export type YattBuildConfig = YattConfig & {
   builders?: BuilderMap
-  declarators?: DeclaratorMap
   declCache?: DeclTree
   sourceCache?: SourceRegistry
   sourceLoader?: SourceLoader
@@ -34,13 +33,12 @@ export function isBuilderSession(arg: YattBuildConfig | BuilderRequestSession)
 
 export type BuilderMap = Map<string, DeclarationProcessor>;
 
-export type DeclaratorMap = Map<string, DeclarationProcessor>;
 
 export interface DeclarationProcessor {
   readonly kind: string;
-  createPart(
-    ctx: BuilderContext, attlist: AttItem[]
-  ): [Part, AttItem[]]
+  process(
+    ctx: BuilderContext, template: TemplateDeclaration, attlist: AttItem[]
+  ): Promise<[Part, AttItem[]] | undefined>
 }
 
 // Session は３階層にすべきか…
@@ -48,7 +46,6 @@ export interface DeclarationProcessor {
 
 export type BuilderSettings = {
   builders: BuilderMap
-  declarators: DeclaratorMap
   params: YattParams
   varTypeMap: VarTypeMap
   declCache: DeclTree
@@ -83,14 +80,12 @@ export type BuilderContext = BuilderContextClass<TargetedBuilderSession>
 export class BuilderContextClass<S extends TargetedBuilderSession>
 extends ScanningContext<S> {
   public debug: number = 0
-  stash: Map<[string, string], any>;
   constructor(session: S,
               index: number = 0,
               start: number = 0,
               end: number = session.source.length,
               parent?: BuilderContextClass<S>) {
     super(session, index, start, end, parent)
-    this.stash = new Map;
     if (session.params.debug.declaration !== undefined) {
       this.debug = session.params.debug.declaration
     }
@@ -111,16 +106,6 @@ extends ScanningContext<S> {
   }
   body_argument_name(): string {
     return this.session.params.body_argument_name;
-  }
-
-  append_stash(key: [string, string], value: any): void {
-    if (! this.stash.has(key)) {
-      this.stash.set(key, [value])
-    } else {
-      const entry = this.stash.get(key);
-      entry.push(value)
-      this.stash.set(key, entry)
-    }
   }
 
   copy_array<T>(ary: T[]): T[] {
