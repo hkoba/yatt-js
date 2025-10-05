@@ -121,7 +121,7 @@ if (import.meta.main) {
 
     const session = freshCGenSession(cgenSettings('populator', config))
 
-    const template = build_template_declaration(filename, source, config)
+    const template = await build_template_declaration(filename, source, config)
 
     const fromDir = Path.dirname(filename)
     const elemPath = elemPathStr.split(/:/)

@@ -128,7 +128,7 @@ export async function get_template_declaration(
       console.log(`build new template decl for: ${realPath}`)
     }
     const {modTimeMs, source} = sourceEntry
-    const template = build_template_declaration(realPath, source, session)
+    const template = await build_template_declaration(realPath, source, session)
     session.declCache.set(realPath, template)
 
     return {source, template, modTimeMs, updated: true}
@@ -139,11 +139,11 @@ export async function get_template_declaration(
   }
 }
 
-export function build_template_declaration(
+export async function build_template_declaration(
   filename: string,
   source: string,
   configOrSession: YattBuildConfig | BuilderRequestSession
-): TemplateDeclaration {
+): Promise<TemplateDeclaration> {
 
   const builder_session = isBuilderSession(configOrSession)
     ? configOrSession
@@ -153,16 +153,16 @@ export function build_template_declaration(
     source, {...builder_session, filename}
   )
 
-  return populateTemplateDeclaration(
+  return await populateTemplateDeclaration(
     filename, source,
     builder_session, contentList
   )
 }
 
-export function populateTemplateDeclaration(
+export async function populateTemplateDeclaration(
   filename: string, source: string,
   builder_session: BuilderRequestSession, contentList: Content[]
-): TemplateDeclaration {
+): Promise<TemplateDeclaration> {
   const ctx = new BuilderContextClass({filename, source, ...builder_session})
 
   // For delegate type and ArgMacro
@@ -283,7 +283,7 @@ if (import.meta.main) {
 
     console.time('run');
     for (const fn of args) {
-      const template = build_template_declaration(
+      const template = await build_template_declaration(
         fn,
         readFileSync(fn, { encoding: "utf-8" }),
         config

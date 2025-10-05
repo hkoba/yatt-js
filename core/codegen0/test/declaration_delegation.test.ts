@@ -8,8 +8,8 @@ import {env} from 'node:process'
 import { build_template_declaration } from '../src/declaration/template-declaration.ts'
 
 {
-  const it = (src: string) => {
-    const template = build_template_declaration('', src, {
+  const it = async (src: string) => {
+    const template = await build_template_declaration('', src, {
       entFns: {},
       debug: {
         declaration: parseInt(env["DEBUG"] ?? "0", 10)
@@ -23,8 +23,8 @@ import { build_template_declaration } from '../src/declaration/template-declarat
   }
 
   const test = (src: string, result: any, title?: string) => {
-    cross_test(title ?? src, () => {
-      assertEquals(it(src), result)
+    cross_test(title ?? src, async () => {
+      assertEquals(await it(src), result)
     })
   }
 
@@ -63,8 +63,8 @@ import { build_template_declaration } from '../src/declaration/template-declarat
 }
 
 {
-  const it = (src: string) => {
-    const template = build_template_declaration('', src, {entFns: {}});
+  const it = async (src: string) => {
+    const template = await build_template_declaration('', src, {entFns: {}});
     const {routeMap} = template
     return [...routeMap.entries()].map(([route, rec]) => {
       return {route, kind: rec.part.kind, name: rec.part.name}
@@ -72,8 +72,8 @@ import { build_template_declaration } from '../src/declaration/template-declarat
   }
 
   const test = (src: string, result: any, title?: string) => {
-    cross_test(title ?? src, () => {
-      assertEquals(it(src), result)
+    cross_test(title ?? src, async () => {
+      assertEquals(await it(src), result)
     })
   }
 
