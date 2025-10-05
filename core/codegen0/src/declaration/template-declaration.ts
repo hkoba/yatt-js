@@ -23,6 +23,7 @@ import { TaskGraph } from './taskgraph.ts'
 import type {
   PartMapType
   , RouteMapType
+  , VFS_Item
 } from './types.ts'
 
 import type {
@@ -120,7 +121,7 @@ export async function get_template_declaration(
       console.log(`found up-to-date sourceEntry of ${realPath}`)
     }
     const {modTimeMs, source} = sourceEntry
-    return {source, template, modTimeMs, updated: false}
+    return {kind: 'template', source, template, modTimeMs, updated: false}
   }
 
   if (sourceEntry) {
@@ -131,7 +132,7 @@ export async function get_template_declaration(
     const template = await build_template_declaration(realPath, source, session)
     session.declCache.set(realPath, template)
 
-    return {source, template, modTimeMs, updated: true}
+    return {kind: 'template', source, template, modTimeMs, updated: true}
   }
 
   if (debug >= 2) {

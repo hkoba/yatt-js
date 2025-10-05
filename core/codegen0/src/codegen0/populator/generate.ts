@@ -86,6 +86,14 @@ export async function generate_populator_for_declentry(
 
   const {source, template} = entry
 
+  for (const item of template.base) {
+    if (item.kind === 'template') {
+      const {template} = item
+      const entry = await get_template_declaration(baseSession, template.path);
+      if (! entry) {
+        throw new Error(`No such item: ${template.path}`)
+      }
+
   const filename = template.path
 
   const templateName = templatePath(
@@ -123,6 +131,11 @@ export async function generate_populator_for_declentry(
     // typeAnnotation(': typeof$yatt$public$index'),
     ' {\n')
   {
+    if ((session.params.debug.codegen ?? 0) >= 3) {
+      // XXX: if で guard したい ← populate に debug 引数を渡せるように？
+      // XXX: どのテンプレート由来かを表示すべき
+      program.push(indent(session), 'console.log("on populate, $yatt: ", $yatt);\n');
+    }
     using _fun_body = new IndentScope(session)
 
     program.push(indent(session), "const $this = \{\n")

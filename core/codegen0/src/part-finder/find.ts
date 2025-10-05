@@ -73,6 +73,23 @@ export async function find_widget(
       }
     }
   }
+
+  for (const item of template.base) {
+    switch (item.kind) {
+      case "folder": {
+        throw new Error(`Not implemented`)
+        break;
+      }
+      case "template": {
+        const {template} = item;
+        if (rest.length === 0 && template.partMap.widget.has(head)) {
+          const widget = template.partMap.widget.get(head)!
+          return {widget, template}
+        }
+        break;
+      }
+    }
+  }
 }
 
 export function find_entity(

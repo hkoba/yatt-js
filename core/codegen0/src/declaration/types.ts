@@ -7,6 +7,19 @@ export type {
 
 export type PartType = Widget | Action | Entity
 
+export type DeclEntry = {
+  kind: 'template';
+  modTimeMs: number;
+  template: TemplateDeclaration
+}
+
+export type VFS_Item = VFS_Folder | DeclEntry
+
+export type VFS_Folder = {
+  kind: 'folder';
+  path: string;
+}
+
 export type TemplateDeclaration = {
   modName: string;
   path: string; // fullpath of template file
@@ -15,6 +28,7 @@ export type TemplateDeclaration = {
   partMap: PartMapType;
   routeMap: RouteMapType;
   partOrder: [PartKind, string][]; // kind, name
+  base: VFS_Item[]
 }
 
 export type PartMapType = {

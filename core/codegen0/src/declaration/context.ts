@@ -72,7 +72,7 @@ export type BuilderRequestSession = BuilderSettings & BuilderRequestItems
 export type TargetedBuilderSession = BuilderRequestSession & SessionTarget
 
 export type DeclTree = Map<string, TemplateDeclaration>
-export type DeclEntry = {modTimeMs: number, template: TemplateDeclaration}
+import type {DeclEntry} from './types.ts'
 export type DeclState = DeclEntry & {source: string, updated: boolean}
 
 export type BuilderContext = BuilderContextClass<TargetedBuilderSession>
