@@ -66,10 +66,10 @@ export async function refresh_populator(
     const output = await generate_populator_for_declentry(entry, session);
 
     if (debug) {
-      console.log(`related.length:`, session.output.length)
+      console.log(`related.length:`, session.output.size)
     }
 
-    for (const related of session.output) {
+    for (const [_path, related] of session.output.entries()) {
       await load_output(related, session)
     }
 
@@ -114,7 +114,7 @@ export async function load_output(
   return templateFolder[modName] = populate(session.$yatt)
 }
 
-function ensure_folder($yatt: typeof$yatt, folderName: `$${string}`): HandlerSetFolder {
+export function ensure_folder($yatt: typeof$yatt, folderName: `$${string}`): HandlerSetFolder {
   $yatt[folderName] ??= {}
   return $yatt[folderName]
 }

@@ -2,6 +2,16 @@ import * as Path from 'node:path'
 
 import type {BuilderRequestSession, BuilderSettings} from './context.ts'
 
+import type {TemplateDeclaration} from './types.ts'
+
+export function resolveTemplate(fn: string, template: TemplateDeclaration): string {
+  if (template.realDir === "") {
+    return fn
+  } else {
+    return Path.resolve(template.realDir, fn)
+  }
+}
+
 export function baseModName(path: string): string {
   const base = Path.basename(path)
   const ext = Path.extname(path)

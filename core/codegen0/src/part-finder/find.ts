@@ -57,7 +57,7 @@ export async function find_widget(
       }
       await ensure_generated(entry, session);
       if (debug >= 2) {
-        console.log(`=> output.length: ${session.output.length}`)
+        console.log(`=> output.length: ${session.output.size}`)
       }
     } else {
       if (debug >= 2) {

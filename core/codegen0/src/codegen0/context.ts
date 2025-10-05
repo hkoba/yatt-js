@@ -61,7 +61,7 @@ export function freshCGenSession(base: CGenSettings)
   const fresh = {
     ...base
     , visited: new Set<string>
-    , output: []
+    , output: new Map
     , indentLevel: 0
   }
   return fresh

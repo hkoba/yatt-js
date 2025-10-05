@@ -57,7 +57,7 @@ export type BuilderSettings = {
 
 export type BuilderRequestItems = {
   visited: Set<string>
-  output: OutputRecord[]
+  output: Map<string, OutputRecord>
 }
 
 // XXX: ../codegen0/output.ts: TranspileOutput と統合する？

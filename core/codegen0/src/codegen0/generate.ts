@@ -15,7 +15,7 @@ export async function ensure_generated(
   using _top = new IndentScope(session, 0)
 
   const output = await generate_for_declentry(entry, session);
-  session.output.push({
+  session.output.set(entry.template.path, {
     folder: entry.template.folder,
     modName: entry.template.modName,
     output
