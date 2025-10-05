@@ -29,7 +29,9 @@ export class BaseProcessor implements DeclarationProcessor  {
         })
       }
       else if (att.label.value === "dir") {
-        template.base.push({kind: 'folder', path: att.value})
+        // XXX: @processing!!
+        const dirFn = resolveTemplate(att.value, template)
+        template.base.push({kind: 'folder', path: dirFn})
       }
       else {
         ctx.throw_error(`Unknown base att: ${att.label.kind}`)

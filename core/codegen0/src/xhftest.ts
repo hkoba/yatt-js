@@ -13,7 +13,7 @@ import { cgenSettings, freshCGenSession, type CGenSettings } from "./codegen0/co
 import {
   refresh_populator, type Connection, type typeof$yatt
 } from "./codegen0/populator/loader.ts"
-import { SourceRegistry, SourceConfig } from "./declaration/registry.ts" 
+import { SourceRegistry, type SourceConfig } from "./declaration/registry.ts"
 import { runtime } from "./yatt.ts"
 
 export type Header = {
@@ -90,6 +90,8 @@ export function runtests(files: string[], baseConfig: YattConfig): void {
     const $yatt = {
       runtime, $public: {}
     }
+
+    // console.log(`testItems: `, testItems);
 
     for (const item of testItems) {
       // console.log(item)

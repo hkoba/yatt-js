@@ -33,7 +33,6 @@ export function isBuilderSession(arg: YattBuildConfig | BuilderRequestSession)
 
 export type BuilderMap = Map<string, DeclarationProcessor>;
 
-
 export interface DeclarationProcessor {
   readonly kind: string;
   process(

@@ -30,15 +30,51 @@ export async function find_widget(
   session: CGenRequestSession, template: TemplateDeclaration, partPath: string[]
 ): Promise<{widget: Widget, template: TemplateDeclaration} | undefined>
 {
-  const debug = session.params.debug.declaration ?? 0;
-
   const [head, ...rest] = partPath
   if (rest.length === 0 && template.partMap.widget.has(head)) {
     const widget = template.partMap.widget.get(head)!
     return {widget, template}
   }
 
-  for (const cand of candidatesForLookup(session, template.realDir, partPath)) {
+  const found = await lookupGenerateWidgetFromFolder(session, template.realDir, partPath)
+  if (found) {
+    return found
+  }
+
+  for (const item of template.base) {
+    switch (item.kind) {
+      case "folder": {
+        const found = await lookupGenerateWidgetFromFolder(session, item.path, partPath)
+        if (found) {
+          return found
+        }
+        break;
+      }
+      case "template": {
+        if (rest.length > 0) {
+          throw new Error(`Not implemented`);
+        }
+        const {template} = item;
+        if (template.partMap.widget.has(head)) {
+          const widget = template.partMap.widget.get(head)!
+          return {widget, template}
+        }
+        break;
+      }
+    }
+  }
+}
+
+async function lookupGenerateWidgetFromFolder(
+  session: CGenRequestSession, folder: string, partPath: string[]
+): Promise<{widget: Widget, template: TemplateDeclaration} | undefined> {
+  const debug = session.params.debug.declaration ?? 0;
+
+  if (debug >= 2) {
+    console.log(`looking for: `, partPath, 'from folder:', folder)
+  }
+
+  for (const cand of candidatesForLookup(session, folder, partPath)) {
     const {realPath, name} = cand;
 
     const entry = await get_template_declaration(session, realPath)
@@ -70,23 +106,6 @@ export async function find_widget(
     } else {
       if (debug >= 2) {
         console.log(`widget ${name} not found in template ${realPath}`)
-      }
-    }
-  }
-
-  for (const item of template.base) {
-    switch (item.kind) {
-      case "folder": {
-        throw new Error(`Not implemented`)
-        break;
-      }
-      case "template": {
-        const {template} = item;
-        if (rest.length === 0 && template.partMap.widget.has(head)) {
-          const widget = template.partMap.widget.get(head)!
-          return {widget, template}
-        }
-        break;
       }
     }
   }
