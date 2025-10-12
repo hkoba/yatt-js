@@ -112,10 +112,8 @@ async function load_output(
     }
     throw new Error(`compilation error`)
   } else {
-    console.log(outputMap)
+    // console.log(outputMap)
   }
-
-  console.log(`outputText=${outputText}`)
 
   const {populate} = await import(`data:text/typescript,${script}`)
 

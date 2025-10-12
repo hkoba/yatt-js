@@ -1,0 +1,5 @@
+<yatt:foo x="3" y="8"/>
+
+<!yatt:widget foo x y>
+x=&yatt:x;
+y=&yatt:y;

@@ -1,0 +1,2 @@
+<!yatt:base file="foo1.ytjs">
+<yatt:foo x="cc" y="dd"/>

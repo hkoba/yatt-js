@@ -84,7 +84,7 @@ export function makeProgram(
     }
   };
   compilerHost.writeFile = (name: string, text: string) => {
-    console.log(`output(${name}=${text})`)
+    // console.log(`output(${name}=${text})`)
     if (/\.map$/.exec(name)) {
       if (sourceMapText != null)
         throw new Error(`Multiple sourcemap output`)
