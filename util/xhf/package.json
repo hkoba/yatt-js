@@ -18,6 +18,9 @@
   "bugs": {
     "url": "https://github.com/hkoba/yatt-js/issues"
   },
+  "dependencies": {
+    "@yatt/lrxml": "workspace:*"
+  },
   "devDependencies": {
     "typescript": "^4.4.2"
   },
