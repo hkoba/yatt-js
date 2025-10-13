@@ -26,6 +26,7 @@ export type Header = {
 
 export interface ItemSpec {
   SKIP?: string
+  BREAK?: string
 
   FILE?: string
   TITLE?: string
@@ -43,6 +44,8 @@ export interface TestItemBase {
   kind: 'output' | 'error'
   realfile: string
   num: number
+
+  BREAK: boolean
 
   FILE: string
   TITLE: string
@@ -98,6 +101,9 @@ export function runtests(files: string[], baseConfig: YattConfig): void {
 
       test(`${item.TITLE}`, async () => {
         // const cgen = freshCGenSession(baseCgen)
+        if (item.BREAK) {
+          debugger;
+        }
 
         switch (item.kind) {
           case 'error': {
@@ -241,6 +247,8 @@ export function parseTestItemSpec(spec: ItemSpec, fileNo: number, prevItem?: Tes
     }
   }
 
+  const BREAK: boolean = spec.BREAK ? true : false;
+
   FILE ??= `f${fileNo}.yatt`
   const realfile = IN != null ? FILE : prevItem!.realfile
 
@@ -252,6 +260,7 @@ export function parseTestItemSpec(spec: ItemSpec, fileNo: number, prevItem?: Tes
   if (spec.OUT != null) {
     testItem = {
       ...spec,
+      BREAK,
       kind: 'output',
       realfile, num: fileNo,
       TITLE, FILE, WIDGET,
@@ -260,6 +269,7 @@ export function parseTestItemSpec(spec: ItemSpec, fileNo: number, prevItem?: Tes
   } else if (spec.ERROR != null) {
     testItem = {
       ...spec,
+      BREAK,
       kind: 'error',
       realfile, num: fileNo,
       TITLE, FILE, WIDGET,
