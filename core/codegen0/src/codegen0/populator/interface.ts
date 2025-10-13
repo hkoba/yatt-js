@@ -50,8 +50,8 @@ export function generate_reference_interface(
 function gatherImports(session: TargetedCGenSession) {
   const result: {[k: string]: TemplateDeclaration[]} = {}
   for (const template of Object.values(session.importDict)) {
-    result[template.folder] ??= []
-    result[template.folder].push(template)
+    result[template.runtimeNamespace] ??= []
+    result[template.runtimeNamespace].push(template)
   }
   return result
 }

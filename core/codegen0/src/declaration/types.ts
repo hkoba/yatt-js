@@ -24,7 +24,7 @@ export type TemplateDeclaration = {
   modName: string;
   path: string; // fullpath of template file
   realDir: string;
-  folder: string;
+  runtimeNamespace: string; // namespace for generated code
   partMap: PartMapType;
   routeMap: RouteMapType;
   partOrder: [PartKind, string][]; // kind, name

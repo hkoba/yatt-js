@@ -94,7 +94,7 @@ function generate_function_prefix(
       }
     } else {
       ctx.addImport(template)
-      prefix.push('$yatt', '$'+template.folder, template.modName)
+      prefix.push('$yatt', '$'+template.runtimeNamespace, template.modName)
     }
   }
   if (! prefix.length) {

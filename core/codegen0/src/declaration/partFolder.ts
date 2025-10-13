@@ -22,7 +22,7 @@ export function baseModName(path: string): string {
   }
 }
 
-export function internTemplateFolder(path: string, settings: BuilderSettings): string {
+export function internTemplateRuntimeNamespace(path: string, settings: BuilderSettings): string {
   const dir = Path.dirname(path)
   if (! settings.templateFolderMap.size) {
     const nick = 'public'

@@ -97,7 +97,7 @@ export async function generate_populator_for_declentry(
       if (! baseSession.output.has(template.path)) {
         const output = await generate_populator_for_declentry(entry, baseSession);
         baseSession.output.set(template.path, {
-          folder: template.folder, modName: template.modName,
+          runtimeNamespace: template.runtimeNamespace, modName: template.modName,
           output
         })
       }

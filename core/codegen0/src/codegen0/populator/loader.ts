@@ -55,7 +55,7 @@ export async function refresh_populator(
     return
   }
 
-  const {folder, modName} = entry.template
+  const {runtimeNamespace, modName} = entry.template
 
   let $this: HandlerSet | undefined
   if (entry.updated) {
@@ -74,7 +74,7 @@ export async function refresh_populator(
     }
 
     $this = await load_output({
-      folder, modName, output
+      runtimeNamespace, modName, output
     }, session)
 
   } else {
@@ -82,7 +82,7 @@ export async function refresh_populator(
       console.log(`use cached handler`)
     }
 
-    $this = ensure_folder(session.$yatt, `$${folder}`)[modName]
+    $this = ensureRuntimeNamespace(session.$yatt, `$${runtimeNamespace}`)[modName]
   }
 
   if (debug >= 3) {
@@ -98,23 +98,23 @@ export async function load_output(
   output: OutputRecord, session: LoaderSession
 ): Promise<HandlerSet> {
 
-  const {folder, modName} = output
+  const {runtimeNamespace, modName} = output
 
   const script = output.output.outputText
 
   if ((session.params.debug.codegen ?? 0) >= 2) {
     console.log(`=======================`)
-    console.log(`folder:$${folder}, modName=${modName}\n`, script)
+    console.log(`runtimeNamespace:$${runtimeNamespace}, modName=${modName}\n`, script)
   }
 
   const {populate} = await import(`data:text/typescript,${script}`)
 
-  const templateFolder = ensure_folder(session.$yatt, `$${folder}`)
+  const templateFolder = ensureRuntimeNamespace(session.$yatt, `$${runtimeNamespace}`)
 
   return templateFolder[modName] = populate(session.$yatt)
 }
 
-export function ensure_folder($yatt: typeof$yatt, folderName: `$${string}`): HandlerSetFolder {
+export function ensureRuntimeNamespace($yatt: typeof$yatt, folderName: `$${string}`): HandlerSetFolder {
   $yatt[folderName] ??= {}
   return $yatt[folderName]
 }

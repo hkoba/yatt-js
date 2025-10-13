@@ -16,7 +16,7 @@ export async function ensure_generated(
 
   const output = await generate_for_declentry(entry, session);
   session.output.set(entry.template.path, {
-    folder: entry.template.folder,
+    runtimeNamespace: entry.template.runtimeNamespace,
     modName: entry.template.modName,
     output
   })

@@ -19,7 +19,7 @@ import {makeProgram} from '../../utils/compileTs.ts'
 import {type OutputRecord} from '../../declaration/context.ts'
 
 import type {LoaderSession, HandlerSet} from './loader.ts'
-import {ensure_folder} from './loader.ts'
+import {ensureRuntimeNamespace} from './loader.ts'
 
 import {runtime} from '../../yatt.ts'
 
@@ -51,7 +51,7 @@ export async function runSource(
   }
 
   const $this = await load_output({
-    folder: output.template.folder,
+    runtimeNamespace: output.template.runtimeNamespace,
     modName: output.template.modName,
     output
   }, session)
@@ -78,13 +78,13 @@ export async function runSource(
 async function load_output(
   output: OutputRecord, session: LoaderSession
 ): Promise<HandlerSet> {
-  const {folder, modName} = output
+  const {runtimeNamespace, modName} = output
 
   const script = output.output.outputText
 
   if ((session.params.debug.codegen ?? 0) >= 2) {
     console.log(`=======================`)
-    console.log(`folder:$${folder}, modName=${modName}\n`, script)
+    console.log(`runtimeNamespace:$${runtimeNamespace}, modName=${modName}\n`, script)
   }
 
   const {outputText, outputMap, diagnostics} = makeProgram(script, [], {
@@ -117,7 +117,7 @@ async function load_output(
 
   const {populate} = await import(`data:text/typescript,${script}`)
 
-  const templateFolder = ensure_folder(session.$yatt, `$${folder}`)
+  const templateFolder = ensureRuntimeNamespace(session.$yatt, `$${runtimeNamespace}`)
 
   return templateFolder[modName] = populate(session.$yatt)
 }
