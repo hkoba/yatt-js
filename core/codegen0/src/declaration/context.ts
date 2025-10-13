@@ -61,7 +61,7 @@ export type BuilderRequestItems = {
 
 // XXX: ../codegen0/output.ts: TranspileOutput と統合する？
 export type OutputRecord = {
-  folder: string
+  runtimeNamespace: string
   modName: string
   output: OutputItem
 }

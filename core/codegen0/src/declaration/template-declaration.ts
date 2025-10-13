@@ -40,7 +40,7 @@ import {add_args, type ArgAdder} from './addArgs.ts'
 
 import { BaseProcessor } from './base.ts'
 
-import {internTemplateFolder} from './partFolder.ts'
+import {internTemplateRuntimeNamespace} from './partFolder.ts'
 
 import {add_route} from './attlist.ts'
 
@@ -170,11 +170,11 @@ export async function populateTemplateDeclaration(
   const taskGraph = new TaskGraph<Widget>(ctx.debug);
   const routeMap: RouteMapType = new Map
 
-  const folder = internTemplateFolder(filename, builder_session)
+  const runtimeNamespace = internTemplateRuntimeNamespace(filename, builder_session)
   const dir = dirname(filename)
   const template: TemplateDeclaration = {
     path: filename,
-    folder,
+    runtimeNamespace,
     realDir: dir === '.' ? '' : dir,
     modName: baseModName(filename),
     partMap, routeMap, partOrder,
