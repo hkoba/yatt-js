@@ -1,13 +1,9 @@
-import {dirname} from 'node:path'
-
 import type {YattConfig} from '../config.ts'
 
 import type {
   YattBuildConfig,
   TemplateDeclaration, BuilderSettings, Part, Widget, Entity
 } from '../declaration/index.ts'
-
-import {baseModName, internTemplateFolder} from '../declaration/index.ts'
 
 import {
   BuilderContextClass, declarationBuilderSession,

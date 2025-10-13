@@ -23,7 +23,6 @@ import { TaskGraph } from './taskgraph.ts'
 import type {
   PartMapType
   , RouteMapType
-  , VFS_Item
 } from './types.ts'
 
 import type {
@@ -33,7 +32,7 @@ import type {
 import {baseModName} from './partFolder.ts'
 import {dirname} from 'node:path'
 
-import type { PartKind, Part, Widget, Entity } from './part.ts'
+import type { PartKind, Part, Widget } from './part.ts'
 
 import {builtin_vartypemap} from './vartype.ts'
 
@@ -65,7 +64,6 @@ export function declarationBuilderSession(
   config: YattBuildConfig
 ): BuilderRequestSession {
 
-  const rootDir = config.rootDir ?? ".";
   const {
     builders = builtin_builders(),
     varTypeMap = builtin_vartypemap(),
@@ -250,7 +248,6 @@ export async function populateTemplateDeclaration(
     // XXX: find from vfs
   })
 
-  // XXX: declList を使ってない
   return template
 }
 
