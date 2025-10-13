@@ -30,21 +30,36 @@ export async function find_widget(
   session: CGenRequestSession, template: TemplateDeclaration, partPath: string[]
 ): Promise<{widget: Widget, template: TemplateDeclaration} | undefined>
 {
+  const debugLevel = session.params.debug.declaration ?? 0
+  if (debugLevel >= 2) {
+    console.log(`find_widget from(path=${template.path} realDir=${template.realDir})`, partPath)
+  }
+
   const [head, ...rest] = partPath
   if (rest.length === 0 && template.partMap.widget.has(head)) {
     const widget = template.partMap.widget.get(head)!
+    if (debugLevel >= 2) {
+      console.log(` => found internal widget`, widget)
+    }
     return {widget, template}
   }
 
-  const found = await lookupGenerateWidgetFromFolder(session, template.realDir, partPath)
+  if (debugLevel >= 2) {
+    console.log(` lookupGenerateWidgetFromDir(realDir=${template.realDir})`, partPath)
+  }
+
+  const found = await lookupGenerateWidgetFromDir(session, template.realDir, partPath)
   if (found) {
+    if (debugLevel >= 2) {
+      console.log(` => found sibling widget`, found)
+    }
     return found
   }
 
   for (const item of template.base) {
     switch (item.kind) {
       case "folder": {
-        const found = await lookupGenerateWidgetFromFolder(session, item.path, partPath)
+        const found = await lookupGenerateWidgetFromDir(session, item.path, partPath)
         if (found) {
           return found
         }
@@ -65,16 +80,16 @@ export async function find_widget(
   }
 }
 
-async function lookupGenerateWidgetFromFolder(
-  session: CGenRequestSession, folder: string, partPath: string[]
+async function lookupGenerateWidgetFromDir(
+  session: CGenRequestSession, dir: string, partPath: string[]
 ): Promise<{widget: Widget, template: TemplateDeclaration} | undefined> {
   const debug = session.params.debug.declaration ?? 0;
 
   if (debug >= 2) {
-    console.log(`looking for: `, partPath, 'from folder:', folder)
+    console.log(`looking for: `, partPath, 'from dir:', dir)
   }
 
-  for (const cand of candidatesForLookup(session, folder, partPath)) {
+  for (const cand of candidatesForLookup(session, dir, partPath)) {
     const {realPath, name} = cand;
 
     const entry = await get_template_declaration(session, realPath)
