@@ -14,6 +14,7 @@ import type {
 } from './context.ts'
 
 import {
+  DeclarationScope, indent,
   BuilderContextClass,
   isBuilderSession
 } from './context.ts'
@@ -83,6 +84,7 @@ export function declarationBuilderSession(
     entFns,
     visited: new Set,
     output: new Map,
+    declDepth: 0,
     templateFolderMap: new Map,
     params: buildParams
   }
@@ -99,10 +101,12 @@ export async function get_template_declaration(
   modTimeMs?: number
 ): Promise<DeclState | undefined> {
 
+  using _top = new DeclarationScope(session)
+
   const debug = session.params.debug.declaration ?? 0
 
   if (debug) {
-    console.log(`get_template_declaration: ${realPath}`)
+    console.log(indent(session) + `get_template_declaration: ${realPath}`)
   }
 
   const {sourceEntry, updated} = await session.sourceCache.refresh(
@@ -116,7 +120,7 @@ export async function get_template_declaration(
 
   if (template && sourceEntry && !updated) {
     if (debug >= 2) {
-      console.log(`found up-to-date sourceEntry of ${realPath}`)
+      console.log(indent(session) + `found up-to-date sourceEntry of ${realPath}`)
     }
     const {modTimeMs, source} = sourceEntry
     return {kind: 'template', source, template, modTimeMs, updated: false}
@@ -134,7 +138,7 @@ export async function get_template_declaration(
   }
 
   if (debug >= 2) {
-    console.log(`XXX: has sourceEntry(updated=${updated}):`, sourceEntry != null, `has template: `, template != null)
+    console.log(indent(session) + `XXX: has sourceEntry(updated=${updated}):`, sourceEntry != null, `has template: `, template != null)
   }
 }
 

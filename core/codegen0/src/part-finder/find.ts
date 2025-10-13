@@ -14,6 +14,8 @@ import {
   get_template_declaration
 } from '../declaration/index.ts'
 
+import {indent} from '../declaration/context.ts'
+
 import type {CGenRequestSession} from '../codegen0/context.ts'
 
 import {candidatesForLookup} from '../declaration/partFolder.ts'
@@ -32,26 +34,26 @@ export async function find_widget(
 {
   const debugLevel = session.params.debug.declaration ?? 0
   if (debugLevel >= 2) {
-    console.log(`find_widget from(path=${template.path} realDir=${template.realDir})`, partPath)
+    console.log(indent(session) + `find_widget from(path=${template.path} realDir=${template.realDir})`, partPath)
   }
 
   const [head, ...rest] = partPath
   if (rest.length === 0 && template.partMap.widget.has(head)) {
     const widget = template.partMap.widget.get(head)!
     if (debugLevel >= 2) {
-      console.log(` => found internal widget`, widget)
+      console.log(indent(session) + ` => found internal widget`, widget)
     }
     return {widget, template}
   }
 
   if (debugLevel >= 2) {
-    console.log(` lookupGenerateWidgetFromDir(realDir=${template.realDir})`, partPath)
+    console.log(indent(session) + ` lookupGenerateWidgetFromDir(realDir=${template.realDir})`, partPath)
   }
 
   const found = await lookupGenerateWidgetFromDir(session, template.realDir, partPath)
   if (found) {
     if (debugLevel >= 2) {
-      console.log(` => found sibling widget`, found)
+      console.log(indent(session) + ` => found sibling widget`, found)
     }
     return found
   }
@@ -86,7 +88,7 @@ async function lookupGenerateWidgetFromDir(
   const debug = session.params.debug.declaration ?? 0;
 
   if (debug >= 2) {
-    console.log(`looking for: `, partPath, 'from dir:', dir)
+    console.log(indent(session) + `looking for: `, partPath, 'from dir:', dir)
   }
 
   for (const cand of candidatesForLookup(session, dir, partPath)) {
@@ -96,7 +98,7 @@ async function lookupGenerateWidgetFromDir(
 
     if (! entry) {
       if (debug >= 2) {
-        console.log(`template not found at: ${realPath}`)
+        console.log(indent(session) + `template not found at: ${realPath}`)
       }
       continue
     }
@@ -104,15 +106,15 @@ async function lookupGenerateWidgetFromDir(
     const {template, updated} = entry
     if (updated) {
       if (debug >= 2) {
-        console.log(`Calling ensure_generated: ${template.path}`)
+        console.log(indent(session) + `Calling ensure_generated: ${template.path}`)
       }
       await ensure_generated(entry, session);
       if (debug >= 2) {
-        console.log(`=> output.length: ${session.output.size}`)
+        console.log(indent(session) + `=> output.length: ${session.output.size}`)
       }
     } else {
       if (debug >= 2) {
-        console.log(`No need to generate: ${template.path}`)
+        console.log(indent(session) + `No need to generate: ${template.path}`)
       }
     }
 
@@ -120,7 +122,7 @@ async function lookupGenerateWidgetFromDir(
       return {widget: template.partMap.widget.get(name)!, template}
     } else {
       if (debug >= 2) {
-        console.log(`widget ${name} not found in template ${realPath}`)
+        console.log(indent(session) + `widget ${name} not found in template ${realPath}`)
       }
     }
   }

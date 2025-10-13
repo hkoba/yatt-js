@@ -1,6 +1,7 @@
 import * as Path from 'node:path'
 
 import type {BuilderRequestSession, BuilderSettings} from './context.ts'
+import {indent} from './context.ts'
 
 import type {TemplateDeclaration} from './types.ts'
 
@@ -53,14 +54,14 @@ export function* candidatesForLookup(
   const debug = session.params.debug.declaration ?? 0
 
   if (debug) {
-    console.log(`fromDir: ${fromDir} rootDir: ${session.params.rootDir} looking partPath: `, partPath)
+    console.log(indent(session) + `fromDir: ${fromDir} rootDir: ${session.params.rootDir} looking partPath: `, partPath)
   }
 
   const extMayList = session.params.ext_public
 
   if (fromDir === "") {
     for (const ext of Array.isArray(extMayList) ? extMayList : [extMayList]) {
-      yield rawPartInFile(debug, partPath, ext)
+      yield rawPartInFile(session, debug, partPath, ext)
     }
     return;
   }
@@ -73,13 +74,13 @@ export function* candidatesForLookup(
   {
     const absFromDir = virtResolve(fromDir) + Path.sep
     if (debug) {
-      console.log(` absFromDir: ${absFromDir} fromDir: ${fromDir}`)
+      console.log(indent(session) + ` absFromDir: ${absFromDir} fromDir: ${fromDir}`)
     }
 
     for (const gen of genList) {
       for (const ext of Array.isArray(extMayList) ? extMayList : [extMayList]) {
         yield {
-          ...gen(debug, absFromDir, partPath, ext),
+          ...gen(session, debug, absFromDir, partPath, ext),
         }
       }
     }
@@ -90,13 +91,14 @@ export function* candidatesForLookup(
 // when partPath is ['foo', 'bar']...
 
 function rawPartInFile(
+  session: BuilderRequestSession,
   debug: number, partPath: string[], ext: string
 ): {realPath: string, name: string} {
   if (partPath.length === 1) {
     const realPath = partPath[0] + ext
     const result = {realPath, name: ""}
     if (debug) {
-      console.log(`rawPartInFile: ext=${ext} =>`, result)
+      console.log(indent(session) + `rawPartInFile: ext=${ext} =>`, result)
     }
     return result
   } else {
@@ -104,7 +106,7 @@ function rawPartInFile(
     const realPath = virtPath + ext
     const result = {realPath, name: partPath[partPath.length-1]}
     if (debug) {
-      console.log(`rawPartInFile: virtPath: ${virtPath} ext=${ext} =>`, result)
+      console.log(indent(session) + `rawPartInFile: virtPath: ${virtPath} ext=${ext} =>`, result)
     }
     return result
   }
@@ -113,6 +115,7 @@ function rawPartInFile(
 
 // look for 'foo.ytjs'
 function partInFile(
+  session: BuilderRequestSession,
   debug: number, fromDir: string, partPath: string[]
   , ext: string
 ): {realPath: string, name: string} {
@@ -125,7 +128,7 @@ function partInFile(
     const realPath = virtResolve(fromDir, virtPath) + ext
     const result = {realPath, name: partPath[partPath.length-1]}
     if (debug) {
-      console.log(`partInFile: fromDir: ${fromDir} virtPath: ${virtPath} ext=${ext} =>`, result)
+      console.log(indent(session) + `partInFile: fromDir: ${fromDir} virtPath: ${virtPath} ext=${ext} =>`, result)
     }
     return result
   }
@@ -134,6 +137,7 @@ function partInFile(
 
 // look for 'foo/bar.ytjs'
 function partInSubdir(
+  session: BuilderRequestSession,
   debug: number, fromDir: string, partPath: string[]
   , ext: string
 ): {realPath: string, name: string} {
@@ -141,7 +145,7 @@ function partInSubdir(
   const realPath = virtResolve(fromDir, virtPath) + ext
   const result = {realPath, name: ''};
   if (debug) {
-    console.log(`partInSubdir: virtPath: ${virtPath} ext=${ext} => `, result)
+    console.log(indent(session) + `partInSubdir: virtPath: ${virtPath} ext=${ext} => `, result)
   }
   return result
 }

@@ -59,6 +59,7 @@ export function freshCGenSession(base: CGenSettings)
     , visited: new Set<string>
     , output: new Map
     , indentLevel: 0
+    , declDepth: 0
   }
   return fresh
 }

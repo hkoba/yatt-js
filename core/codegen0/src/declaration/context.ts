@@ -57,6 +57,7 @@ export type BuilderSettings = {
 export type BuilderRequestItems = {
   visited: Set<string>
   output: Map<string, OutputRecord>
+  declDepth: number
 }
 
 // XXX: ../codegen0/output.ts: TranspileOutput と統合する？
@@ -109,5 +110,29 @@ extends ScanningContext<S> {
 
   copy_array<T>(ary: T[]): T[] {
     return Object.assign([], ary)
+  }
+}
+
+export function indent(session: BuilderRequestSession): string {
+  return "  ".repeat(session.declDepth)
+}
+
+export class DeclarationScope {
+  savedDeclDepth: number
+  constructor(public session: BuilderRequestSession, newDepth?: number) {
+    this.savedDeclDepth = session.declDepth
+    if (newDepth != null) {
+      session.declDepth = newDepth
+    } else {
+      session.declDepth++
+    }
+  }
+
+  reset(): void {
+    this.session.declDepth = this.savedDeclDepth + 1
+  }
+
+  [Symbol.dispose]() {
+    this.session.declDepth = this.savedDeclDepth
   }
 }
