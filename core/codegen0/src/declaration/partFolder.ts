@@ -5,10 +5,14 @@ import type {BuilderRequestSession, BuilderSettings} from './context.ts'
 import type {TemplateDeclaration} from './types.ts'
 
 export function resolveTemplate(fn: string, template: TemplateDeclaration): string {
-  if (template.realDir === "") {
-    return fn
+  return virtResolve(template.realDir, fn)
+}
+
+function virtResolve(path: string, ...rest: string[]): string {
+  if (! Path.isAbsolute(path)) {
+    return Path.join(path, ...rest)
   } else {
-    return Path.resolve(template.realDir, fn)
+    return Path.resolve(path, ...rest)
   }
 }
 
@@ -49,15 +53,14 @@ export function* candidatesForLookup(
   const debug = session.params.debug.declaration ?? 0
 
   if (debug) {
-    console.log(`fromDir: ${fromDir} looking partPath: `, partPath)
+    console.log(`fromDir: ${fromDir} rootDir: ${session.params.rootDir} looking partPath: `, partPath)
   }
 
   const extMayList = session.params.ext_public
 
   if (fromDir === "") {
     for (const ext of Array.isArray(extMayList) ? extMayList : [extMayList]) {
-      // XXX: fromDir を使わないのに渡すのは、気持ち悪い…
-      yield partInFile(debug, fromDir, partPath, ext, true)
+      yield rawPartInFile(debug, partPath, ext)
     }
     return;
   }
@@ -68,7 +71,10 @@ export function* candidatesForLookup(
 
   // XXX: ext_private でもループ
   {
-    const absFromDir = Path.resolve(fromDir) + Path.sep
+    const absFromDir = virtResolve(fromDir) + Path.sep
+    if (debug) {
+      console.log(` absFromDir: ${absFromDir} fromDir: ${fromDir}`)
+    }
 
     for (const gen of genList) {
       for (const ext of Array.isArray(extMayList) ? extMayList : [extMayList]) {
@@ -83,18 +89,40 @@ export function* candidatesForLookup(
 
 // when partPath is ['foo', 'bar']...
 
+function rawPartInFile(
+  debug: number, partPath: string[], ext: string
+): {realPath: string, name: string} {
+  if (partPath.length === 1) {
+    const realPath = partPath[0] + ext
+    const result = {realPath, name: ""}
+    if (debug) {
+      console.log(`rawPartInFile: ext=${ext} =>`, result)
+    }
+    return result
+  } else {
+    const virtPath = partPath.slice(0, partPath.length-1).join(Path.sep);
+    const realPath = virtPath + ext
+    const result = {realPath, name: partPath[partPath.length-1]}
+    if (debug) {
+      console.log(`rawPartInFile: virtPath: ${virtPath} ext=${ext} =>`, result)
+    }
+    return result
+  }
+
+}
+
 // look for 'foo.ytjs'
 function partInFile(
   debug: number, fromDir: string, partPath: string[]
-  , ext: string, ignoreFromDir?: boolean
+  , ext: string
 ): {realPath: string, name: string} {
   if (partPath.length === 1) {
-    const realPath = (ignoreFromDir ? partPath[0] : Path.resolve(fromDir, partPath[0])) + ext
+    const realPath = virtResolve(fromDir, partPath[0]) + ext
     const result = {realPath, name: ""}
     return result
   } else {
     const virtPath = partPath.slice(0, partPath.length-1).join(Path.sep);
-    const realPath = (ignoreFromDir ? virtPath : Path.resolve(fromDir, virtPath)) + ext
+    const realPath = virtResolve(fromDir, virtPath) + ext
     const result = {realPath, name: partPath[partPath.length-1]}
     if (debug) {
       console.log(`partInFile: fromDir: ${fromDir} virtPath: ${virtPath} ext=${ext} =>`, result)
@@ -110,7 +138,7 @@ function partInSubdir(
   , ext: string
 ): {realPath: string, name: string} {
   const virtPath = partPath.join(Path.sep)
-  const realPath = Path.resolve(fromDir, virtPath) + ext
+  const realPath = virtResolve(fromDir, virtPath) + ext
   const result = {realPath, name: ''};
   if (debug) {
     console.log(`partInSubdir: virtPath: ${virtPath} ext=${ext} => `, result)
