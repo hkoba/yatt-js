@@ -698,6 +698,13 @@ IN:
  <h2>bar: &yatt:xa;</h2>
  &yatt:xb;
 
+FILE: base_loop.yatt
+SKIP: 1
+IN:
+ <!yatt:base file="base_loop.yatt">
+ This should raise error
+ERROR: <!yatt:base> points to itself!
+
 
 TITLE: base "base1.yatt"
 IN:
