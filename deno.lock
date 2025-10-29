@@ -829,7 +829,8 @@
         ],
         "packageJson": {
           "dependencies": [
-            "npm:source-map@~0.7.4"
+            "npm:source-map@~0.7.4",
+            "npm:typescript@*"
           ]
         }
       },
