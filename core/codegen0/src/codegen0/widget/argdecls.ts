@@ -35,7 +35,7 @@ export function generate_argdecls<T extends Part>(
       const {dflag, children} = varSpec.defaultSpec
       const cond = generate_dflag_condition(name, dflag)
       if (dflag === "!") {
-        defaultInits.push(`if (`, cond, `) { throw new Error('Argument '+${name}+' is undef!')`, `}`)
+        defaultInits.push(`if (`, cond, `) { throw new Error(\`Argument '${name}' is undef!\`)`, `}`)
       } else {
         const as_cast = generate_attstring_as_cast_to(ctx, scope, varSpec, children)
         defaultInits.push(`if (`, cond, `) {`, name, ` = `, as_cast, `}`)
