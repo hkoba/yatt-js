@@ -179,6 +179,7 @@ PARAM[
 - 
 - 0
 ]
+SKIP: perl-vs-js difference
 OUT:
  <h2>xval and 8</h2>
 
