@@ -11,6 +11,7 @@ import type {YattConfig} from './config.ts'
 
 import { cgenSettings, freshCGenSession, type CGenSettings } from "./codegen0/context.ts"
 import {
+Populator,
   refresh_populator, type Connection, type typeof$yatt
 } from "./codegen0/populator/loader.ts"
 import { SourceRegistry, type SourceConfig } from "./declaration/registry.ts"
@@ -99,7 +100,7 @@ export function runtests(files: string[], baseConfig: YattConfig): void {
     for (const item of testItems) {
       // console.log(item)
 
-      test(`${item.TITLE}`, async () => {
+      test(testTitle(item), async () => {
         // const cgen = freshCGenSession(baseCgen)
         if (item.BREAK) {
           debugger;
@@ -126,6 +127,14 @@ export function runtests(files: string[], baseConfig: YattConfig): void {
   }
 }
 
+function testTitle(item: TestItemBase, params?: string[]): string {
+  let msg = item.TITLE
+  if (item.PARAM) {
+    msg += ": " + JSON.stringify(params ?? item.PARAM)
+  }
+  return msg
+}
+
 export async function doErrorTest(
   item: TestItemError & {kind: 'error'},
   $yatt: typeof$yatt,
@@ -133,8 +142,9 @@ export async function doErrorTest(
 ): Promise<string> {
   const cgen = freshCGenSession(baseCgen)
 
+  let entry
   try {
-    await refresh_populator(
+    entry = await refresh_populator(
       item.FILE, {...cgen, $yatt}
     )
   } catch (error) {
@@ -144,7 +154,18 @@ export async function doErrorTest(
     return error.message
   }
 
-  throw new Error(`Failed to detect error: ${item.TITLE}`)
+  if (entry) {
+    try {
+      runCompiledWidget(item, $yatt, entry)
+    } catch (error) {
+      if (! (error instanceof Error)) {
+        throw error
+      }
+      return error.message
+    }
+  }
+
+  fail(`Failed to detect error: ${item.TITLE}`)
 }
 
 export async function doOutputTest(
@@ -161,6 +182,14 @@ export async function doOutputTest(
     fail(`FAILED to compile: ${item.TITLE}`)
   }
 
+  return runCompiledWidget(item, $yatt, entry)
+}
+
+function runCompiledWidget(
+  item: TestItemOk & {kind: 'output'} | TestItemError,
+  $yatt: typeof$yatt,
+  entry: Populator
+): string {
   const {$this, template} = entry
 
   const CON = {
@@ -189,6 +218,7 @@ export async function doOutputTest(
         params[name] = item.PARAM[varSpec.argNo]
       }
     }
+    // console.log(`params(${item.TITLE}):`, params, 'from', item.PARAM)
   }
 
   $this.render_(CON, params)
@@ -217,7 +247,12 @@ export function loadTestItems(fn: string, config: SourceConfig): {
     }
 
     if (item.SKIP) {
-      console.warn(`SKIP: ${item.TITLE ?? fileNo}`)
+      const lastTestItem = testItems[testItems.length - 1]
+      let title = item.TITLE ?? (lastTestItem ? testTitle(lastTestItem, item.PARAM) : fileNo)
+      if (item.SKIP !== "1") {
+        title += ": " + item.SKIP
+      }
+      console.warn(`SKIP: ${title}`)
       continue
     }
 

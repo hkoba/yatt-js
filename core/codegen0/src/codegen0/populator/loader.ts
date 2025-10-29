@@ -40,9 +40,13 @@ export type LoaderSession = CGenRequestSession & {
   $yatt: typeof$yatt
 }
 
+export type Populator = {
+  $this: HandlerSet, template: TemplateDeclaration
+}
+
 export async function refresh_populator(
   realPath: string, session: LoaderSession
-): Promise<{$this: HandlerSet, template: TemplateDeclaration} | undefined> {
+): Promise<Populator | undefined> {
 
   const debug = session.params.debug.declaration ?? 0
 
