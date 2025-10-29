@@ -4,7 +4,13 @@
 
 import {cgenSettings, freshCGenSession, refresh_populator, runtime} from '@yatt/codegen0'
 
+import {parse_long_options} from '@yatt/lrxml'
+
 import {resolve} from 'node:path'
+
+const process = await import('node:process')
+
+const [...args] = process.argv.slice(2);
 
 const __dirname = new URL('.', import.meta.url).pathname
 
@@ -16,6 +22,8 @@ const config = {
     codegen: 1
   }
 }
+
+parse_long_options(args, {target: config})
 
 const baseCgen = cgenSettings('populator', config)
 
@@ -77,7 +85,11 @@ async function handler(req: Request): Promise<Response> {
 
   $this.render_(CON, params)
 
-  return new Response(CON.buffer);
+  return new Response(CON.buffer, {
+    headers: {
+      "Content-Type": `text/html; charset="utf-8"`
+    }
+  });
 }
 
 Deno.serve(handler)
