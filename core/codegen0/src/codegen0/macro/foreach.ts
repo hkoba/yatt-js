@@ -61,7 +61,7 @@ export async function macro_foreach(
   return {output, fragment}
 }
 
-function collect_arg_spec<T extends {[k: string]: AttValue}>(
+export function collect_arg_spec<T extends {[k: string]: AttValue}>(
   attlist: (AttItem | AttElement)[], specList: (keyof T)[]
 )
 : {ok: Partial<T>} | {err: string, value: (AttItem | AttElement)} {
