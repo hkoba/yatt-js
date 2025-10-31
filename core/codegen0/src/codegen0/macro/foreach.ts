@@ -101,8 +101,8 @@ function generateListExpr(
   const passThru = maybePassThruVarName(list)
   let actualVar: Variable | undefined
   if (!passThru || !(actualVar = scope.lookup(passThru))) {
-    console.log('curscope:', scope)
-    console.log('passThru: ', passThru, 'actualVar: ', actualVar)
+    // console.log('curscope:', scope)
+    // console.log('passThru: ', passThru, 'actualVar: ', actualVar)
     return generate_as_cast_to_list(ctx, scope, list);
   }
   if (actualVar.typeName !== "list") {
