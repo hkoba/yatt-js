@@ -11,8 +11,11 @@ import type {CodeFragment} from '../codefragment.ts'
 import {generate_argdecls} from '../widget/argdecls.ts'
 
 export function generate_action(ctx: CodeGenContext<Action>): CodeFragment {
+  const isPopulator = ctx.session.cgenStyle === 'populator';
+
   const program: CodeFragment = [
-    `export function do_`,
+    !isPopulator ? 'export function ' : '',
+    `do_`,
     {kind: 'name', code: ctx.part.name, source: ctx.part.nameNode},
     ` `
   ];
@@ -28,7 +31,9 @@ export function generate_action(ctx: CodeGenContext<Action>): CodeFragment {
   let bodyPreamble = ""
   if (ctx.hasThis) {
     implicitArgs.push(`this: typeof ${ctx.session.templateName.join('.')}`)
-    bodyPreamble += `const $this = this`;
+    if (! isPopulator) {
+      bodyPreamble += `const $this = this;`;
+    }
   }
   implicitArgs.push(`CON: ${ctx.session.params.connectionTypeName}`)
 
