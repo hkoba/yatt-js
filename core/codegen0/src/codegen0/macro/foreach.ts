@@ -1,6 +1,8 @@
 import {
   type ElementNode
-  , type AttItem, type AttElement, type AttValue, attValue, isBareLabeledAtt
+  , type AttItem, type AttElement, type AttValue, attValue, isBareLabeledAtt,
+  Term,
+  maybePassThruVarName
 } from '../../deps.ts'
 
 import type {WidgetGenContext} from '../context.ts'
@@ -9,7 +11,7 @@ import {VarScope} from '../varscope.ts'
 
 import {isError} from '../../utils/isError.ts'
 
-import {build_simple_variable, type SimpleVar} from '../../declaration/index.ts'
+import {build_simple_variable, Variable, type SimpleVar} from '../../declaration/index.ts'
 
 import {generate_body} from '../widget/body.ts'
 
@@ -41,7 +43,7 @@ export async function macro_foreach(
   if (list == null)
     ctx.token_error(node, `no list= is given`)
 
-  const listExpr = generate_as_cast_to_list(ctx, scope, list)
+  const listExpr = generateListExpr(ctx, scope, list, node)
 
   if (node.children == null)
     ctx.token_error(node, `BUG?: foreach body is empty!`)
@@ -89,4 +91,22 @@ export function collect_arg_spec<T extends {[k: string]: AttValue}>(
     actual[argName] = attValue(att)
   }
   return {ok: actual as Partial<T>}
+}
+
+function generateListExpr(
+  ctx: WidgetGenContext, scope: VarScope,
+  list: Term,
+  node: ElementNode
+): CodeFragment[] | CodeFragment {
+  const passThru = maybePassThruVarName(list)
+  let actualVar: Variable | undefined
+  if (!passThru || !(actualVar = scope.lookup(passThru))) {
+    console.log('curscope:', scope)
+    console.log('passThru: ', passThru, 'actualVar: ', actualVar)
+    return generate_as_cast_to_list(ctx, scope, list);
+  }
+  if (actualVar.typeName !== "list") {
+    ctx.token_error(list, `${node.path.join(":")} - ${passThru} should be list type.`)
+  }
+  return {kind: 'name', code: passThru, source: list}
 }
