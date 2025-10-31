@@ -35,15 +35,16 @@ export function generate_entity_argdecls(
   entityDecl: Entity
 ): CodeFragment[] {
 
-  const args: CodeFragment[] = []
+  const argList: CodeFragment[] = []
 
   for (const [name, spec] of entityDecl.argMap.entries()) {
     const label = spec.attItem?.label
-    args.push([{kind: 'name', code: name, source: label}
-               , ': '
-               , {kind: 'name', code: varTypeExpr(ctx, spec)}
-              ])
+    const arg: CodeFragment[] = [{kind: 'name', code: name, source: label}]
+    // if (spec.typeName) {
+    //   arg.push(': ', {kind: 'name', code: spec.typeName});
+    // }
+    argList.push(arg);
   }
 
-  return args
+  return argList
 }
