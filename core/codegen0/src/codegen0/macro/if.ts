@@ -29,7 +29,7 @@ export async function macro_if(
 ) {
   const output: CodeFragment[] = []
 
-  console.log(`if: `, node)
+  // console.log(`if: `, node)
 
   const primary: IfUnless = collect_arg_spec(node.attlist, ['if', 'unless'])
   if (isError(primary))
@@ -56,7 +56,7 @@ export async function macro_if(
   }
 
   if (node.footer) {
-    console.log(`footer:`, node.footer)
+    // console.log(`footer:`, node.footer)
     for (const elem of node.footer) {
       const [_, kw] = elem.path
       if (kw !== "else") {
@@ -87,7 +87,7 @@ export async function macro_if(
   }
 
   for (const arm of armList) {
-    console.log(`arm: `, arm)
+    // console.log(`arm: `, arm)
     const [pre, guard, post, body] = arm;
     output.push(pre, guard ? generate_as_list(ctx, scope, guard) : "", post)
     output.push(' {', await generate_body(ctx, scope, body), '}')
