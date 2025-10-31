@@ -8,6 +8,8 @@ import {parse_long_options} from '@yatt/lrxml'
 
 import {resolve} from 'node:path'
 
+import {readFileSync} from 'node:fs'
+
 const process = await import('node:process')
 
 const [...args] = process.argv.slice(2);
@@ -15,6 +17,7 @@ const [...args] = process.argv.slice(2);
 const __dirname = new URL('.', import.meta.url).pathname
 
 const config = {
+  mockEntityByFile: "",
   rootDir: resolve(__dirname, 'public'),
   ext_public: ['.ytjs', '.yatt'],
   debug: {
@@ -27,9 +30,24 @@ parse_long_options(args, {target: config})
 
 const baseCgen = cgenSettings('populator', config)
 
+if (config.mockEntityByFile !== "") {
+  console.log(`Mocking entities by ${config.mockEntityByFile}`)
+  const mock = JSON.parse(readFileSync(config.mockEntityByFile, {encoding: "utf-8"}))
+  baseCgen.entFns = Object.fromEntries(
+    Object.entries(mock).map(([k, v]) => {
+      console.log(`entity ${k} returns ${v}`)
+      return [k, function () {
+        console.log(`mock ${k} is called`);
+        return v
+      }];
+    })
+  )
+}
+
 const $yatt = {
   runtime,
-  $public: {}
+  $public: {},
+  ...baseCgen.entFns
 }
 
 console.log(`debug: `, baseCgen.params.debug)
