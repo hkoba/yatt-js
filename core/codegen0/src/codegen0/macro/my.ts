@@ -22,9 +22,10 @@ export async function macro_my(
     if (! isBareLabeledAtt(att)) {
       ctx.NIMPL(att)
     }
-    const varName = att.label.value
-    // XXX: typeName
-    const myvar = build_simple_variable(ctx, varName, {typeName: "text"}, {})
+    const [varName, ...typeName] = att.label.value.split(/:/)
+    const myvar = build_simple_variable(
+      ctx, varName, {typeName: typeName[0] ?? "text"}, {}
+    )
     if (scope.has(varName)) {
       ctx.token_error(att, `duplicate variable declaration ${varName}`)
     }
