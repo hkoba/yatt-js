@@ -1,0 +1,8 @@
+{
+  "compilerOptions": {
+    "module": "None",
+    "target": "es2015",
+    "lib": ["esnext"],
+    "experimentalDecorators": true
+  }
+}

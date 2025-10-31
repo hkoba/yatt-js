@@ -2,6 +2,12 @@
   "name": "@yatt/gas-clasp",
   "version": "0.0.1",
   "exports": "./src/index.ts",
+  "compilerOptions": {
+    "strict": true,
+    "types": ["./globals.d.ts"],
+    "module": "None",
+    "target": "es2015"
+  },
   "imports": {
     "@yatt/codegen0": "../../core/codegen0/src/index.ts",
     "@yatt/lrxml": "../../core/lrxml/src/index.ts",

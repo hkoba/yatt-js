@@ -1,5 +1,7 @@
 #!/usr/bin/env -S deno run -WRE
 
+/// <reference lib="deno.ns" />
+
 import {glob, type GlobOptions} from 'npm:glob'
 import * as Path from 'node:path'
 import {readFileSync, writeFileSync, statSync} from 'node:fs'
