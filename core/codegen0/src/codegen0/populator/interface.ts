@@ -23,10 +23,12 @@ export function generate_reference_interface(
 
   program.push(`interface typeof$yatt {\n`);
 
+  let numFolders = 0;
   for (const [folder, templateList] of Object.entries(importTree)) {
-    program.push(` \$${folder}: {\n`);
+    program.push(` `, numFolders++ ? ', ': "", `\$${folder}: {\n`);
+    let numFiles = 0
     for (const template of templateList) {
-      program.push(`    ${template.modName}: {\n`)
+      program.push(`    `, numFiles++ ? ', ' : "", `${template.modName}: {\n`)
       for (const [kind, name] of template.partOrder) {
         switch (kind) {
           case "widget": {
