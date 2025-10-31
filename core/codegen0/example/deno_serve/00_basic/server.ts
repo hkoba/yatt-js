@@ -16,13 +16,15 @@ const [...args] = process.argv.slice(2);
 
 const __dirname = new URL('.', import.meta.url).pathname
 
+const DEBUG_LEVEL = parseInt(process.env["DEBUG"] ?? "0", 10)
+
 const config = {
   mockEntityByFile: "",
   rootDir: resolve(__dirname, 'public'),
   ext_public: ['.ytjs', '.yatt'],
   debug: {
-    declaration: 1,
-    codegen: 1
+    declaration: DEBUG_LEVEL,
+    codegen: DEBUG_LEVEL
   }
 }
 
@@ -50,7 +52,12 @@ const $yatt = {
   ...baseCgen.entFns
 }
 
-console.log(`debug: `, baseCgen.params.debug)
+if (DEBUG_LEVEL > 0) {
+  console.log(`\$yatt: `, $yatt)
+
+  console.log(`debug: `, baseCgen.params.debug)
+}
+
 
 async function handler(req: Request): Promise<Response> {
 
