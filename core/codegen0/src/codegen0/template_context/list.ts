@@ -8,7 +8,7 @@ import type {VarScope} from '../varscope.ts'
 import type {CodeFragment} from '../codefragment.ts'
 
 import {generate_entity} from '../widget/entity/generate.ts'
-import { AttStringItem } from "../../../../lrxml/src/attstring/parse.ts";
+import type { AttStringItem } from "@yatt/lrxml";
 
 export function generate_as_list<T extends Part>(
   ctx: CodeGenContext<T>, scope: VarScope, children: AttStringItem[]
@@ -25,7 +25,7 @@ export function generate_as_list<T extends Part>(
 
 export function generate_as_cast_to_list<T extends Part>(
   ctx: CodeGenContext<T>, scope: VarScope, term: Term
-): CodeFragment {
+): CodeFragment[] {
 
   if (hasQuotedStringValue(term)) {
     const fragments = generate_as_list(ctx, scope, term.children)

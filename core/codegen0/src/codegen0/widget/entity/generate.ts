@@ -7,6 +7,7 @@ import {type CodeFragment, joinAsArray} from '../../codefragment.ts'
 import type {Argument} from '../../template_context/index.ts'
 
 import {find_entity} from '../../../part-finder/index.ts'
+import { generate_as_text } from "../../template_context/text.ts";
 
 export function generate_entity<T extends Part>(
   ctx: CodeGenContext<T>, scope: VarScope, node: Node & {kind: 'entity'},
@@ -57,7 +58,7 @@ export function generate_entpath<T extends Part>(
         ? generate_entlist(ctx, scope, head.elements, {})
         : [];
 
-      result.push(`.apply(CON, [`, args, `])`);
+      result.push(`.apply(CON, [`, joinAsArray(', ', args), `])`);
     }
   }
   else {
@@ -69,12 +70,16 @@ export function generate_entpath<T extends Part>(
       case "prop": case "invoke": {
         result.push(".", {kind: 'name', code: item.name, offset, source: item})
         if (item.kind === "invoke") {
-          result.push("(", generate_entlist(ctx, scope, item.elements, {}), ")")
+          result.push("(", joinAsArray(", ", generate_entlist(ctx, scope, item.elements, {})), ")")
         }
         break;
       }
       case "aref": {
-        result.push("[", generate_entlist(ctx, scope, item.elements, {}), "]")
+        result.push("[", joinAsArray(", ", generate_entlist(ctx, scope, item.elements, {})), "]")
+        break;
+      }
+      case "href": {
+        result.push("[", joinAsArray("+", generate_entlist(ctx, scope, item.elements, {})), "]")
         break;
       }
       default: {
@@ -92,8 +97,8 @@ export function generate_entpath<T extends Part>(
 export function generate_entlist<T extends Part>(
   ctx: CodeGenContext<T>, scope: VarScope, nodeList: EntTerm[],
   options: {need_runtime_escaping?: boolean}
-): CodeFragment {
-  const exprList: CodeFragment[] = nodeList.map(term => {
+): CodeFragment[] {
+  return nodeList.map(term => {
     if (term instanceof Array) {
       return generate_entpath(ctx, scope, term, options).items
     } else {
@@ -101,5 +106,4 @@ export function generate_entlist<T extends Part>(
               , source: term}
     }
   })
-  return joinAsArray(', ', exprList)
 }
