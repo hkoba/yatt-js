@@ -16,7 +16,7 @@ const [...args] = process.argv.slice(2);
 
 const __dirname = new URL('.', import.meta.url).pathname
 
-const DEBUG_LEVEL = parseInt(process.env["DEBUG"] ?? "0", 10)
+const DEBUG_LEVEL = parseInt(process.env["DEBUG"] ?? "0", 10) || 0
 
 const config = {
   mockEntityByFile: "",
