@@ -1,7 +1,8 @@
-import { loadIfModified } from './load.ts'
+import { loadIfModified, testFile } from './load.ts'
 
 export interface SourceConfig {
   sourceLoader?: SourceLoader
+  sourceTester?: SourceTester
   files?: {[path: string]: string} | Map<string, string>
 }
 
@@ -9,7 +10,10 @@ export type RegistryEntry = {modTimeMs: number, source: string, note?: any}
 
 export type SourceLoader = (path: string, modTimeMs?: number, debug?: number) => Promise<RegistryEntry | undefined>
 
+export type SourceTester = (path: string) => Promise<number | undefined>
+
 export class SourceRegistry {
+  tester?: SourceTester
   loader?: SourceLoader
   entries: Map<string, RegistryEntry>
 
@@ -21,6 +25,9 @@ export class SourceRegistry {
     // null が来たら、null のままにする
     this.loader = Object.hasOwn(config, 'sourceLoader')
       ? config.sourceLoader : loadIfModified
+
+    this.tester = Object.hasOwn(config, 'sourceTester')
+      ? config.sourceTester : testFile
 
     this.entries = new Map
 
@@ -44,6 +51,10 @@ export class SourceRegistry {
     }
     this.entries.set(path, {source, modTimeMs, note})
     return {source, modTimeMs}
+  }
+
+  has(path: string): boolean {
+    return this.entries.has(path)
   }
 
   get(path: string): RegistryEntry | undefined {

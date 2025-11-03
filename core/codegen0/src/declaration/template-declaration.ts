@@ -82,6 +82,7 @@ export function declarationBuilderSession(
     declCache,
     sourceCache,
     entFns,
+    tested: new Map,
     visited: new Set,
     output: new Map,
     declDepth: 0,

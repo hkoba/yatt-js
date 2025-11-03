@@ -1,6 +1,18 @@
-import {open} from 'node:fs/promises'
+import {open, stat} from 'node:fs/promises'
 
 import type { RegistryEntry } from "./registry.ts";
+
+export async function testFile(path: string): Promise<number | undefined> {
+  try {
+    const s = await stat(path)
+    return s.mtimeMs
+  } catch (err) {
+    if (! isNodeLikeSystemError(err) || err.code !== "ENOENT") {
+      throw err;
+    }
+    return
+  }
+}
 
 export async function loadIfModified(
     path: string, modTimeMs?: number, debug?: number

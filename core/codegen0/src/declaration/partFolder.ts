@@ -1,7 +1,7 @@
 import * as Path from 'node:path'
 
 import type {BuilderRequestSession, BuilderSettings} from './context.ts'
-import {indent} from './context.ts'
+import {indent, testFileCache} from './context.ts'
 
 import type {TemplateDeclaration} from './types.ts'
 
@@ -42,14 +42,22 @@ export function internTemplateRuntimeNamespace(path: string, settings: BuilderSe
   }
 }
 
+function lexpand(mayList: string | string[]): string[] {
+  if (Array.isArray(mayList)) {
+    return mayList
+  } else {
+    return [mayList]
+  }
+}
+
 // partPath = ['foo', 'bar']
 // 1. foo.ytjs:<!yatt:widget bar>
 // 2. foo/bar.ytjs:<!yatt:args>
 
 // 1. foo.ytjs:<!yatt:widget bar>
-export function* candidatesForLookup(
+export async function* candidatesForLookup(
   session: BuilderRequestSession, fromDir: string, partPath: string[]
-): Generator<{realPath: string, name: string}> {
+): AsyncGenerator<{realPath: string, name: string}> {
 
   const debug = session.params.debug.declaration ?? 0
 
@@ -57,11 +65,24 @@ export function* candidatesForLookup(
     console.log(indent(session) + `fromDir: ${fromDir} rootDir: ${session.params.rootDir} looking partPath: `, partPath)
   }
 
-  const extMayList = session.params.ext_public
+  const extList = [
+    ...lexpand(session.params.ext_private),
+    ...lexpand(session.params.ext_public)
+  ]
 
   if (fromDir === "") {
-    for (const ext of Array.isArray(extMayList) ? extMayList : [extMayList]) {
-      yield rawPartInFile(session, debug, partPath, ext)
+    const found = []
+    for (const ext of extList) {
+      const rec = rawPartInFile(session, debug, partPath, ext);
+      if (await testFileCache(session, rec.realPath)) {
+        found.push(rec)
+      }
+    }
+    if (found.length >= 2) {
+      throw new Error(`Use of multiple extension is detected for ${partPath.join(":")} in ${fromDir}: ${found.join("\n")}`)
+    }
+    if (found.length) {
+      yield found[0]
     }
     return;
   }
@@ -78,10 +99,18 @@ export function* candidatesForLookup(
     }
 
     for (const gen of genList) {
-      for (const ext of Array.isArray(extMayList) ? extMayList : [extMayList]) {
-        yield {
-          ...gen(session, debug, absFromDir, partPath, ext),
+      const found = []
+      for (const ext of extList) {
+        const rec = gen(session, debug, absFromDir, partPath, ext);
+        if (await testFileCache(session, rec.realPath)) {
+          found.push(rec)
         }
+      }
+      if (found.length >= 2) {
+        throw new Error(`Use of multiple extension is detected for ${partPath.join(":")} in ${absFromDir}: ${found.join("\n")}`)
+      }
+      if (found.length) {
+        yield found[0]
       }
     }
   }

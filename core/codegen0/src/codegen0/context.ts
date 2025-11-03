@@ -56,6 +56,7 @@ export function freshCGenSession(base: CGenSettings)
 : CGenRequestSession {
   const fresh = {
     ...base
+    , tested: new Map
     , visited: new Set<string>
     , output: new Map
     , indentLevel: 0

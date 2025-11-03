@@ -91,7 +91,7 @@ async function lookupGenerateWidgetFromDir(
     console.log(indent(session) + `looking for: `, partPath, 'from dir:', dir)
   }
 
-  for (const cand of candidatesForLookup(session, dir, partPath)) {
+  for await (const cand of candidatesForLookup(session, dir, partPath)) {
     const {realPath, name} = cand;
 
     const entry = await get_template_declaration(session, realPath)
@@ -180,7 +180,7 @@ if (import.meta.main) {
     const elemPath = elemPathStr.split(/:/)
 
     if (config.lookup_only) {
-      for (const {realPath, name} of candidatesForLookup(
+      for await (const {realPath, name} of candidatesForLookup(
         session, fromDir, elemPath
       )) {
         console.log(`Try ${name} in ${realPath}`)

@@ -55,6 +55,7 @@ export type BuilderSettings = {
 
 
 export type BuilderRequestItems = {
+  tested: Map<string, number | undefined>; // path => mtimeMs
   visited: Set<string>
   output: Map<string, OutputRecord>
   declDepth: number
@@ -134,5 +135,19 @@ export class DeclarationScope {
 
   [Symbol.dispose]() {
     this.session.declDepth = this.savedDeclDepth
+  }
+}
+
+export async function testFileCache(session: BuilderRequestSession, fn: string): Promise<boolean> {
+  if (session.tested.has(fn)) {
+    return session.tested.get(fn) != null
+  } else {
+    const tester = session.sourceCache.tester;
+    if (! tester) {
+      return session.sourceCache.has(fn)
+    }
+    const maybeMtime = await tester(fn)
+    session.tested.set(fn, maybeMtime)
+    return maybeMtime != null
   }
 }
