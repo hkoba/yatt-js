@@ -231,6 +231,10 @@ export function loadTestItems(fn: string, config: SourceConfig): {
   testItems: TestItem[],
   sourceCache: SourceRegistry
 } {
+  
+  config.sourceLoader = undefined;
+  config.sourceTester = undefined;
+
   const xhf_content = readFileSync(fn, {encoding: "utf-8"})
   const xhf_stream = parseAsObjectList(xhf_content, {header: true})
   const header = xhf_stream.next()?.value as Header
