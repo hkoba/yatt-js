@@ -19,7 +19,7 @@ import {makeProgram} from '../../utils/compileTs.ts'
 import {type OutputRecord} from '../../declaration/context.ts'
 
 import type {LoaderSession, HandlerSet} from './loader.ts'
-import {ensureRuntimeNamespace} from './loader.ts'
+import {ensureRuntimeNamespace, importTypescript} from './loader.ts'
 
 import {runtime} from '../../yatt.ts'
 
@@ -115,7 +115,7 @@ async function load_output(
     // console.log(outputMap)
   }
 
-  const {populate} = await import(`data:text/typescript,${script}`)
+  const {populate} = await importTypescript(script)
 
   const templateFolder = ensureRuntimeNamespace(session.$yatt, `$${runtimeNamespace}`)
 

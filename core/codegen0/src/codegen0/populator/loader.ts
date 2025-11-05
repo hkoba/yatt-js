@@ -19,6 +19,10 @@ export interface typeof$yatt {
   [key: `$${string}`]: HandlerSetFolder
 }
 
+export interface PopulatorModule {
+  populate($yatt: typeof$yatt): HandlerSet
+}
+
 export type HandlerSetFolder = {
   [key: string]: HandlerSet
 }
@@ -111,7 +115,7 @@ export async function load_output(
     console.log(`runtimeNamespace:$${runtimeNamespace}, modName=${modName}\n`, script)
   }
 
-  const {populate} = await import(`data:text/typescript,${script}`)
+  const {populate} = await importTypescript(script)
 
   const templateFolder = ensureRuntimeNamespace(session.$yatt, `$${runtimeNamespace}`)
 
@@ -121,4 +125,19 @@ export async function load_output(
 export function ensureRuntimeNamespace($yatt: typeof$yatt, folderName: `$${string}`): HandlerSetFolder {
   $yatt[folderName] ??= {}
   return $yatt[folderName]
+}
+
+export async function importTypescript(script: string): Promise<PopulatorModule> {
+  return await import(`data:text/typescript;base64,${textToBase64(script)}`)
+}
+
+export function textToBase64(text: string): string {
+  return bytesToBase64(new TextEncoder().encode(text))
+}
+
+function bytesToBase64(bytes: Uint8Array): string {
+  const binString = Array
+    .from(bytes, (byte) => String.fromCodePoint(byte))
+    .join("")
+  return btoa(binString)
 }
