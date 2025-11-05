@@ -1,0 +1,3 @@
+*.yatt  linguist-language=HTML gitlab-language=html 
+*.ytjs  linguist-language=HTML gitlab-language=html 
+*.ytmpl linguist-language=HTML gitlab-language=html
