@@ -33,7 +33,7 @@ async function build(rootDir: string, templateDir: string, config: cgen.YattConf
     copyFilesIfMissing(`${srcDir}/runtime`, '**/*.ts', rootDir, true);
   }
 
-  const fileList = glob.sync('**/*.{ytjs,yatt}', {
+  const fileList = glob.sync('**/*.{ytmpl,ytjs,yatt}', {
     root: templateDir, cwd: templateDir
   })
 
