@@ -16,7 +16,7 @@ import type {runtime} from '../../yatt.ts'
 
 export interface typeof$yatt {
   runtime: typeof runtime;
-  [key: `$${string}`]: HandlerSetFolder
+  [key: `${string}$`]: HandlerSetFolder
 }
 
 export interface PopulatorModule {
@@ -90,11 +90,11 @@ export async function refresh_populator(
       console.log(`use cached handler`)
     }
 
-    $this = ensureRuntimeNamespace(session.$yatt, `$${runtimeNamespace}`)[modName]
+    $this = ensureRuntimeNamespace(session.$yatt, `${runtimeNamespace}$`)[modName]
   }
 
   if (debug >= 3) {
-    console.log(`session.$yatt.$public: `, session.$yatt.$public)
+    console.log(`session.$yatt.$public: `, session.$yatt.public$)
   }
 
   if ($this) {
@@ -117,12 +117,12 @@ export async function load_output(
 
   const {populate} = await importTypescript(script)
 
-  const templateFolder = ensureRuntimeNamespace(session.$yatt, `$${runtimeNamespace}`)
+  const templateFolder = ensureRuntimeNamespace(session.$yatt, `${runtimeNamespace}$`)
 
   return templateFolder[modName] = populate(session.$yatt)
 }
 
-export function ensureRuntimeNamespace($yatt: typeof$yatt, folderName: `$${string}`): HandlerSetFolder {
+export function ensureRuntimeNamespace($yatt: typeof$yatt, folderName: `${string}$`): HandlerSetFolder {
   $yatt[folderName] ??= {}
   return $yatt[folderName]
 }

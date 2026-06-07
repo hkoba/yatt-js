@@ -25,7 +25,7 @@ export function generate_reference_interface(
 
   let numFolders = 0;
   for (const [folder, templateList] of Object.entries(importTree)) {
-    program.push(` `, numFolders++ ? ', ': "", `\$${folder}: {\n`);
+    program.push(` `, numFolders++ ? ', ': "", `${folder}$: {\n`);
     let numFiles = 0
     for (const template of templateList) {
       program.push(`    `, numFiles++ ? ', ' : "", `${template.modName}: {\n`)
