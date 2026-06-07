@@ -21,7 +21,7 @@ export function generate_reference_interface(
 
   const importTree = gatherImports(session)
 
-  program.push(`interface typeof$yatt {\n`);
+  program.push(`interface $yattType {\n`);
 
   let numFolders = 0;
   for (const [folder, templateList] of Object.entries(importTree)) {

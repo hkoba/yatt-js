@@ -136,9 +136,9 @@ export async function generate_populator_for_declentry(
   // XXX: element path => typename mapping
   program.push(
     'export function populate($yatt',
-    typeAnnotation(': typeof$yatt'),
+    typeAnnotation(': $yattType'),
     ')',
-    // typeAnnotation(': typeof$yatt$public$index'),
+    // typeAnnotation(': $yattType$public$index'),
     ' {\n')
   {
     if ((session.params.debug.codegen ?? 0) >= 3) {

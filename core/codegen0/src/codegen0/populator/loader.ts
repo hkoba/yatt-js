@@ -14,13 +14,13 @@ import {generate_populator_for_declentry} from './generate.ts'
 
 import type {runtime} from '../../yatt.ts'
 
-export interface typeof$yatt {
+export interface $yattType {
   runtime: typeof runtime;
   [key: `${string}$`]: HandlerSetFolder
 }
 
 export interface PopulatorModule {
-  populate($yatt: typeof$yatt): HandlerSet
+  populate($yatt: $yattType): HandlerSet
 }
 
 export type HandlerSetFolder = {
@@ -41,7 +41,7 @@ export interface Connection {
 }
 
 export type LoaderSession = CGenRequestSession & {
-  $yatt: typeof$yatt
+  $yatt: $yattType
 }
 
 export type Populator = {
@@ -122,7 +122,7 @@ export async function load_output(
   return templateFolder[modName] = populate(session.$yatt)
 }
 
-export function ensureRuntimeNamespace($yatt: typeof$yatt, folderName: `${string}$`): HandlerSetFolder {
+export function ensureRuntimeNamespace($yatt: $yattType, folderName: `${string}$`): HandlerSetFolder {
   $yatt[folderName] ??= {}
   return $yatt[folderName]
 }

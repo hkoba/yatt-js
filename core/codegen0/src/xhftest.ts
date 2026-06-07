@@ -12,7 +12,7 @@ import type {YattConfig} from './config.ts'
 import { cgenSettings, freshCGenSession, type CGenSettings } from "./codegen0/context.ts"
 import {
 Populator,
-  refresh_populator, type Connection, type typeof$yatt
+  refresh_populator, type Connection, type $yattType
 } from "./codegen0/populator/loader.ts"
 import { SourceRegistry, type SourceConfig } from "./declaration/registry.ts"
 import { runtime } from "./yatt.ts"
@@ -137,7 +137,7 @@ function testTitle(item: TestItemBase, params?: string[]): string {
 
 export async function doErrorTest(
   item: TestItemError & {kind: 'error'},
-  $yatt: typeof$yatt,
+  $yatt: $yattType,
   baseCgen: CGenSettings
 ): Promise<string> {
   const cgen = freshCGenSession(baseCgen)
@@ -170,7 +170,7 @@ export async function doErrorTest(
 
 export async function doOutputTest(
   item: TestItemOk & {kind: 'output'},
-  $yatt: typeof$yatt,
+  $yatt: $yattType,
   baseCgen: CGenSettings
 ): Promise<string> {
   const cgen = freshCGenSession(baseCgen)
@@ -187,7 +187,7 @@ export async function doOutputTest(
 
 function runCompiledWidget(
   item: TestItemOk & {kind: 'output'} | TestItemError,
-  $yatt: typeof$yatt,
+  $yatt: $yattType,
   entry: Populator
 ): string {
   const {$this, template} = entry
