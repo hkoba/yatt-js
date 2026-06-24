@@ -92,7 +92,7 @@ export function runtests(files: string[], baseConfig: YattConfig): void {
     })
 
     const $yatt = {
-      runtime, $public: {}
+      runtime, public$: {}
     }
 
     // console.log(`testItems: `, testItems);
@@ -344,7 +344,7 @@ if (import.meta.main) {
     })
 
     const $yatt = {
-      runtime, $public: {}
+      runtime, public$: {}
     }
 
     for (const item of testItems) {

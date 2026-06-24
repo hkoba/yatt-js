@@ -138,7 +138,7 @@ export async function generate_populator_for_declentry(
     'export function populate($yatt',
     typeAnnotation(': $yattType'),
     ')',
-    // typeAnnotation(': $yattType$public$index'),
+    // typeAnnotation(': $yattType.public$.index'),
     ' {\n')
   {
     if ((session.params.debug.codegen ?? 0) >= 3) {

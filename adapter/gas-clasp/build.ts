@@ -64,7 +64,7 @@ async function build(rootDir: string, templateDir: string, config: cgen.YattConf
     }
     console.log(`writing ${mapFn}`)
     const json = JSON.stringify(script)
-    writeFileSync(mapFn, `namespace $yatt {\n  export const $staticMap = ${json}\n}\n`)
+    writeFileSync(mapFn, `namespace $yatt {\n  export const staticMap$ = ${json}\n}\n`)
   }
 }
 

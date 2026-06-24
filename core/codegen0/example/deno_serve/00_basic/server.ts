@@ -48,7 +48,7 @@ if (config.mockEntityByFile !== "") {
 
 const $yatt = {
   runtime,
-  $public: {},
+  public$: {},
   ...baseCgen.entFns
 }
 

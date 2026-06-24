@@ -23,10 +23,10 @@ function doGet(request: $yatt.runtime.Request): GoogleAppsScript.HTML.HtmlOutput
     }
   }
 
-  const page = ($yatt.$public as any)[fileName]
+  const page = ($yatt.public$ as any)[fileName]
   // XXX: error.ytjs が無い時の fallback がほしい
   if (page == null) {
-    $yatt.$public.error.render_(CON, {msg: `Page not found: ${fileName}`})
+    $yatt.public$.error.render_(CON, {msg: `Page not found: ${fileName}`})
   } else {
     // XXX safe parameter mapping
     page.render_(CON, {})
@@ -36,11 +36,11 @@ function doGet(request: $yatt.runtime.Request): GoogleAppsScript.HTML.HtmlOutput
 }
 
 function _lookup_static(fileName): string | undefined {
-  if ($yatt.$staticMap[fileName]) {
+  if ($yatt.staticMap$[fileName]) {
     return fileName
   } else {
     const fn = fileName + '.html'
-    if ($yatt.$staticMap[fn]) {
+    if ($yatt.staticMap$[fn]) {
       return fn
     }
   }

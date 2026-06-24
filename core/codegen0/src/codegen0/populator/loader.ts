@@ -94,7 +94,7 @@ export async function refresh_populator(
   }
 
   if (debug >= 3) {
-    console.log(`session.$yatt.$public: `, session.$yatt.public$)
+    console.log(`session.$yatt.public$: `, session.$yatt.public$)
   }
 
   if ($this) {
@@ -112,7 +112,7 @@ export async function load_output(
 
   if ((session.params.debug.codegen ?? 0) >= 2) {
     console.log(`=======================`)
-    console.log(`runtimeNamespace:$${runtimeNamespace}, modName=${modName}\n`, script)
+    console.log(`runtimeNamespace:${runtimeNamespace}$, modName=${modName}\n`, script)
   }
 
   const {populate} = await importTypescript(script)
