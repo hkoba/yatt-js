@@ -1,4 +1,4 @@
-#!/usr/bin/env -S deno run -WRE
+#!/usr/bin/env -S deno run -WRE --allow-run --allow-net
 
 /// <reference lib="deno.ns" />
 
@@ -66,6 +66,96 @@ async function build(rootDir: string, templateDir: string, config: cgen.YattConf
     const json = JSON.stringify(script)
     writeFileSync(mapFn, `namespace $yatt {\n  export const staticMap$ = ${json}\n}\n`)
   }
+
+  // bundle client(browser) TypeScript and expose it as $yatt.clientBundle$
+  // (GAS serves only HTML, so client JS must be inlined into a <script>).
+  if (! config.noEmit) {
+    await buildClientBundles(rootDir, templateDir, outDir, config)
+  }
+}
+
+// Discover client-side .ts entries, bundle them with esbuild (InlineSink) and
+// emit `${outDir}/_clientBundle.ts` mirroring the `_static.ts`/`staticMap$`
+// pattern. A template inlines a bundle via, e.g.:
+//   <script><?yatt CON.append($yatt.clientBundle$.index) ?></script>
+async function buildClientBundles(
+  rootDir: string, templateDir: string, outDir: string, config: cgen.YattConfig
+): Promise<void> {
+  const clientExt = config.clientExt ?? '.client.ts'
+  // project root = parent of the templates dir (sibling of clasp `root/`).
+  const projectRoot = Path.dirname(templateDir.replace(/[/\\]+$/, ''))
+
+  const entries: cgen.ClientEntry[] = []
+  const includes: string[] = []
+
+  // "endpoint" layout: client TS co-located with templates under templateDir.
+  const coLocated = glob.sync(`**/*${clientExt}`, {root: templateDir, cwd: templateDir})
+  for (const fn of coLocated) {
+    const name = fn.slice(0, -clientExt.length)   // index.client.ts -> index
+    entries.push({name, entryPoint: Path.join(templateDir, fn)})
+  }
+  if (coLocated.length) {
+    includes.push(`${Path.relative(projectRoot, templateDir) || '.'}/**/*${clientExt}`)
+  }
+
+  // "role-split" layout: dedicated client source dirs (relative to project root).
+  for (const dir of (config.clientDirs ?? [])) {
+    const base = Path.resolve(projectRoot, dir)
+    if (! statSync(base, {throwIfNoEntry: false})) continue
+    for (const fn of glob.sync('**/*.ts', {root: base, cwd: base})) {
+      entries.push({name: fn.replace(/\.ts$/, ''), entryPoint: Path.join(base, fn)})
+    }
+    includes.push(`${Path.relative(projectRoot, base) || '.'}/**/*.ts`)
+  }
+
+  if (entries.length === 0) return
+
+  // Provide a client-scoped tsconfig (DOM lib, no GAS types) so developers can
+  // type-check client TS separately from the server/GAS code (esbuild itself
+  // only transpiles). Write-if-missing so user edits are preserved.
+  writeClientTsconfigIfMissing(projectRoot, includes)
+
+  console.log(`bundling ${entries.length} client entr${entries.length === 1 ? 'y' : 'ies'}`)
+  const sink = new cgen.InlineSink()
+  await cgen.bundleClientEntries(entries, sink, {format: 'iife', target: 'es2015'})
+
+  // Escape `</script` so bundled JS can sit inside an HTML <script> element.
+  const map: {[k: string]: string} = {}
+  for (const [k, js] of Object.entries(sink.bundles)) {
+    map[k] = js.replace(/<\/(script)/gi, '<\\/$1')
+  }
+
+  const outFn = `${outDir}/_clientBundle.ts`
+  console.log(`writing ${outFn}`)
+  writeFileSync(outFn, `namespace $yatt {\n  export const clientBundle$ = ${JSON.stringify(map)}\n}\n`)
+}
+
+// Client TS uses the DOM lib and must NOT see GAS server types; this is the
+// "server(no DOM) / client(DOM)" split. esbuild only transpiles, so this
+// config is for the developer's own `tsc -p _yatt.client.tsconfig.json` pass
+// and editor type-checking. Only client files are included; imported helpers
+// are checked transitively.
+function writeClientTsconfigIfMissing(projectRoot: string, includes: string[]) {
+  const destFn = `${projectRoot}/_yatt.client.tsconfig.json`
+  if (statSync(destFn, {throwIfNoEntry: false})) {
+    return
+  }
+  const tsconfig = {
+    compilerOptions: {
+      target: "es2015",
+      module: "ESNext",
+      moduleResolution: "Bundler",
+      lib: ["esnext", "DOM", "DOM.Iterable"],
+      types: [],
+      noEmit: true,
+      strict: true,
+      skipLibCheck: true,
+      allowImportingTsExtensions: true,
+    },
+    include: includes,
+  }
+  console.log(`writing ${destFn}`)
+  writeFileSync(destFn, JSON.stringify(tsconfig, null, 2) + '\n')
 }
 
 function copyIntoNamespaceIfMissing(ns: string, srcFn: string, destFn: string) {

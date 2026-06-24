@@ -29,6 +29,7 @@ find . -name '*.ts' -perm -u+x -not -path '*/node_modules/*'
 | `core/codegen0/src/codegen0/module/generate.ts` | module スタイル生成 | テンプレファイル |
 | `core/codegen0/src/codegen0/populator/generate.ts` | populator スタイル生成 | テンプレファイル |
 | `core/codegen0/src/codegen0/populator/runner.ts` | populator を生成し実行 | テンプレファイル |
+| `core/codegen0/src/client/bundle.ts` | client(browser) TS の transpile/bundle（esbuild） | `[--outDir=DIR] [--format=iife\|esm] <entry.ts>...` |
 | `core/codegen0/src/xhftest.ts` | `.xhf` spec を流す | `test/spec_xhf/*.xhf` |
 | `adapter/gas-clasp/build.ts` | gas-clasp 一括ビルド | （`./pages` を走査） |
 | `adapter/gas-clasp/migrate.ts` | gas-clasp 命名規約 migration | `[--dry-run] [root...]` |

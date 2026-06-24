@@ -17,6 +17,7 @@
     "util/xhf"
   ],
   "dependencies": {
+    "esbuild": "^0.24.2",
     "typescript": "^5.4.5"
   }
 }

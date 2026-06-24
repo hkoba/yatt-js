@@ -49,6 +49,7 @@ export function yattParams(
   const lrxmlDefault = lrxmlParams(config)
   const {
     yattRoot, documentRoot, libDirs, outDir, linkDir,
+    clientDirs, clientExt, bundleOutDir,
     yattSrcPrefix, projectStyle,
     entityDefinitionsFile,
     lookup_subdirectory_first = false,
@@ -62,7 +63,8 @@ export function yattParams(
   return {
     ...lrxmlDefault,
     ...applyProjectStyle(
-      {yattRoot, documentRoot, libDirs, outDir, linkDir, yattSrcPrefix},
+      {yattRoot, documentRoot, libDirs, outDir, linkDir, yattSrcPrefix,
+       clientDirs, clientExt, bundleOutDir},
       projectStyle
     ),
     lookup_subdirectory_first,

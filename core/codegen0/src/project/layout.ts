@@ -9,6 +9,14 @@ export type YattProjectParams = {
   outDir?: string
   linkDir?: string
   yattSrcPrefix?: string
+  // client(browser) side TypeScript sources (see docs/discuss/browser-js.md).
+  // `clientExt` is the marker extension used to recognize client entry points
+  // (e.g. `*.client.ts`). `clientDirs` are dedicated source roots for the
+  // "role-split" layout; when empty, client sources are discovered co-located
+  // with templates ("endpoint" layout). `bundleOutDir` is the FileSink target.
+  clientDirs?: string[]
+  clientExt?: string
+  bundleOutDir?: string
 }
 
 export type YattProjectStyle = {
@@ -19,6 +27,9 @@ export type YattProjectStyle = {
   linkDir?: string
   projectStyle?: string | YattProjectStyle
   yattSrcPrefix?: string
+  clientDirs?: string[]
+  clientExt?: string
+  bundleOutDir?: string
 }
 
 const pagesStyle = {
@@ -34,6 +45,27 @@ const projectStyles: {[k: string]: YattProjectStyle} = {
   "pages": pagesStyle,
   "yatt/pages": {
     ...pagesStyle, projectStyle: "yatt/pages", yattSrcPrefix: "yatt/"
+  },
+  // "endpoint": polyglot small-team layout — templates and their client TS live
+  // together under public/, client entries marked by `*.client.ts`.
+  "endpoint": {
+    projectStyle: "endpoint",
+    yattRoot:     "./",
+    documentRoot: "public/",
+    libDirs:     [],
+    clientExt:    ".client.ts",
+    bundleOutDir: "public/_dist/",
+  },
+  // "role-split": designer + dedicated-JS-dev layout — server templates under
+  // public/, client TS in a separate tree (e.g. client/ or browser/).
+  "role-split": {
+    projectStyle: "role-split",
+    yattRoot:     "./",
+    documentRoot: "public/",
+    libDirs:     [],
+    clientDirs:  ["client/"],
+    clientExt:    ".ts",
+    bundleOutDir: "dist/",
   }
 }
 
@@ -78,9 +110,12 @@ export function applyProjectStyle(
     yattRoot,
     documentRoot,
     libDirs,
+    clientDirs,
     yattSrcPrefix,
     outDir = style.outDir,
-    linkDir = style.linkDir
+    linkDir = style.linkDir,
+    clientExt = style.clientExt,
+    bundleOutDir = style.bundleOutDir,
   } = origConfig;
 
   yattSrcPrefix ??= style.yattSrcPrefix
@@ -100,11 +135,17 @@ export function applyProjectStyle(
   const defaultLibDirs = (yattSrcPrefix && style.libDirs)
     ? style.libDirs.map(d => yattSrcPrefix + d) : (style.libDirs ?? []);
 
+  const defaultClientDirs = (yattSrcPrefix && style.clientDirs)
+    ? style.clientDirs.map(d => yattSrcPrefix + d) : (style.clientDirs ?? undefined);
+
   return {
     projectStyle,
     yattRoot,
     documentRoot,
     libDirs: typeof libDirs === 'string' ? [libDirs] : defaultLibDirs,
+    clientDirs: clientDirs ?? defaultClientDirs,
+    clientExt,
+    bundleOutDir,
     yattSrcPrefix,
     outDir, linkDir
   }
@@ -113,6 +154,12 @@ export function applyProjectStyle(
 export function extractProjectStyle<T extends YattProjectConfig>(
   config: T
 ): YattProjectConfig {
-  const {yattSrcPrefix, yattRoot, documentRoot, libDirs, outDir, linkDir} = config
-  return {yattSrcPrefix, yattRoot, documentRoot, libDirs, outDir, linkDir}
+  const {
+    yattSrcPrefix, yattRoot, documentRoot, libDirs, outDir, linkDir,
+    clientDirs, clientExt, bundleOutDir
+  } = config
+  return {
+    yattSrcPrefix, yattRoot, documentRoot, libDirs, outDir, linkDir,
+    clientDirs, clientExt, bundleOutDir
+  }
 }

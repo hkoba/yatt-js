@@ -4,6 +4,7 @@
   "exports": "./src/index.ts",
   "imports": {
     "source-map": "npm:source-map",
+    "esbuild": "npm:esbuild@^0.24.0",
     "@cross/test": "jsr:@cross/test@^0.0.9",
     "@std/assert": "jsr:@std/assert@^0.223.0",
     "@yatt/lrxml": "../lrxml/src/index.ts",
