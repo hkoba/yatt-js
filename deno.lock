@@ -955,6 +955,8 @@
     ],
     "packageJson": {
       "dependencies": [
+        "npm:@jsr/cross__test@^0.0.10",
+        "npm:@jsr/std__assert@1",
         "npm:esbuild@~0.24.2",
         "npm:source-map@*",
         "npm:typescript@^5.4.5"
