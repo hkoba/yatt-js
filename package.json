@@ -3,13 +3,14 @@
   "version": "0.0.1",
   "author": "buribullet@gmail.com",
   "devDependencies": {
+    "@cross/test": "npm:@jsr/cross__test@^0.0.10",
+    "@std/assert": "npm:@jsr/std__assert@^1",
     "source-map": "npm:source-map"
   },
   "description": "Yet Another Template Transpiler to TypeScript",
   "license": "MIT",
   "private": true,
-  "scripts": {
-  },
+  "scripts": {},
   "workspaces": [
     "core/lrxml",
     "core/codegen0",
