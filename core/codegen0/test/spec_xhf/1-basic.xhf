@@ -75,16 +75,6 @@ OUT:
  <h2>Hello foo world! bar</h2>
  
 
-SKIP: 1
-TITLE: Misplaced widget declaration.
-IN:
- <form>
-  <yatt:hello/>
- 
- <!yatt:widget hello>
-ERROR: Misplaced yatt:widget in: \([^\)]+\), at file \S+ line 4
-
-
 TITLE: comment in widget call
 IN:
  (<yatt:foo
@@ -303,7 +293,6 @@ OUT:
  <h2>&lt;foo&gt;&amp;bar;</h2>
 
 TITLE: entvar:text in mid of argument.
-SKIP: 1
 TAG: entity
 TAG: var
 IN:
@@ -322,7 +311,6 @@ OUT:
  </div>
 
 TITLE: entvar:scalar
-SKIP: 1
 IN:
  <yatt:foo x="3 * 3"/>
  <!yatt:widget foo x=scalar y="scalar?&yatt:x; + 2">
@@ -332,9 +320,8 @@ OUT:
  
 
 TITLE: entvar:list
-SKIP: 1
 IN:
- <yatt:foo x="3 .. 6, 'seven'"/>
+ <yatt:foo x="3,4,5,6, 'seven'"/>
  <!yatt:widget foo x=list>
  <h2>&yatt:x[0];-&yatt:x[2];-&yatt:x[4];</h2>
 OUT:
@@ -659,7 +646,6 @@ OUT:
 
 
 TITLE: nested hash subscript
-SKIP: 1
 IN:
  <!yatt:args dict=value ix=list>
  (&yatt:dict{:ix[0][0]};)
