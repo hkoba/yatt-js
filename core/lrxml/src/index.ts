@@ -32,8 +32,16 @@ export {
   maybePassThruVarName, maybeArgName
 } from './template/index.ts'
 
-export type {AttItem, AttValue} from './attlist/parse.ts'
-export { attValue, attInnerRange } from './attlist/parse.ts'
+export type {
+  AttItem, AttValue, Label,
+  AttLabeled, AttLabeledByIdent, AttLabeledNested, AttPositional,
+  AttIdentOnly, StringTerm, QuotedStringTerm, BareStringTerm,
+  IdentplusTerm, NestedTerm, EntTermWComment, StringishTerm
+} from './attlist/parse.ts'
+export {
+  attValue, attInnerRange, attKindIsQuotedString, isLabelTerm,
+  termIsStringish
+} from './attlist/parse.ts'
 
 export type { AttStringItem } from './attstring/parse.ts'
 export { parse_attstring } from './attstring/parse.ts'
