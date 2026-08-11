@@ -1,7 +1,7 @@
 import { parse_attstring } from "../../../lrxml/src/attstring/parse.ts";
 import type { RangeLine } from "../../../lrxml/src/context.ts";
 import {type AttItem, isBareLabeledAtt, isIdentOnly, hasLabel, hasQuotedStringValue} from '../deps.ts'
-import {attInnerRange} from '@yatt/lrxml'
+import {attInnerRange, termIsStringish} from '@yatt/lrxml'
 
 import type { BuilderContext } from './context.ts'
 
@@ -68,7 +68,7 @@ export function add_args_cont(
     if (isBareLabeledAtt(att)) {
       //: name = SOMETHING
       const name = att.label.value
-      if (att.kind === "bare" || att.kind === "sq" || att.kind === "dq" || att.kind === "identplus") {
+      if (termIsStringish(att)) {
         //: name="type?default"
         if (ctx.debug) {
           console.log(`kind ${att.kind}: ${name} = ${att.value}`)
