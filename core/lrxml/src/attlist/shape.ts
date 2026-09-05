@@ -16,11 +16,17 @@ type TermShapeOf<T extends Term> =
   T extends EntTermWComment ? Extract<TermShape, {shape: "entity"}> :
   TermShape
 
+// has_three_colon の時、term.value は ":::" を含む（term_identplus が range 全体から作るため）。
+// view の text/name は識別子そのものに正規化する。生の値が要る消費者は node.value を見る。
+function identText(term: IdentplusTerm): string {
+  return term.has_three_colon ? term.value.substring(3) : term.value
+}
+
 export function termShape<T extends Term>(term: T): TermShapeOf<T>
 export function termShape(term: Term): TermShape {
   switch (term.kind) {
     case "identplus": {
-      return {shape: "ident", text: term.value, node: term, has_three_colon: term.has_three_colon}
+      return {shape: "ident", text: identText(term), node: term, has_three_colon: term.has_three_colon}
     }
     case "sq":
     case "dq":
@@ -62,7 +68,7 @@ export function attShape(att: AttItem | AttElement): AttShape {
     if (att.kind === "identplus") {
       // foo
       return {shape: "identOnly", has_three_colon: att.has_three_colon
-        , name: att.value, node: att}
+        , name: identText(att), node: att}
     }
     else {
       // "foo" 'foo' other*non*ident
