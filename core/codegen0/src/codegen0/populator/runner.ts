@@ -84,12 +84,12 @@ async function load_output(
 
   if ((session.params.debug.codegen ?? 0) >= 2) {
     console.log(`=======================`)
-    console.log(`runtimeNamespace:$${runtimeNamespace}, modName=${modName}\n`, script)
+    console.log(`runtimeNamespace:${runtimeNamespace}$, modName=${modName}\n`, script)
   }
 
   const {outputText, outputMap, diagnostics} = makeProgram(script, [], {
     // fileName: resolve(config.filename), // XXX ファイル名を入れると outputMap がゼロになる！何で…？
-    moduleName: '$yatt$public$index'
+    moduleName: '$yatt.public$.index'
   })
 
   if (diagnostics && diagnostics.length > 0) {
@@ -117,7 +117,7 @@ async function load_output(
 
   const {populate} = await importTypescript(script)
 
-  const templateFolder = ensureRuntimeNamespace(session.$yatt, `$${runtimeNamespace}`)
+  const templateFolder = ensureRuntimeNamespace(session.$yatt, `${runtimeNamespace}$`)
 
   return templateFolder[modName] = populate(session.$yatt)
 }

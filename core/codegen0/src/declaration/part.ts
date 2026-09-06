@@ -2,6 +2,8 @@ import type { Payload, AttItem } from '../deps.ts'
 
 import type { Variable } from './vartype.ts'
 
+import type {RouteSpec} from './types.ts'
+
 export type Part = Widget | Action | Entity
 export type PartKind = Part['kind']
 
@@ -13,7 +15,7 @@ export type PartBase = {
   argMap: Map<string, Variable>;
   varMap: Map<string, Variable>;
   payloads: Payload[]
-  route?: string | [string, string] // [method, route]
+  route?: RouteSpec
 }
 
 export type Widget = PartBase & {

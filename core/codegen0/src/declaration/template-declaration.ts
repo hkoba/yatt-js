@@ -87,7 +87,8 @@ export function declarationBuilderSession(
     output: new Map,
     declDepth: 0,
     templateFolderMap: new Map,
-    params: buildParams
+    params: buildParams,
+    allowedRouteMethodSet: new Set(buildParams.allowedRouteMethods)
   }
 
   return builder_session
