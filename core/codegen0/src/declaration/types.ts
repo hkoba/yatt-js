@@ -5,6 +5,8 @@ export type {
   PartBase, PartKind, Part, Widget, Action, Entity
 } from './part.ts';
 
+import type {AttItem} from '../deps.ts'
+
 export type PartType = Widget | Action | Entity
 
 export type DeclEntry = {
@@ -38,4 +40,14 @@ export type PartMapType = {
   [k: string]: Map<string, PartBase>;
 }
 
-export type RouteMapType = Map<string, {part: Part, method?: string}>;
+export type RouteMapType = Map<string, RoutePatternEntry>
+export type RoutePatternEntry = {
+  pattern: string, // original pattern
+  byMethod: Map<string, {part: Part, nameNode?: AttItem}>
+}
+
+export type RouteSpec = {
+  pattern: string
+  method: string[]
+  nameNode: AttItem
+}
