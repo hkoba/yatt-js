@@ -1,13 +1,10 @@
-import {
-  type ElementNode
-  , type AttItem, type AttElement, type AttValue
-  , isBareLabeledAtt
-  , hasQuotedStringValue,
+import type {
+  ElementNode,
   AttStringItem,
   BodyNode
 } from '../../deps.ts'
 
-import {WidgetGenContext} from '../context.ts'
+import type {WidgetGenContext} from '../context.ts'
 import type {CodeFragment} from "../codefragment.ts"
 import type {VarScope} from '../varscope.ts'
 
@@ -18,20 +15,20 @@ import {isError} from '../../utils/isError.ts'
 
 import {collect_arg_spec} from './foreach.ts'
 
-type IfUnless = {ok: Partial<{"if": AttValue, "unless": AttValue}>} | {err: string, value: (AttItem | AttElement)}
+// type IfUnless = {ok: Partial<{"if": AttValue, "unless": AttValue}>} | {err: string, value: (AttItem | AttElement)}
 
 
 export async function macro_if(
   ctx: WidgetGenContext,
   scope: VarScope,
   node: ElementNode,
-  option?: {fragment?: boolean}
+  _option?: {fragment?: boolean}
 ) {
   const output: CodeFragment[] = []
 
   // console.log(`if: `, node)
 
-  const primary: IfUnless = collect_arg_spec(node.attlist, ['if', 'unless'])
+  const primary = collect_arg_spec(node.attlist, ['if', 'unless'])
   if (isError(primary))
     ctx.token_error(primary.value, primary.err)
 
@@ -40,8 +37,8 @@ export async function macro_if(
   // console.log(`ok:`, primary.ok)
 
   if (primary.ok.if) {
-    if (! hasQuotedStringValue(primary.ok.if)) {
-      ctx.NIMPL(primary.ok.if)
+    if (primary.ok.if.shape !== "string" || !primary.ok.if.quoted) {
+      ctx.NIMPL(primary.ok.if.node)
     }
     if (! node.children) {
       ctx.token_error(node, `yatt:if must have body`)
@@ -49,7 +46,7 @@ export async function macro_if(
     armList.push(["if (", primary.ok.if.children, ")", node.children]);
   }
   else if (primary.ok.unless) {
-    ctx.NIMPL(primary.ok.unless)
+    ctx.NIMPL(primary.ok.unless.node)
   }
   else {
     ctx.NIMPL(node)
@@ -66,19 +63,19 @@ export async function macro_if(
         ctx.token_error(node, `:yatt:else must have body`)
       }
 
-      const arm: IfUnless = collect_arg_spec(elem.attlist, ['if', 'unless'])
+      const arm = collect_arg_spec(elem.attlist, ['if', 'unless'])
 
       if (isError(arm)) {
         ctx.NIMPL(elem)
       }
       else if (arm.ok.if) {
-        if (! hasQuotedStringValue(arm.ok.if)) {
-          ctx.NIMPL(arm.ok.if)
+        if (arm.ok.if.shape !== "string" || !arm.ok.if.quoted) {
+          ctx.NIMPL(arm.ok.if.node)
         }
         armList.push(["else if (", arm.ok.if.children, ")", elem.children])
       }
       else if (arm.ok.unless) {
-        ctx.NIMPL(arm.ok.unless)
+        ctx.NIMPL(arm.ok.unless.node)
       }
       else {
         armList.push(["else", undefined, "", elem.children])

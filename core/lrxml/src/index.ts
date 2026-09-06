@@ -43,6 +43,11 @@ export {
   termIsStringish
 } from './attlist/parse.ts'
 
+export {
+  type TermShape, termShape,
+  type AttShape, attShape
+} from './attlist/shape.ts'
+
 export type { AttStringItem } from './attstring/parse.ts'
 export { parse_attstring } from './attstring/parse.ts'
 
