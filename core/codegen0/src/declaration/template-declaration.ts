@@ -70,7 +70,6 @@ export function declarationBuilderSession(
     varTypeMap = builtin_vartypemap(),
     declCache = new Map,
     entFns = {},
-    allowedRouteMethods,
     ...rest_config
   } = config
 
@@ -89,7 +88,7 @@ export function declarationBuilderSession(
     declDepth: 0,
     templateFolderMap: new Map,
     params: buildParams,
-    allowedRouteMethodSet: new Set(allowedRouteMethods)
+    allowedRouteMethodSet: new Set(buildParams.allowedRouteMethods)
   }
 
   return builder_session

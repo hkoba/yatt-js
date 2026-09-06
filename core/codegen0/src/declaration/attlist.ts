@@ -1,11 +1,9 @@
-import {type AttItem, hasQuotedStringValue, hasLabel
-  , attShape
-} from '../deps.ts'
+import {type AttItem, attShape} from '../deps.ts'
 
 import type {BuilderContext} from './context.ts'
 
 import type {
-  RouteMapType, RoutePatternEntry, RouteSpec, Part
+  RouteMapType, RouteSpec, Part
 } from './types.ts'
 
 export function cut_name_and_route(
@@ -19,12 +17,15 @@ export function cut_name_and_route(
   let routeSpec: RouteSpec | undefined
   if (! is_named) {
     name = ""
-    if (attlist.length && !hasLabel(attlist[0])
-      && hasQuotedStringValue(attlist[0])) {
-      routeSpec = {
-        pattern: ctx.range_text(attlist.shift()!), method: [],
-        nameNode: attlist[0]
-      };
+    if (attlist.length) {
+      const s = attShape(attlist[0])
+      if (s.shape === "positional" && s.value.shape === "string" && s.value.quoted) {
+        const att = attlist.shift()!
+        routeSpec = {
+          pattern: s.value.text, method: [],
+          nameNode: att
+        };
+      }
     }
 
   } else {
@@ -111,12 +112,13 @@ function parse_method_and_route(ctx: BuilderContext, head: AttItem, attlist: Att
       if (s.has_three_colon) {
         ctx.token_error(head, `Syntax error: :::${s.name}`)
       }
-      if (! ctx.session.allowedRouteMethodSet.has(s.name)) {
-        ctx.token_error(head, `Unsupported http method: ${s.name}`)
+      const lowerMethod = s.name.toLowerCase()
+      if (! ctx.session.allowedRouteMethodSet.has(lowerMethod)) {
+        ctx.token_error(head, `Unsupported http method: ${lowerMethod}`)
       }
-      method.push(s.name)
+      method.push(lowerMethod)
     }
-    else if (s.shape === "positional" && s.value.shape === "string") {
+    else if (s.shape === "positional" && s.value.shape === "string" && s.value.quoted) {
       if (routeStr != null) {
         ctx.token_error(head, `Multiple route patterns: ${routeStr} vs ${JSON.stringify(s.node)}`)
       }
@@ -135,32 +137,33 @@ function parse_method_and_route(ctx: BuilderContext, head: AttItem, attlist: Att
 }
 
 export function add_route(
-  _ctx: BuilderContext, routeMap: RouteMapType
+  ctx: BuilderContext, routeMap: RouteMapType
   , routeSpec: RouteSpec, part: Part
 ): void {
 
   // XXX: path-ro-regexp and add args to part
 
-  const entry: RoutePatternEntry = {pattern: routeSpec.pattern, byMethod: new Map};
-  routeMap.set(routeSpec.pattern, entry)
-  if (routeSpec.method.length) {
-    for (const method of routeSpec.method) {
-      entry.byMethod.set(method, {part, nameNode: routeSpec.nameNode})
-    }
-  } else {
-    entry.byMethod.set("*", {part, nameNode: routeSpec.nameNode})
+  let entry = routeMap.get(routeSpec.pattern)
+  if (! entry) {
+    entry = {pattern: routeSpec.pattern, byMethod: new Map};
+    routeMap.set(routeSpec.pattern, entry)
   }
-
-  // routeMap.set(route, {part, method});
+  for (const method of routeSpec.method.length ? routeSpec.method : ["*"]) {
+    const found = entry.byMethod.get(method)
+    if (found) {
+      ctx.token_error(routeSpec.nameNode, `route conflict: ${method} ${entry.pattern} (already claimed by ${found.part.name})`)
+    }
+    entry.byMethod.set(method, {part, nameNode: routeSpec.nameNode})
+  }
 }
 
 function location2name(routeSpec: RouteSpec): string {
   const {pattern, method} = routeSpec;
   let name = pattern.replace(
     /[^A-Za-z0-9]/g,
-    (s) => '_' + s.charCodeAt(0).toString(16)) + '__';
+    (s) => '_' + s.charCodeAt(0).toString(16));
   if (method.length) {
-    name += [...method].sort().join("_")
+    name += '__' + [...method].sort().join("_")
   }
   return name
 
