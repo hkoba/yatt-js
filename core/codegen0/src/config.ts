@@ -15,6 +15,7 @@ export type YattParams = LrxmlParams & YattProjectParams & {
   macro?: Partial<CGenMacro>
   es?: boolean
   genFileSuffix?: string
+  allowedRouteMethods: readonly string[]
   debug: {
     build?: number,
     codegen?: number,
@@ -26,6 +27,10 @@ export type YattParams = LrxmlParams & YattProjectParams & {
 export type YattConfig = Partial<Omit<YattParams, 'libDirs'>> & {
   libDirs?: string | string[]
 };
+
+export const DEFAULT_ALLOWED_ROUTE_METHODS = [
+  "get", "post", "head", "put", "delete", "patch", "options"
+] as const;
 
 export function isYattParams(arg: YattConfig | YattParams): arg is YattParams {
   return IsLrxmlParams(arg)
@@ -58,7 +63,12 @@ export function yattParams(
     connectionTypeName = 'Connection',
     noEmit = false,
     body_argument_name = "BODY",
+    allowedRouteMethods = DEFAULT_ALLOWED_ROUTE_METHODS
   } = config;
+
+  if (allowedRouteMethods.find((v) => v === "*")) {
+    throw new Error(`allowedRouteMethods should not contain '*'`)
+  }
 
   return {
     ...lrxmlDefault,
@@ -73,6 +83,7 @@ export function yattParams(
     noEmit,
     genFileSuffix,
     body_argument_name,
-    entityDefinitionsFile
+    entityDefinitionsFile,
+    allowedRouteMethods,
   }
 }

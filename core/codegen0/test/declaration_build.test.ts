@@ -53,8 +53,10 @@ import { build_template_declaration } from '../src/declaration/template-declarat
   const it = async (src: string) => {
     const template = await build_template_declaration('', src, {entFns: {}});
     const {routeMap} = template
-    return [...routeMap.entries()].map(([route, rec]) => {
-      return {route, kind: rec.part.kind, name: rec.part.name}
+    return [...routeMap.entries()].flatMap(([route, entry]) => {
+      return [...entry.byMethod.entries()].map(([method, rec]) => {
+        return {route, method, kind: rec.part.kind, name: rec.part.name}
+      })
     })
   }
 
@@ -68,7 +70,7 @@ import { build_template_declaration } from '../src/declaration/template-declarat
 
 <!yatt:page user="/user/:uid">
 `, [
-  {route: "/home", kind: "widget", name: "home"},
-  {route: "/user/:uid", kind: "widget", name: "user"},
+  {route: "/home", method: "*", kind: "widget", name: "home"},
+  {route: "/user/:uid", method: "*", kind: "widget", name: "user"},
 ])
 }

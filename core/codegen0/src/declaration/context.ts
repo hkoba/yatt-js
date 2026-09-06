@@ -51,6 +51,7 @@ export type BuilderSettings = {
   sourceCache: SourceRegistry
   entFns: {[k: string]: any}
   templateFolderMap: Map<string, string>
+  allowedRouteMethodSet: Set<string>
 }
 
 
