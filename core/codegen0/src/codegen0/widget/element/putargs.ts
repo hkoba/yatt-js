@@ -1,5 +1,6 @@
 import {
   type Node, type AttItem, isIdentOnly, hasQuotedStringValue,
+  attShape,
   maybePassThruVarName, maybeArgName
 } from '../../../deps.ts'
 import type {WidgetGenContext, Widget} from '../../context.ts'
@@ -27,12 +28,16 @@ export async function generate_putargs(
   const positionalArgs = formalArgs.entries()
   const actualArgs: Map<string, CodeFragment> = new Map
   for (const argSpec of node.attlist) {
+
     // formal
     let argName: string | undefined
     let formalVar: Variable | undefined
     let is_spread: boolean | undefined
-    const nameRec = maybeArgName(argSpec)
-    if (! nameRec) {
+
+    const s = attShape(argSpec)
+    if (s.shape === "positional") {
+      // ".." '..' .. [..] &yatt:entity();
+
       const nextArg = positionalArgs.next()
       if (nextArg.done) {
         ctx.token_error(argSpec, `Too many arguments for widget <${elementPath(node)}>`)
@@ -44,8 +49,43 @@ export async function generate_putargs(
         })
         ctx.token_error(argSpec, `Too many arguments for widget <${elementPath(node)}>: ${args}`)
       }
+
+      actualArgs.set(argName, [
+        {kind: 'name', code: argName, source: s.node},
+        ": ",
+        generate_as_cast_to(ctx, scope, formalVar, s.value.node)
+      ])
+
     } else {
-      [argName, is_spread] = nameRec
+      let passThru: string | undefined
+      switch (s.shape) {
+        case "identOnly": {
+          // ident
+          argName = s.name
+          is_spread = s.has_three_colon
+          passThru = s.name
+          break;
+        }
+        case "labeled": {
+          // name=...
+          argName = s.name
+          is_spread = s.nameNode.has_three_colon
+          if (s.value.shape === "ident") {
+            passThru = s.value.text
+          }
+          break;
+        }
+        case "attelem": {
+          // <:yatt:name>..</:yatt:name>
+          argName = s.path[s.path.length - 1]
+          is_spread = false
+          break;
+        }
+        case "nestLabeled": {
+          // [..]=..
+          ctx.NIMPL(argSpec)
+        }
+      }
       if (is_spread) {
         ctx.token_error(argSpec, `spread(:::) is useless here`)
       }
@@ -53,50 +93,51 @@ export async function generate_putargs(
         ctx.token_error(argSpec, `Unknown arg '${argName}'`)
       }
       formalVar = formalArgs.get(argName)!
-    }
-    if (actualArgs.has(argName)) {
-      ctx.token_error(argSpec, `Duplicate argument: ${argName}`)
-    }
 
-    // console.log('nameRec', nameRec, 'formal', formalVar, `argSpec for ${argName}`, argSpec)
+      if (actualArgs.has(argName)) {
+        ctx.token_error(argSpec, `Duplicate argument: ${argName}`)
+      }
 
-    let passThru: string | undefined
-    let actualVar: Variable | undefined
-    if ((passThru = maybePassThruVarName(argSpec)) && (actualVar = scope.lookup(passThru))) {
-      // formalVar escaped and not actualVar escaped
-      actualArgs.set(argName, [
-        {kind: 'name', code: argName, source: argSpec},
-        ": ",
-        (isEscapedVariable(formalVar) && !isEscapedVariable(actualVar)
-          ? generate_varref_as_escaped(ctx, argSpec, actualVar)
-          : {kind: 'name', code: passThru, source: argSpec})
-      ])
-    }
-    else if (argSpec.kind === 'bare' || hasQuotedStringValue(argSpec)) {
-      actualArgs.set(argName, [
-        {kind: 'name', code: argName, source: argSpec.label},
-        ": ",
-        generate_as_cast_to(ctx, scope, formalVar, argSpec)
-      ])
-    }
-    else if (argSpec.kind === 'entity') {
-      actualArgs.set(argName, [
-        {kind: 'name', code: argName},
-        ": ",
-        generate_as_cast_to(ctx, scope, formalVar, argSpec)
-      ])
-    }
-    else if (isIdentOnly(argSpec) && formalVar.typeName === 'boolean') {
-      // 1
-      ctx.NIMPL()
-    }
-    else if (argSpec.kind === "attelem") {
-      // <:yatt:name>...</:yatt:name>
-      ctx.NIMPL()
-    }
-    else {
-      console.log('foobarbaz:', argSpec, 'passThru', passThru);
-      ctx.token_error(argSpec, `argument '${argName}' requires value expression like '=...'`)
+      if (passThru) {
+        const actualVar = scope.lookup(passThru)
+        if (! actualVar) {
+          ctx.token_error(argSpec, `No such variable ${passThru}`)
+        }
+
+        // formalVar escaped and not actualVar escaped
+        actualArgs.set(argName, [
+          {kind: 'name', code: argName, source: argSpec},
+          ": ",
+          (isEscapedVariable(formalVar) && !isEscapedVariable(actualVar)
+            ? generate_varref_as_escaped(ctx, argSpec, actualVar)
+            : {kind: 'name', code: passThru, source: argSpec})
+        ])
+      }
+      else if (argSpec.kind === 'bare' || hasQuotedStringValue(argSpec)) {
+        actualArgs.set(argName, [
+          {kind: 'name', code: argName, source: argSpec.label},
+          ": ",
+          generate_as_cast_to(ctx, scope, formalVar, argSpec)
+        ])
+      }
+      else if (argSpec.kind === 'entity') {
+        actualArgs.set(argName, [
+          {kind: 'name', code: argName},
+          ": ",
+          generate_as_cast_to(ctx, scope, formalVar, argSpec)
+        ])
+      }
+      else if (isIdentOnly(argSpec) && formalVar.typeName === 'boolean') {
+        // 1
+        ctx.NIMPL()
+      }
+      else if (argSpec.kind === "attelem") {
+        // <:yatt:name>...</:yatt:name>
+        ctx.NIMPL()
+      }
+      else {
+        ctx.token_error(argSpec, `argument '${argName}' requires value expression like '=...'`)
+      }
     }
   }
 
