@@ -1,7 +1,10 @@
 import { parse_attstring } from "../../../lrxml/src/attstring/parse.ts";
 import type { RangeLine } from "../../../lrxml/src/context.ts";
-import {type AttItem, isBareLabeledAtt, isIdentOnly, hasLabel, hasQuotedStringValue} from '../deps.ts'
-import {attInnerRange, termIsStringish} from '@yatt/lrxml'
+import {
+  type AttItem,
+  attShape, type AttShape
+} from '../deps.ts'
+import {attInnerRange} from '@yatt/lrxml'
 
 import type { BuilderContext } from './context.ts'
 
@@ -65,75 +68,99 @@ export function add_args_cont(
     if (ctx.debug >= 3) {
       console.log('add args from: ', att)
     }
-    if (isBareLabeledAtt(att)) {
-      //: name = SOMETHING
-      const name = att.label.value
-      if (termIsStringish(att)) {
-        //: name="type?default"
-        if (ctx.debug) {
-          console.log(`kind ${att.kind}: ${name} = ${att.value}`)
+    const s = attShape(att)
+    switch (s.shape) {
+      case "identOnly": {
+        //: nameOnly
+        if (s.has_three_colon) {
+          ctx.token_error(att, `Syntax error: :::${s.name}`)
         }
-        const spec = parse_arg_spec(ctx, att.value, "text", attInnerRange(ctx.parserContext(), att))
-        const v = build_simple_variable(ctx, name, spec, {
+        const name = s.name
+        const v = build_simple_variable(ctx, name, {typeName: "text"}, {
           attItem: att, argNo: part.argMap.size
         })
         part.argMap.set(name, v)
+        break
       }
-      else if (att.kind === "nest") {
-        //: name=[code] name=[delegate]
-        if (att.value.length === 0) {
-          ctx.token_error(att, `Empty arg declaration`)
-        }
-        const attlist = ctx.copy_array(att.value)
-        //: attlist is [code x y z], [delegate x y z], [delegate:foo x y]
-        const fst = attlist.shift()!
-        //: fst is code, delegate (or "code", "delegate")
-        if (isIdentOnly(fst)
-            || !hasLabel(fst) && hasQuotedStringValue(fst)) {
-          const [givenTypeName, ...restName] = fst.value.split(/:/)
 
-          const rec = ctx.session.varTypeMap.nested.get(givenTypeName)
-          if (rec == null) {
-            ctx.token_error(fst, `Unknown type ${givenTypeName} for argument ${name}`)
-          }
-          if (rec.kind === "callable") {
-            //: name=[code]
-            const v = rec.fun(ctx, att, part.argMap.size, name, attlist);
+      case "labeled": {
+        //: name = SOMETHING
+        const name = s.name;
+        switch (s.value.shape) {
+          case "string":
+          case "ident": {
+            //: name="type?default" name=type
+            if (ctx.debug) {
+              console.log(`kind ${att.kind}: ${name} = ${s.value.text}`)
+            }
+            const spec = parse_arg_spec(ctx, s.value.text, "text", attInnerRange(ctx.parserContext(), att))
+            const v = build_simple_variable(ctx, name, spec, {
+              attItem: att, argNo: part.argMap.size
+            })
             part.argMap.set(name, v)
+            break;
           }
-          else if (rec.kind === "delayed") {
-            //: name=[delegate]
-            return rec.fun(
-              ctx, part, gen, att, part.argMap.size,
-              name, restName, attlist
-            )
+          case "nest": {
+            //: name=[code] name=[delegate]
+            if (s.value.items.length === 0) {
+              ctx.token_error(att, `Empty arg declaration`)
+            }
+            const attlist = [...s.value.items]
+            //: attlist is [code x y z], [delegate x y z], [delegate:foo x y]
+            const fst = attShape(attlist.shift()!)
+            //: fst is code, delegate (or "code", "delegate")
+            const path = getAttString(fst)
+            if (! path) {
+              ctx.token_error(fst.node, `typename is required`);
+            }
+
+            const [givenTypeName, ...restName] = path.split(/:/)
+
+            const rec = ctx.session.varTypeMap.nested.get(givenTypeName)
+            if (rec == null) {
+              ctx.token_error(fst.node, `Unknown type ${givenTypeName} for argument ${name}`)
+            }
+            if (rec.kind === "callable") {
+              //: name=[code]
+              const v = rec.fun(ctx, att, part.argMap.size, name, attlist);
+              part.argMap.set(name, v)
+            }
+            else if (rec.kind === "delayed") {
+              //: name=[delegate]
+              return rec.fun(
+                ctx, part, gen, att, part.argMap.size,
+                name, restName, attlist
+              )
+            }
+            else {
+              ctx.NEVER();
+            }
+
+            break;
           }
-          else {
-            ctx.NEVER();
+          case "entity": {
+            //: name=%entity;
+            ctx.NIMPL(att)
           }
+        }
+        break;
+      }
+      case "positional": {
+        //: ".." %entity;
+        if (s.value.shape === "entity") {
+          // XXX: entity (ArgMacro)
+          console.warn(`Ignoring argmacro`)
         }
         else {
-          ctx.token_error(fst, `Unknown arg declaration`)
+          ctx.token_error(att, `Unknown arg declaration`)
         }
+        break
       }
-      else {
+      case "attelem":
+      case "nestLabeled": {
+        //: [..]=..
         ctx.token_error(att, `Unknown arg declaration`)
       }
-    }
-    else if (isIdentOnly(att)) {
-      //: nameOnly
-      const name = att.value
-      const v = build_simple_variable(ctx, name, {typeName: "text"}, {
-        attItem: att, argNo: part.argMap.size
-      })
-      part.argMap.set(name, v)
-    }
-    else if (att.kind === "entity") {
-      // XXX: entity (ArgMacro)
-      console.warn(`Ignoring argmacro`)
-    }
-    else {
-      ctx.token_error(att, `Unknown arg declaration`)
     }
   }
 
@@ -149,4 +176,15 @@ export function add_args_cont(
     }
   }
 
+}
+
+function getAttString(shape: AttShape)
+: string | undefined
+{
+  if (shape.shape === "identOnly") {
+    return shape.name;
+  }
+  else if (shape.shape === "positional" && shape.value.shape === "string") {
+    return shape.value.text
+  }
 }
