@@ -1,6 +1,6 @@
 import {
   type Node, type AttItem, type AttElement,
-  attShape
+  attShape, type TermShape, termShape
 } from '../../../deps.ts'
 import type {WidgetGenContext, Widget} from '../../context.ts'
 import {VarScope} from '../../varscope.ts'
@@ -12,7 +12,6 @@ import {generate_body} from '../body.ts'
 import {type CodeFragment, joinAsArray} from '../../codefragment.ts'
 
 import {generate_as_cast_to} from '../../template_context/cast.ts'
-import { type TermShape, termShape } from "../../../../../lrxml/src/attlist/shape.ts";
 
 function elementPath(node: Node & {kind: 'element'}): string {
   return node.path.join(":")
@@ -90,10 +89,12 @@ export async function generate_putargs(
 
     switch (s.shape) {
       case "identOnly": {
+        const code = formalVar.typeName === "boolean" ? "true"
+          : generate_actual_value(ctx, scope, argSpec, formalVar, termShape(s.node));
         actualArgs.set(argName, [
           {kind: 'name', code: argName, source: s.node},
           ": ",
-          generate_actual_value(ctx, scope, argSpec, formalVar, termShape(s.node))
+          code
         ])
         break;
       }
@@ -173,7 +174,7 @@ function generate_actual_value(
       }
       const actualVar = scope.lookup(value.text)
       if (! actualVar) {
-        ctx.token_error(argSpec, "No such variable ${value.text}")
+        ctx.token_error(argSpec, `No such variable ${value.text}`)
       }
       if (isEscapedVariable(formalVar) && !isEscapedVariable(actualVar)) {
         return generate_varref_as_escaped(ctx, argSpec, actualVar)
@@ -184,7 +185,7 @@ function generate_actual_value(
     case "string":case "entity":
       return generate_as_cast_to(ctx, scope, formalVar, value.node)
     case "nest":
-      ctx.NIMPL(argSpec)
+      ctx.token_error(argSpec, `Not implemented yet`)
   }
 }
 
