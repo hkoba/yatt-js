@@ -742,3 +742,49 @@ OUT:
  
  
 
+
+TITLE: putargs: duplicate argument between named and positional
+IN:
+ <yatt:foo x=3 "str"/>
+ 
+ <!yatt:widget foo x y>
+ <h2>&yatt:x;&yatt:y;</h2>
+ERROR: Duplicate argument: x
+
+
+TITLE: putargs: spread(:::) in argument value is rejected
+IN:
+ <yatt:foo x=:::y/>
+ 
+ <!yatt:widget foo x>
+ <h2>&yatt:x;</h2>
+ERROR: spread\(:::\) is useless here
+
+
+TITLE: putargs: passing unknown variable by name raises error
+IN:
+ <yatt:foo x/>
+ 
+ <!yatt:widget foo x>
+ <h2>&yatt:x;</h2>
+ERROR: No such variable x
+
+
+TITLE: putargs: nest as argument value is not implemented (yet)
+IN:
+ <yatt:foo ["a" "b"]/>
+ 
+ <!yatt:widget foo x>
+ <h2>&yatt:x;</h2>
+ERROR: Not implemented yet
+
+
+TITLE: putargs: bare boolean flag means true
+IN:
+ <yatt:foo flag/>
+ 
+ <!yatt:widget foo flag=boolean>
+ <h2>&yatt:flag;</h2>
+OUT:
+ <h2>true</h2>
+ 
