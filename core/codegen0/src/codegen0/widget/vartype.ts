@@ -18,6 +18,9 @@ export function varTypeExpr<T extends Part>(ctx: CodeGenContext<T>, vr: Variable
       // XXX: better type
       return "any[]";
     }
+    case "boolean": {
+      return "boolean";
+    }
     default:
       ctx.NIMPL();
   }
