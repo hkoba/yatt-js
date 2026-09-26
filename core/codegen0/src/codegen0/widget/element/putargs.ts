@@ -1,7 +1,6 @@
 import {
-  type Node, type AttItem, isIdentOnly, hasQuotedStringValue,
-  attShape,
-  maybePassThruVarName, maybeArgName
+  type Node, type AttItem, type AttElement,
+  attShape
 } from '../../../deps.ts'
 import type {WidgetGenContext, Widget} from '../../context.ts'
 import {VarScope} from '../../varscope.ts'
@@ -13,6 +12,7 @@ import {generate_body} from '../body.ts'
 import {type CodeFragment, joinAsArray} from '../../codefragment.ts'
 
 import {generate_as_cast_to} from '../../template_context/cast.ts'
+import { type TermShape, termShape } from "../../../../../lrxml/src/attlist/shape.ts";
 
 function elementPath(node: Node & {kind: 'element'}): string {
   return node.path.join(":")
@@ -32,7 +32,6 @@ export async function generate_putargs(
     // formal
     let argName: string | undefined
     let formalVar: Variable | undefined
-    let is_spread: boolean | undefined
 
     const s = attShape(argSpec)
     if (s.shape === "positional") {
@@ -50,29 +49,19 @@ export async function generate_putargs(
         ctx.token_error(argSpec, `Too many arguments for widget <${elementPath(node)}>: ${args}`)
       }
 
-      actualArgs.set(argName, [
-        {kind: 'name', code: argName, source: s.node},
-        ": ",
-        generate_as_cast_to(ctx, scope, formalVar, s.value.node)
-      ])
-
     } else {
-      let passThru: string | undefined
+      let is_spread: boolean | undefined
       switch (s.shape) {
         case "identOnly": {
           // ident
           argName = s.name
           is_spread = s.has_three_colon
-          passThru = s.name
           break;
         }
         case "labeled": {
           // name=...
           argName = s.name
           is_spread = s.nameNode.has_three_colon
-          if (s.value.shape === "ident") {
-            passThru = s.value.text
-          }
           break;
         }
         case "attelem": {
@@ -93,50 +82,32 @@ export async function generate_putargs(
         ctx.token_error(argSpec, `Unknown arg '${argName}'`)
       }
       formalVar = formalArgs.get(argName)!
+    }
 
-      if (actualArgs.has(argName)) {
-        ctx.token_error(argSpec, `Duplicate argument: ${argName}`)
-      }
+    if (actualArgs.has(argName)) {
+      ctx.token_error(argSpec, `Duplicate argument: ${argName}`)
+    }
 
-      if (passThru) {
-        const actualVar = scope.lookup(passThru)
-        if (! actualVar) {
-          ctx.token_error(argSpec, `No such variable ${passThru}`)
-        }
-
-        // formalVar escaped and not actualVar escaped
+    switch (s.shape) {
+      case "identOnly": {
         actualArgs.set(argName, [
-          {kind: 'name', code: argName, source: argSpec},
+          {kind: 'name', code: argName, source: s.node},
           ": ",
-          (isEscapedVariable(formalVar) && !isEscapedVariable(actualVar)
-            ? generate_varref_as_escaped(ctx, argSpec, actualVar)
-            : {kind: 'name', code: passThru, source: argSpec})
+          generate_actual_value(ctx, scope, argSpec, formalVar, termShape(s.node))
         ])
+        break;
       }
-      else if (argSpec.kind === 'bare' || hasQuotedStringValue(argSpec)) {
+      case "positional":
+      case "labeled": {
         actualArgs.set(argName, [
-          {kind: 'name', code: argName, source: argSpec.label},
+          {kind: 'name', code: argName, source: s.node},
           ": ",
-          generate_as_cast_to(ctx, scope, formalVar, argSpec)
+          generate_actual_value(ctx, scope, argSpec, formalVar, s.value)
         ])
+        break;
       }
-      else if (argSpec.kind === 'entity') {
-        actualArgs.set(argName, [
-          {kind: 'name', code: argName},
-          ": ",
-          generate_as_cast_to(ctx, scope, formalVar, argSpec)
-        ])
-      }
-      else if (isIdentOnly(argSpec) && formalVar.typeName === 'boolean') {
-        // 1
-        ctx.NIMPL()
-      }
-      else if (argSpec.kind === "attelem") {
-        // <:yatt:name>...</:yatt:name>
-        ctx.NIMPL()
-      }
-      else {
-        ctx.token_error(argSpec, `argument '${argName}' requires value expression like '=...'`)
+      case "attelem": {
+        ctx.NIMPL(argSpec)
       }
     }
   }
@@ -186,6 +157,35 @@ export async function generate_putargs(
 
   // XXX: node.footer
   return joinAsArray(', ', Array.from(actualArgs.values()))
+}
+
+function generate_actual_value(
+  ctx: WidgetGenContext,
+  scope: VarScope,
+  argSpec: AttElement | AttItem,
+  formalVar: Variable,
+  value: TermShape
+): CodeFragment {
+  switch (value.shape) {
+    case "ident": {
+      if (value.has_three_colon) {
+        ctx.token_error(argSpec, `spread(:::) is useless here`)
+      }
+      const actualVar = scope.lookup(value.text)
+      if (! actualVar) {
+        ctx.token_error(argSpec, "No such variable ${value.text}")
+      }
+      if (isEscapedVariable(formalVar) && !isEscapedVariable(actualVar)) {
+        return generate_varref_as_escaped(ctx, argSpec, actualVar)
+      } else {
+        return {kind: "name", code: value.text, source: argSpec}
+      }
+    }
+    case "string":case "entity":
+      return generate_as_cast_to(ctx, scope, formalVar, value.node)
+    case "nest":
+      ctx.NIMPL(argSpec)
+  }
 }
 
 function generate_varref_as_escaped(
