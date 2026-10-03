@@ -52,7 +52,7 @@ export type { AttStringItem } from './attstring/parse.ts'
 export { parse_attstring } from './attstring/parse.ts'
 
 export type {EntNode, EntTerm, EntPath, EntPathItem} from './entity/parse.ts'
-export {isVarOrCall}  from './entity/parse.ts'
+export {isVarOrCall, isEntPath}  from './entity/parse.ts'
 
 export { parse_long_options } from './utils/long-options.ts'
 export {
