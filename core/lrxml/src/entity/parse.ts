@@ -66,6 +66,9 @@ export type EntPathItem =  AnyToken & {kind: "var" | "prop", name: string} |
 
 export type EntNode = AnyToken & {kind: "entity", path: EntPath}
 
+export function isEntPath(term: EntTerm): term is EntPath {
+  return Array.isArray(term)
+}
 
 export function isVarOrCall(item: EntPathItem)
 : item is {kind: "var" | "call"} & EntPathItem {
