@@ -4,7 +4,7 @@ declare global {
   interface ImportMeta {main: boolean}
 }
 
-import { AnyToken, Range, ParserContext, parserContext } from '../context.ts'
+import { type AnyToken, type Range, type ParserContext, parserContext } from '../context.ts'
 
 import { re_join } from '../utils/regexp.ts'
 
@@ -14,7 +14,7 @@ export type EntPrefixChar = '&' | '%'
 
 export function re_entity_open(ns: string[], entPrefixChar: EntPrefixChar): string {
   const nspat = ns.join("|")
-  let entbase = `(?<entity>${nspat})`
+  const entbase = `(?<entity>${nspat})`
   return `${entPrefixChar}(?:${entbase})`
 }
 
@@ -156,7 +156,7 @@ function _is_open(mg: EntPathMatch): OpenChars | undefined {
 }
 
 function parse_entgroup(ctx: ParserContext, close: RegExp): EntTerm[] {
-  let elements: EntTerm[] = [];
+  const elements: EntTerm[] = [];
   let lastIndex = ctx.index
   while (! ctx.empty()) {
     const term: EntTerm | undefined = parse_entterm(ctx)
@@ -182,10 +182,10 @@ function parse_entterm(ctx: ParserContext): EntTerm | undefined {
                               re_enttext(['(?=(?<close>[\\])};,]))']))
   let match;
   // For backward compat
-  if (match = ctx.match_index(/,/y)) {
+  if ((match = ctx.match_index(/,/y))) {
     // yield empty string
-    let range = {line: ctx.line, start: match.index, end: match.index}
-    let term: EntText = {kind: "text", text: "",
+    const range = {line: ctx.line, start: match.index, end: match.index}
+    const term: EntText = {kind: "text", text: "",
                          ...range, is_paren: false, innerRange: range}
     ctx.tab_match(match);
     return term;
@@ -195,7 +195,7 @@ function parse_entterm(ctx: ParserContext): EntTerm | undefined {
     return;
   }
   let term: EntText | EntPathItem[] | undefined
-  if (match = ctx.match_index(re_text)) {
+  if ((match = ctx.match_index(re_text))) {
     const line = ctx.line
     const start = ctx.index
     const is_paren = match.groups && match.groups.paren ? true : false;
@@ -206,7 +206,7 @@ function parse_entterm(ctx: ParserContext): EntTerm | undefined {
       if (match.groups && match.groups.paren) {
         parse_entparen(ctx)
       }
-    } while (match = ctx.match_index(re_text_cont))
+    } while ((match = ctx.match_index(re_text_cont)))
     const end = ctx.index
     const range = {start, end};
     const innerRange = is_paren ? {start: range.start+1, end: range.end-1} : range
@@ -217,7 +217,7 @@ function parse_entterm(ctx: ParserContext): EntTerm | undefined {
   } else {
     term = parse_pipeline(ctx)
   }
-  if (match = ctx.match_index(/[,:]/y)) {
+  if ((match = ctx.match_index(/[,:]/y))) {
     ctx.tab_match(match)
   }
   return term;
@@ -225,7 +225,7 @@ function parse_entterm(ctx: ParserContext): EntTerm | undefined {
 
 function parse_entparen(ctx: ParserContext): void {
   let match
-  while (match = ctx.match_index(/[^()]+|[()]/y)) {
+  while ((match = ctx.match_index(/[^()]+|[()]/y))) {
     ctx.tab_match(match)
     switch (match[0]) {
       case '(': {
