@@ -7,7 +7,6 @@ import {type CodeFragment, joinAsArray} from '../../codefragment.ts'
 import type {Argument} from '../../template_context/index.ts'
 
 import {find_entity} from '../../../part-finder/index.ts'
-import { generate_as_text } from "../../template_context/text.ts";
 
 export function generate_entity<T extends Part>(
   ctx: CodeGenContext<T>, scope: VarScope, node: Node & {kind: 'entity'},

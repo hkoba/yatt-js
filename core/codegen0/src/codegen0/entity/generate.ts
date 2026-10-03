@@ -4,8 +4,6 @@ import type {CodeGenContext} from '../context.ts'
 
 import {type CodeFragment, joinAsArray} from '../codefragment.ts'
 
-import {varTypeExpr} from '../widget/vartype.ts'
-
 export function generate_entity(ctx: CodeGenContext<Entity>): CodeFragment {
   const program: CodeFragment = []
 
@@ -31,7 +29,7 @@ export function generate_entity(ctx: CodeGenContext<Entity>): CodeFragment {
 }
 
 export function generate_entity_argdecls(
-  ctx: CodeGenContext<Entity>,
+  _ctx: CodeGenContext<Entity>,
   entityDecl: Entity
 ): CodeFragment[] {
 
