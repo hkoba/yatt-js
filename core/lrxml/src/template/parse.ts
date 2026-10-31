@@ -11,6 +11,7 @@ import type { Payload } from '../multipart/parse.ts'
 import type {
   AttItem, Term, Label, StringTerm,
   AttIdentOnly, AttLabeled, AttLabeledNested, AttLabeledByIdent
+  , QuotedStringTerm
   , NestedTerm
 } from '../attlist/parse.ts'
 import {
@@ -38,7 +39,7 @@ type ElementBody = RangeLine & {
 }
 
 export type ElementNode = {kind: "element"} & ElementBody;
-export type AttElement = {kind: "attelem"} & ElementBody;
+export type AttElement = {kind: "attelem", label?: undefined} & ElementBody;
 
 export type LCMsg   = RangeLine & {kind: "lcmsg", namespace: string[]
                                , lcmsg: Text[][], bind: EntNode[]}
@@ -46,13 +47,13 @@ export type LCMsg   = RangeLine & {kind: "lcmsg", namespace: string[]
 export type BodyNode = Text | Comment | PI | ElementNode | AttElement | EntNode | LCMsg
 
 export function hasStringValue(att: AttItem | AttElement)
-: att is ({label?: Label} & StringTerm) {
+: att is ({label?: Label} & StringTerm) | AttIdentOnly {
   return att.kind === "bare" || att.kind === "sq" || att.kind === "dq" ||
     (att.kind === "identplus" && att.label == null)
 }
 
 export function hasQuotedStringValue(att: AttItem | AttElement)
-: att is ({label?: Label} & StringTerm) {
+: att is ({label?: Label} & QuotedStringTerm) {
   return attKindIsQuotedString(att.kind);
 }
 
@@ -62,7 +63,7 @@ export function isIdentOnly(att: AttItem | AttElement)
 }
 
 export function hasNestedTerm(att: AttItem | AttElement)
-: att is NestedTerm {
+: att is {label?: Label} & NestedTerm {
   return att.kind === 'nest'
 }
 
@@ -72,7 +73,7 @@ export function hasNestedLabel(att: AttItem | AttElement)
 }
 
 export function hasLabel(att: AttItem | AttElement): att is AttLabeled {
-  return (att as AttItem).label !== undefined
+  return att.label !== undefined
 }
 
 export function isBareLabeledAtt(att: AttItem | AttElement): att is AttLabeledByIdent {

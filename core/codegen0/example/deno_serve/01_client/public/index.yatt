@@ -1,0 +1,4 @@
+<!yatt:args>
+<h2>client demo</h2>
+<div id="app"></div>
+<script src="/_dist/index.js"></script>

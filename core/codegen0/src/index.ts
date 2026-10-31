@@ -11,3 +11,5 @@ export * from './yatt.ts'
 export * as path from './path.ts'
 
 export * from './project/layout.ts'
+
+export * from './client/bundle.ts'

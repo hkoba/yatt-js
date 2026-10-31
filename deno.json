@@ -2,6 +2,8 @@
   "compilerOptions": {
     "lib": ["dom", "dom.iterable", "dom.asynciterable", "deno.ns"]
   },
+  "//nodeModulesDir": "Ignore the node_modules/ that bun install creates; deno resolves npm/jsr from its own global cache (avoids byonm forcing @types/node into node_modules).",
+  "nodeModulesDir": "none",
   "workspace": [
     "core/lrxml",
     "core/codegen0",

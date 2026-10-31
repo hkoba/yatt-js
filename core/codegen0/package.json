@@ -21,6 +21,7 @@
   "dependencies": {
     "@yatt/xhf": "workspace:*",
     "@yatt/lrxml": "workspace:*",
+    "esbuild": "^0.24.2",
     "source-map": "^0.7.4",
     "typescript": "npm:typescript"
   }

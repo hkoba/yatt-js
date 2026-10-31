@@ -1,4 +1,6 @@
-import {type Node, type EntPathItem, type EntTerm, isVarOrCall} from '../../../deps.ts'
+import {type Node, type EntPathItem, type EntTerm, isVarOrCall
+  , isEntPath
+} from '../../../deps.ts'
 import type {CodeGenContext, Part} from '../../context.ts'
 import type {VarScope} from '../../varscope.ts'
 import {escapeAsStringLiteral} from '../../escape.ts'
@@ -7,7 +9,6 @@ import {type CodeFragment, joinAsArray} from '../../codefragment.ts'
 import type {Argument} from '../../template_context/index.ts'
 
 import {find_entity} from '../../../part-finder/index.ts'
-import { generate_as_text } from "../../template_context/text.ts";
 
 export function generate_entity<T extends Part>(
   ctx: CodeGenContext<T>, scope: VarScope, node: Node & {kind: 'entity'},
@@ -99,7 +100,7 @@ export function generate_entlist<T extends Part>(
   options: {need_runtime_escaping?: boolean}
 ): CodeFragment[] {
   return nodeList.map(term => {
-    if (term instanceof Array) {
+    if (isEntPath(term)) {
       return generate_entpath(ctx, scope, term, options).items
     } else {
       return {kind: 'other', code: escapeAsStringLiteral(term.text)

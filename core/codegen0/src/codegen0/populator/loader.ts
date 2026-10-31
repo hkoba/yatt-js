@@ -14,13 +14,13 @@ import {generate_populator_for_declentry} from './generate.ts'
 
 import type {runtime} from '../../yatt.ts'
 
-export interface typeof$yatt {
+export interface $yattType {
   runtime: typeof runtime;
-  [key: `$${string}`]: HandlerSetFolder
+  [key: `${string}$`]: HandlerSetFolder
 }
 
 export interface PopulatorModule {
-  populate($yatt: typeof$yatt): HandlerSet
+  populate($yatt: $yattType): HandlerSet
 }
 
 export type HandlerSetFolder = {
@@ -41,7 +41,7 @@ export interface Connection {
 }
 
 export type LoaderSession = CGenRequestSession & {
-  $yatt: typeof$yatt
+  $yatt: $yattType
 }
 
 export type Populator = {
@@ -90,11 +90,11 @@ export async function refresh_populator(
       console.log(`use cached handler`)
     }
 
-    $this = ensureRuntimeNamespace(session.$yatt, `$${runtimeNamespace}`)[modName]
+    $this = ensureRuntimeNamespace(session.$yatt, `${runtimeNamespace}$`)[modName]
   }
 
   if (debug >= 3) {
-    console.log(`session.$yatt.$public: `, session.$yatt.$public)
+    console.log(`session.$yatt.public$: `, session.$yatt.public$)
   }
 
   if ($this) {
@@ -112,17 +112,17 @@ export async function load_output(
 
   if ((session.params.debug.codegen ?? 0) >= 2) {
     console.log(`=======================`)
-    console.log(`runtimeNamespace:$${runtimeNamespace}, modName=${modName}\n`, script)
+    console.log(`runtimeNamespace:${runtimeNamespace}$, modName=${modName}\n`, script)
   }
 
   const {populate} = await importTypescript(script)
 
-  const templateFolder = ensureRuntimeNamespace(session.$yatt, `$${runtimeNamespace}`)
+  const templateFolder = ensureRuntimeNamespace(session.$yatt, `${runtimeNamespace}$`)
 
   return templateFolder[modName] = populate(session.$yatt)
 }
 
-export function ensureRuntimeNamespace($yatt: typeof$yatt, folderName: `$${string}`): HandlerSetFolder {
+export function ensureRuntimeNamespace($yatt: $yattType, folderName: `${string}$`): HandlerSetFolder {
   $yatt[folderName] ??= {}
   return $yatt[folderName]
 }

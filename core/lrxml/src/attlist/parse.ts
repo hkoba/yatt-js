@@ -12,15 +12,15 @@ import type { EntNode } from '../entity/parse.ts'
 
 type BaseTerm<T> = AnyToken & {value: T, comment: string[]}
 
-type QuotedStringTerm = {kind: AttSq | AttDq} & BaseTerm<string>;
-type BareStringTerm = {kind: AttBare} & BaseTerm<string>;
-type IdentplusTerm = {kind: AttIdentPlus, has_three_colon: boolean} & BaseTerm<string>;
-export type StringTerm = (BareStringTerm | QuotedStringTerm) &
+export type QuotedStringTerm = {kind: AttSq | AttDq} & BaseTerm<string> &
   {children: AttStringItem[]}
+export type BareStringTerm = {kind: AttBare} & BaseTerm<string> &
+  {children: AttStringItem[]}
+export type IdentplusTerm = {kind: AttIdentPlus, has_three_colon: boolean} & BaseTerm<string>
+export type StringTerm = BareStringTerm | QuotedStringTerm  // 旧 ((B|Q) & {children}) と型同値
 
-export type NestedTerm = {kind: AttNest} & BaseTerm<AttItem[]>;
-
-type EntTermWComment = (EntNode & {comment: string[]})
+export type NestedTerm = {kind: AttNest} & BaseTerm<AttItem[]>
+export type EntTermWComment = EntNode & {comment: string[]}  // export 化
 
 export type Term = IdentplusTerm | StringTerm | NestedTerm | EntTermWComment
 
@@ -28,12 +28,25 @@ export type Label = IdentplusTerm | NestedTerm
 
 export type AttValue = Term
 
-export type AttItem = {label?: Label} & AttValue
-export type AttLabeled = AttLabeledByIdent | AttLabeledNested
 export type AttLabeledByIdent = {label: IdentplusTerm} & AttValue
-export type AttLabeledNested = {label: NestedTerm} & AttValue
-export type AttIdentOnly = IdentplusTerm
-export type AttLabelPair = {label: Label} & Label
+export type AttLabeledNested  = {label: NestedTerm} & AttValue
+export type AttLabeled = AttLabeledByIdent | AttLabeledNested
+export type AttPositional = {label?: undefined} & AttValue   // 新: shape discriminant
+
+export type AttItem = AttLabeled | AttPositional             // ← 根本修正
+
+export type AttIdentOnly = {label?: undefined} & IdentplusTerm  // 旧: 素の IdentplusTerm
+
+export type StringishTerm = StringTerm | IdentplusTerm       // 新
+
+export function termIsStringish(term: Term): term is StringishTerm {
+  switch (term.kind) {
+    case "bare": case "sq": case "dq": case "identplus":
+      return true;
+    default:
+      return false;
+    }
+}
 
 export function attKindIsQuotedString(kind: string): boolean {
   return kind === "sq" || kind === "dq";
@@ -54,13 +67,8 @@ export function isLabelTerm(term: Term)
 
 // This returns copy of att with filtering att.label
 export function attValue(att: AttItem): AttValue {
-  const obj: any = {}
-  for (const [k, v] of Object.entries(att)) {
-    if (k === "label")
-      continue
-    obj[k] = v
-  }
-  return obj as AttValue
+  const {label: _label, ...value} = att
+  return value
 }
 
 export function parse_attlist<T extends {kind: string} & RangeLine>(

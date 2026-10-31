@@ -1,6 +1,6 @@
 import type {AttItem} from '../../deps.ts'
 import type {DeclarationProcessor, BuilderContext} from '../context.ts'
-import type {TemplateDeclaration} from '../types.ts'
+import type {TemplateDeclaration, RouteSpec} from '../types.ts'
 import type {Widget} from '../part.ts'
 
 import {cut_name_and_route} from '../attlist.ts'
@@ -35,7 +35,7 @@ export class WidgetBuilder implements DeclarationProcessor {
 
 export function makeWidget(
   name: string, isPublic: boolean, nameNode?: AttItem
-  , route?: string | [string, string]
+  , route?: RouteSpec
   , implicit?: boolean
 ): Widget {
   return {
