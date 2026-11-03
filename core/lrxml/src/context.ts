@@ -139,8 +139,9 @@ export class ScanningContext<S extends ParserBaseSession> {
     return lineNumber(this.session.source.substring(0, index ?? this.index))
   }
 
-  throw_error(message: string, options?: {index?: number}): never {
-    const index = this.start + (options?.index ?? this.index);
+  throw_error(message: string, options?: {index?: number, start?: number}): never {
+    const index = (options?.start ?? this.start) +
+      (options?.index ?? this.index);
     const [_lastNl, lineNo, colNo] = extract_prefix_spec(
       this.session.source, index
     )
@@ -207,8 +208,12 @@ export class ScanningContext<S extends ParserBaseSession> {
   NIMPL(item?: any): never {
     const callerInfo = getCallerInfo() ?? ""
     if (item !== undefined) {
+      let options
+      if (item.start != null && typeof item.start === "number") {
+        options = {start: item.start}
+      }
       const json = JSON.stringify(item)
-      this.throw_error(`Unhandled element(${callerInfo}): ${json}`)
+      this.throw_error(`Unhandled element(${callerInfo}): ${json}`, options)
     } else {
       this.throw_error(`Not yet implemented(${callerInfo})`)
     }
