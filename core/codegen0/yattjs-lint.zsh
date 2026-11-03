@@ -2,8 +2,7 @@
 
 emulate -L zsh
 
-scriptFn=$0:r.ts
+scriptFn=$(readlink -f $0)
+tsFn=$scriptFn:h/src/bin/$scriptFn:t:r.ts
 
-realScript=$(readlink -f $scriptFn)
-
-exec deno run -RW $realScript "$@"
+exec deno run -RE $tsFn "$@"
