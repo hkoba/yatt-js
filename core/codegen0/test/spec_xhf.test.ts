@@ -4,13 +4,13 @@ import {runtests} from '../src/xhftest.ts'
 
 const __dirname = new URL('.', import.meta.url).pathname
 
-import {expandGlob} from 'jsr:@std/fs/expand-glob'
+import {globSync} from 'node:fs'
 
 import * as process from 'node:process'
 
 const args = process.argv.slice(2);
 
-const files = args.length ? args : (await Array.fromAsync(expandGlob(`${__dirname}/spec_xhf/[1-9]*.xhf`))).map((e) => e.path)
+const files = args.length ? args : globSync(`${__dirname}/spec_xhf/[1-9]*.xhf`)
 
 runtests(files, {
   debug: {

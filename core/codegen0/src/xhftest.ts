@@ -267,7 +267,8 @@ function nimplSite(error: unknown): string | undefined {
     return undefined
   }
   if (! error.site) {
-    return error.message
+    // The runtime can't tell the call site. error.location is reported separately.
+    return error.message.slice(0, -error.location.length)
   }
   const {functionName, scriptName, lineNumber} = error.site
   const script = scriptName.replace(/^file:\/\//, '').replace(projectRoot, '')
