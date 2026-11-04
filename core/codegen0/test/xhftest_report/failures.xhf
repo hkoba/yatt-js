@@ -1,4 +1,6 @@
 # Deliberately failing items, used by ../xhftest_report.test.ts.
+# <yatt:test_nimpl/> is a macro defined there which always calls ctx.NIMPL(),
+# so that these items do not depend on what is left unimplemented.
 
 TITLE: runtime throw
 IN:
@@ -37,9 +39,8 @@ OUT: bbb
 
 TITLE: nimpl
 IN:
- <yatt:foo x/>
- <!yatt:widget foo x=bool>
- &yatt:x;
+ <!yatt:args x>
+ <yatt:test_nimpl/>
 PARAM[
 - 1
 ]
@@ -53,7 +54,6 @@ OUT: two
 
 TITLE: nimpl where an error is expected
 IN:
- <yatt:foo x/>
- <!yatt:widget foo x=bool>
- &yatt:x;
+ <!yatt:args x>
+ <yatt:test_nimpl/>
 ERROR: never matches
