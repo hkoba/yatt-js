@@ -106,6 +106,7 @@ export function builtin_vartypemap(): VarTypeMap {
 
   tm.simple.set('boolean', simple("boolean", false));
   tm.simple.set('bool',    tm.simple.get('boolean')!);
+  tm.simple.set('flag',    tm.simple.get('boolean')!);
 
   tm.nested.set('widget', {
     kind: "callable", typeName: "widget", fun: build_widget_varialbe
