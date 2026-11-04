@@ -36,6 +36,7 @@ export interface ItemSpec {
   IN?: string
   PARAM?: string[]
   OUT?: string
+  OUT_JS?: string
   ERROR?: string
 }
 
@@ -296,14 +297,15 @@ export function parseTestItemSpec(spec: ItemSpec, fileNo: number, prevItem?: Tes
   TITLE ??= prevItem!.TITLE
 
   let testItem: TestItem | undefined
-  if (spec.OUT != null) {
+  const out = spec.OUT_JS ?? spec.OUT
+  if (out != null) {
     testItem = {
       ...spec,
       BREAK,
       kind: 'output',
       realfile, num: fileNo,
       TITLE, FILE, WIDGET,
-      OUT: spec.OUT
+      OUT: out
     }
   } else if (spec.ERROR != null) {
     testItem = {

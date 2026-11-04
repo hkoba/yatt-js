@@ -169,9 +169,10 @@ PARAM[
 - 
 - 0
 ]
-SKIP: perl-vs-js difference
 OUT:
  <h2>xval and 8</h2>
+OUT_JS:
+ <h2>xval and 0</h2>
 
 PARAM[
 - foo
@@ -452,8 +453,7 @@ ERROR: Unknown arg 'y'
 
 
 
-TITLE: valueless bool arg -> 1
-SKIP: 1
+TITLE: valueless bool arg -> true
 IN:
  <yatt:foo x/>
  <!yatt:widget foo x=bool>
@@ -461,9 +461,11 @@ IN:
 OUT:
  1
  
+OUT_JS:
+ true
+ 
 
-TITLE: valueless flag arg -> 1
-SKIP: 1
+TITLE: valueless flag arg -> true
 IN:
  <yatt:foo x/>
  <!yatt:widget foo x=flag>
@@ -471,6 +473,10 @@ IN:
 OUT:
  1
  
+OUT_JS:
+ true
+ 
+
 
 TITLE: valueless value for value => error.
 SKIP: 1
