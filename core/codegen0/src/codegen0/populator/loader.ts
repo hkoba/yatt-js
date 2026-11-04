@@ -42,6 +42,9 @@ export interface Connection {
 
 export type LoaderSession = CGenRequestSession & {
   $yatt: $yattType
+  // Called with each generated module just before it is imported, so that
+  // callers can see the code even when the import itself fails.
+  onOutput?: (output: OutputRecord) => void
 }
 
 export type Populator = {
@@ -114,6 +117,8 @@ export async function load_output(
     console.log(`=======================`)
     console.log(`runtimeNamespace:${runtimeNamespace}$, modName=${modName}\n`, script)
   }
+
+  session.onOutput?.(output)
 
   const {populate} = await importTypescript(script)
 

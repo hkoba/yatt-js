@@ -3,7 +3,7 @@
 import {test} from "@cross/test"
 import {assertEquals} from '@std/assert'
 
-import {parseAsArrayList, parseAsObjectList} from '../src/parse.ts'
+import {parseAsArrayList, parseAsObjectList, parseAsObjectListWithLineno} from '../src/parse.ts'
 
 const testObjectList = (str: string, expected: any) => {
   const msg = `parseAsObjectList(${JSON.stringify(str)}) -> ${JSON.stringify(expected)}`
@@ -219,3 +219,25 @@ chklst[]: 5
   ['chklst[]', "1", 'chklst[]', "2", 'chklst[]', "5"]
 ]
 )
+
+test("parseAsObjectListWithLineno reports the first field's line of each paragraph", () => {
+  const src = `# leading comment
+foo: 1
+bar:
+ multi
+ line
+
+# comment inside the paragraph
+baz: 2
+
+
+qux[
+- a
+]
+`
+  assertEquals([...parseAsObjectListWithLineno(src)], [
+    {lineno: 2, value: {foo: "1", bar: "multi\nline\n"}},
+    {lineno: 8, value: {baz: "2"}},
+    {lineno: 11, value: {qux: ["a"]}},
+  ])
+})

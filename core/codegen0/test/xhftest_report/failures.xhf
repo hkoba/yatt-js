@@ -1,0 +1,36 @@
+# Deliberately failing items, used by ../xhftest_report.test.ts.
+
+TITLE: runtime throw
+IN:
+ <!yatt:args x>
+ &yatt:boom(:x);
+ <!yatt:entity boom x>
+ throw new Error("boom in entity");
+OUT: never
+
+TITLE: bad generated code
+IN:
+ <!yatt:args x>
+ &yatt:bad(:x);
+ <!yatt:entity bad x>
+ return ((((;
+OUT: never
+
+TITLE: compile failure
+IN:
+ <!yatt:args x>
+ <yatt:nosuch/>
+PARAM[
+- 1
+]
+OUT: one
+
+TITLE: compile failure, next param
+PARAM[
+- 2
+]
+OUT: two
+
+TITLE: wrong output
+IN: aaa
+OUT: bbb

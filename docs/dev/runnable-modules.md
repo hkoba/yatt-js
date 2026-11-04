@@ -46,5 +46,25 @@ find . -name '*.ts' -perm -u+x -not -path '*/node_modules/*'
 cd core/codegen0 && deno test -RE     # 同様に core/lrxml, util/xhf でも
 ```
 
+### `.xhf` spec の失敗を調べる
+
+`test/spec_xhf.test.ts` のテスト名は `1-basic.xhf:456 [f30] タイトル` の形式で、
+`.xhf` 内の位置と、エラーメッセージに出るテンプレート名（`f30.yatt`）の両方を示す。
+
+```sh
+cd core/codegen0
+deno test -RE test/spec_xhf.test.ts                                   # 全件。ERRORS の直前に原因別の集計
+DEBUG_CGEN=1 deno test -RE --filter 'xhf:456 ' test/spec_xhf.test.ts  # 1件を詳しく（末尾の空白は :4567 等の除外用）
+deno test -RE test/spec_xhf.test.ts -- path/to/other.xhf              # 別の .xhf を指定
+```
+
+| `DEBUG_CGEN` | 出力 |
+|---|---|
+| `0`（既定） | 失敗の位置・メッセージ・スタック |
+| `1` | 上記に加え、失敗した item の `IN` と行番号付き生成コードをエラーに添付 |
+| `2` | 全 item の生成コードを実行中に出力（従来の動作） |
+
+コード生成の途中で失敗した item には生成コードがないので、`(none: ...)` と表示される。
+
 > 補足: ジェネレータを `.xhf` に対して直接 `xhftest.ts` で流すと、未実装機能を含む item
 > （例: 一部の `<yatt:body/>`）でエラーになることがある。網羅的な合否は `deno test` を正とする。

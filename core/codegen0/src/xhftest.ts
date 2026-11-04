@@ -4,16 +4,18 @@ import {test} from '@cross/test'
 import {assertEquals, assertMatch, fail} from '@std/assert'
 
 import {readFileSync} from 'node:fs'
+import {basename} from 'node:path'
 
-import {parseAsObjectList} from '@yatt/xhf'
+import {parseAsObjectListWithLineno} from '@yatt/xhf'
 
 import type {YattConfig} from './config.ts'
 
 import { cgenSettings, freshCGenSession, type CGenSettings } from "./codegen0/context.ts"
 import {
 Populator,
-  refresh_populator, type Connection, type $yattType
+  refresh_populator, textToBase64, type Connection, type $yattType
 } from "./codegen0/populator/loader.ts"
+import type { OutputRecord } from "./declaration/index.ts"
 import { SourceRegistry, type SourceConfig } from "./declaration/registry.ts"
 import { runtime } from "./yatt.ts"
 
@@ -47,9 +49,14 @@ export interface TestItemBase {
   realfile: string
   num: number
 
+  // Where this item was written. Used to report failures.
+  xhfFile: string
+  lineno: number
+
   BREAK: boolean
 
   FILE: string
+  IN: string
   TITLE: string
   WIDGET: string
   PARAM?: string[]
@@ -79,22 +86,33 @@ export type TestItemError = TestItemBase & {
   CON_CLASS?: string
  */
 
+export type Failure = {item: TestItem, message: string}
+
+type CompileFailure = {item: TestItem, message: string}
+
+/** What runItem needs for the items of one xhf file. */
+export type RunContext = {
+  $yatt: $yattType
+  baseCgen: CGenSettings
+  // Failures of every xhf file. Shared across RunContexts for the summary.
+  failures: Failure[]
+  // realfile -> the failure which left it without a loaded handler.
+  compileFailures: Map<string, CompileFailure>
+}
+
+type RunHooks = {
+  onOutput: (output: OutputRecord) => void
+  onCompileError: (error: unknown) => void
+}
+
 export function runtests(files: string[], baseConfig: YattConfig): void {
+
+  const failures: Failure[] = []
 
   for (const fn of files) {
     // console.log('=====', fn)
 
-    const {header, sourceCache, testItems} = loadTestItems(fn, {})
-
-    const baseCgen = cgenSettings('populator', {
-      ...header,
-      ...baseConfig,
-      sourceCache
-    })
-
-    const $yatt = {
-      runtime, public$: {}
-    }
+    const {testItems, ctx} = prepareFile(fn, baseConfig, failures)
 
     // console.log(`testItems: `, testItems);
 
@@ -102,33 +120,205 @@ export function runtests(files: string[], baseConfig: YattConfig): void {
       // console.log(item)
 
       test(testTitle(item), async () => {
-        // const cgen = freshCGenSession(baseCgen)
-        if (item.BREAK) {
-          debugger;
-        }
-
-        switch (item.kind) {
-          case 'error': {
-            assertMatch(await doErrorTest(item, $yatt, baseCgen)
-              , new RegExp(item.ERROR))
-            break;
-          }
-          case 'output': {
-            assertEquals(await doOutputTest(item, $yatt, baseCgen)
-              , item.OUT)
-            break;
-          }
-          default: {
-            // NEVER
-            break;
-          }
-        }
+        await runItem(item, ctx)
       })
     }
   }
+
+  // Tests run in registration order, so this sees the result of all of them
+  // and its output lands right before deno's ERRORS section.
+  test('xhf failure summary', () => {
+    const summary = formatSummary(failures)
+    if (summary) {
+      console.log(summary)
+    }
+  })
 }
 
-function testTitle(item: TestItemBase, params?: string[]): string {
+export function prepareFile(fn: string, baseConfig: YattConfig, failures: Failure[]): {
+  testItems: TestItem[], ctx: RunContext
+} {
+  const {header, sourceCache, testItems} = loadTestItems(fn, {})
+
+  const baseCgen = cgenSettings('populator', {
+    ...header,
+    ...baseConfig,
+    sourceCache
+  })
+
+  const $yatt = {
+    runtime, public$: {}
+  }
+
+  return {
+    testItems,
+    ctx: {$yatt, baseCgen, failures, compileFailures: new Map()}
+  }
+}
+
+/**
+ * Runs one item. On failure, this throws an error which carries everything
+ * needed to investigate it, because the runner reports failures long after
+ * the test ran.
+ */
+export async function runItem(item: TestItem, ctx: RunContext): Promise<void> {
+  if (item.BREAK) {
+    debugger;
+  }
+
+  const outputs: OutputRecord[] = []
+  const hooks: RunHooks = {
+    onOutput(output) {
+      outputs.push(output)
+    },
+    onCompileError(error) {
+      ctx.compileFailures.set(item.realfile, {item, message: errorMessage(error)})
+    }
+  }
+
+  try {
+    switch (item.kind) {
+      case 'error': {
+        assertMatch(await doErrorTest(item, ctx.$yatt, ctx.baseCgen, hooks)
+          , new RegExp(item.ERROR))
+        break;
+      }
+      case 'output': {
+        assertEquals(await doOutputTest(item, ctx.$yatt, ctx.baseCgen, hooks)
+          , item.OUT)
+        break;
+      }
+      default: {
+        // NEVER
+        break;
+      }
+    }
+  } catch (error) {
+    const message = failureMessage(item, error, ctx)
+    ctx.failures.push({item, message})
+    throw new Error(formatReport(item, message, error, outputs, debugCgen(ctx)))
+  }
+}
+
+function debugCgen(ctx: RunContext): number {
+  return ctx.baseCgen.params.debug.codegen ?? 0
+}
+
+class MissingEntryError extends Error {}
+
+function failureMessage(item: TestItem, error: unknown, ctx: RunContext): string {
+  const prior = ctx.compileFailures.get(item.realfile)
+  if (error instanceof MissingEntryError && prior && prior.item !== item) {
+    return `${FOLLOW_ON}: caused by ${itemLocation(prior.item)}: ${prior.message}`
+  }
+  return errorMessage(error)
+}
+
+const FOLLOW_ON = 'follow-on failure'
+
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error)
+}
+
+function itemLocation(item: TestItemBase): string {
+  return `${basename(item.xhfFile)}:${item.lineno}`
+}
+
+// The report replaces the original error rather than wrapping it as `cause`,
+// because deno prints a cause's stack frames with their data: urls intact.
+function formatReport(
+  item: TestItem,
+  message: string,
+  error: unknown,
+  outputs: OutputRecord[],
+  debugLevel: number
+): string {
+  const report = [
+    `[${itemLocation(item)}] ${message}`,
+    `  spec: ${item.xhfFile}:${item.lineno} (${item.realfile})`
+  ]
+
+  if (debugLevel >= 1) {
+    report.push(`  --- IN ---`, numberLines(item.IN))
+    if (outputs.length) {
+      for (const output of outputs) {
+        report.push(
+          `  --- generated (${moduleLabel(output)}) ---`,
+          numberLines(output.output.outputText)
+        )
+      }
+    } else {
+      report.push(`  --- generated ---`, `  (none: failed before any code was loaded)`)
+    }
+  }
+
+  const frames = stackFrames(error)
+  if (frames.length) {
+    report.push(`  --- stack ---`, ...frames)
+  }
+
+  return hideGeneratedModules(report.join('\n'), outputs)
+}
+
+function stackFrames(error: unknown): string[] {
+  const stack = error instanceof Error ? error.stack ?? '' : ''
+  return stack.split('\n').filter((line) => /^\s+at /.test(line))
+}
+
+function moduleLabel({runtimeNamespace, modName}: OutputRecord): string {
+  return `${runtimeNamespace}$.${modName}`
+}
+
+function numberLines(text: string): string {
+  const lines = text.replace(/\n$/, '').split('\n')
+  const width = String(lines.length).length
+  return lines.map(
+    (line, i) => `  ${String(i + 1).padStart(width)}| ${line}`
+  ).join('\n')
+}
+
+// Generated modules are imported from data: urls, which take a whole screen.
+// Error messages have the full url, so its module can be named. Stack frames
+// have it abbreviated by deno, leaving only the part common to all modules.
+function hideGeneratedModules(text: string, outputs: OutputRecord[]): string {
+  for (const output of outputs) {
+    const url = `data:text/typescript;base64,${textToBase64(output.output.outputText)}`
+    text = text.replaceAll(url, `<generated:${moduleLabel(output)}>`)
+  }
+  return text.replaceAll(/data:text\/typescript;base64,[A-Za-z0-9+\/=.]+/g, '<generated>')
+}
+
+/** Groups failures by cause, to show which fix would resolve how many items. */
+export function formatSummary(failures: Failure[]): string {
+  const groups = new Map<string, TestItem[]>()
+  for (const {item, message} of failures) {
+    const cause = failureCause(message)
+    groups.set(cause, [...groups.get(cause) ?? [], item])
+  }
+
+  return [...groups.entries()]
+    .sort(([, a], [, b]) => b.length - a.length)
+    .map(([cause, items]) =>
+      `${String(items.length).padStart(4)}  ${cause}\n` +
+        `      ${items.map(itemLocation).join(', ')}`
+    ).join('\n')
+}
+
+function failureCause(message: string): string {
+  if (message.startsWith(FOLLOW_ON)) {
+    return FOLLOW_ON
+  }
+  return message.split('\n')[0]
+    // The position in the template differs for each item.
+    .replace(/ at \S+ line \d+ column \d+$/, '')
+    .replace(/\S*\/(?=[^\s\/]+\.ts\b)/g, '')
+}
+
+function testTitle(item: TestItem): string {
+  return `${itemLocation(item)} [${filename2widgetname(item.realfile)}] ${itemTitle(item)}`
+}
+
+function itemTitle(item: TestItemBase, params?: string[]): string {
   let msg = item.TITLE
   if (item.PARAM) {
     msg += ": " + JSON.stringify(params ?? item.PARAM)
@@ -136,18 +326,32 @@ function testTitle(item: TestItemBase, params?: string[]): string {
   return msg
 }
 
+async function compileItem(
+  item: TestItemBase,
+  $yatt: $yattType,
+  baseCgen: CGenSettings,
+  hooks?: RunHooks
+): Promise<Populator | undefined> {
+  const cgen = freshCGenSession(baseCgen)
+  try {
+    return await refresh_populator(
+      item.FILE, {...cgen, $yatt, onOutput: hooks?.onOutput}
+    )
+  } catch (error) {
+    hooks?.onCompileError(error)
+    throw error
+  }
+}
+
 export async function doErrorTest(
   item: TestItemError & {kind: 'error'},
   $yatt: $yattType,
-  baseCgen: CGenSettings
+  baseCgen: CGenSettings,
+  hooks?: RunHooks
 ): Promise<string> {
-  const cgen = freshCGenSession(baseCgen)
-
   let entry
   try {
-    entry = await refresh_populator(
-      item.FILE, {...cgen, $yatt}
-    )
+    entry = await compileItem(item, $yatt, baseCgen, hooks)
   } catch (error) {
     if (! (error instanceof Error)) {
       throw error
@@ -155,15 +359,17 @@ export async function doErrorTest(
     return error.message
   }
 
-  if (entry) {
-    try {
-      runCompiledWidget(item, $yatt, entry)
-    } catch (error) {
-      if (! (error instanceof Error)) {
-        throw error
-      }
-      return error.message
+  if (! entry) {
+    throw new MissingEntryError(`FAILED to compile: ${item.TITLE}`)
+  }
+
+  try {
+    await runCompiledWidget(item, $yatt, entry)
+  } catch (error) {
+    if (! (error instanceof Error)) {
+      throw error
     }
+    return error.message
   }
 
   fail(`Failed to detect error: ${item.TITLE}`)
@@ -172,25 +378,22 @@ export async function doErrorTest(
 export async function doOutputTest(
   item: TestItemOk & {kind: 'output'},
   $yatt: $yattType,
-  baseCgen: CGenSettings
+  baseCgen: CGenSettings,
+  hooks?: RunHooks
 ): Promise<string> {
-  const cgen = freshCGenSession(baseCgen)
-
-  const entry = await refresh_populator(
-    item.FILE, {...cgen, $yatt}
-  )
+  const entry = await compileItem(item, $yatt, baseCgen, hooks)
   if (! entry) {
-    fail(`FAILED to compile: ${item.TITLE}`)
+    throw new MissingEntryError(`FAILED to compile: ${item.TITLE}`)
   }
 
-  return runCompiledWidget(item, $yatt, entry)
+  return await runCompiledWidget(item, $yatt, entry)
 }
 
-function runCompiledWidget(
+async function runCompiledWidget(
   item: TestItemOk & {kind: 'output'} | TestItemError,
   $yatt: $yattType,
   entry: Populator
-): string {
+): Promise<string> {
   const {$this, template} = entry
 
   const CON = {
@@ -222,7 +425,7 @@ function runCompiledWidget(
     // console.log(`params(${item.TITLE}):`, params, 'from', item.PARAM)
   }
 
-  $this.render_(CON, params)
+  await $this.render_(CON, params)
 
   return CON.buffer
 }
@@ -237,8 +440,8 @@ export function loadTestItems(fn: string, config: SourceConfig): {
   config.sourceTester = undefined;
 
   const xhf_content = readFileSync(fn, {encoding: "utf-8"})
-  const xhf_stream = parseAsObjectList(xhf_content, {header: true})
-  const header = xhf_stream.next()?.value as Header
+  const xhf_stream = parseAsObjectListWithLineno(xhf_content, {header: true})
+  const header = xhf_stream.next()?.value?.value as Header
   // console.log('header: ', header)
 
   const sourceCache = new SourceRegistry(config);
@@ -246,22 +449,25 @@ export function loadTestItems(fn: string, config: SourceConfig): {
   const now = Date.now()
   let fileNo = 0
   const testItems: TestItem[] = []
-  for (const item of (xhf_stream as Generator<ItemSpec>)) {
+  for (const {lineno, value} of xhf_stream) {
+    const item = value as ItemSpec
     if (item.IN != null) {
       ++fileNo
     }
 
     if (item.SKIP) {
       const lastTestItem = testItems[testItems.length - 1]
-      let title = item.TITLE ?? (lastTestItem ? testTitle(lastTestItem, item.PARAM) : fileNo)
+      let title = item.TITLE ?? (lastTestItem ? itemTitle(lastTestItem, item.PARAM) : fileNo)
       if (item.SKIP !== "1") {
         title += ": " + item.SKIP
       }
-      console.warn(`SKIP: ${title}`)
+      console.warn(`SKIP: ${basename(fn)}:${lineno} ${title}`)
       continue
     }
 
-    const [realfile, testItem] = parseTestItemSpec(item, fileNo, testItems[testItems.length-1])
+    const [realfile, testItem] = parseTestItemSpec(
+      item, fileNo, {xhfFile: fn, lineno}, testItems[testItems.length-1]
+    )
 
     if (item.IN != null) {
       sourceCache.setFile(realfile, item.IN, now, item.TITLE)
@@ -275,7 +481,12 @@ export function loadTestItems(fn: string, config: SourceConfig): {
   return {header, testItems, sourceCache}
 }
 
-export function parseTestItemSpec(spec: ItemSpec, fileNo: number, prevItem?: TestItem): [string, TestItem | undefined] {
+export function parseTestItemSpec(
+  spec: ItemSpec,
+  fileNo: number,
+  location: {xhfFile: string, lineno: number},
+  prevItem?: TestItem
+): [string, TestItem | undefined] {
   let {IN, TITLE, FILE, WIDGET} = spec
 
   if (prevItem == null) {
@@ -295,6 +506,7 @@ export function parseTestItemSpec(spec: ItemSpec, fileNo: number, prevItem?: Tes
   WIDGET ??= filename2widgetname(realfile)
 
   TITLE ??= prevItem!.TITLE
+  IN ??= prevItem!.IN
 
   let testItem: TestItem | undefined
   const out = spec.OUT_JS ?? spec.OUT
@@ -303,8 +515,9 @@ export function parseTestItemSpec(spec: ItemSpec, fileNo: number, prevItem?: Tes
       ...spec,
       BREAK,
       kind: 'output',
+      ...location,
       realfile, num: fileNo,
-      TITLE, FILE, WIDGET,
+      IN, TITLE, FILE, WIDGET,
       OUT: out
     }
   } else if (spec.ERROR != null) {
@@ -312,8 +525,9 @@ export function parseTestItemSpec(spec: ItemSpec, fileNo: number, prevItem?: Tes
       ...spec,
       BREAK,
       kind: 'error',
+      ...location,
       realfile, num: fileNo,
-      TITLE, FILE, WIDGET,
+      IN, TITLE, FILE, WIDGET,
       ERROR: spec.ERROR
     }
   } else {
@@ -338,35 +552,11 @@ if (import.meta.main) {
   }
 
   for (const fn of args) {
-    const {header, testItems, sourceCache} = loadTestItems(fn, {})
-    const baseCgen = cgenSettings('populator', {
-      ...header,
-      ...baseConfig,
-      sourceCache
-    })
-
-    const $yatt = {
-      runtime, public$: {}
-    }
+    const {testItems, ctx} = prepareFile(fn, baseConfig, [])
 
     for (const item of testItems) {
       console.log(item)
-      switch (item.kind) {
-        case 'error': {
-          assertMatch(await doErrorTest(item, $yatt, baseCgen)
-            , new RegExp(item.ERROR))
-          break;
-        }
-        case 'output': {
-          assertEquals(await doOutputTest(item, $yatt, baseCgen)
-            , item.OUT)
-          break;
-        }
-        default: {
-          // NEVER
-          break;
-        }
-      }
+      await runItem(item, ctx)
     }
   }
 }

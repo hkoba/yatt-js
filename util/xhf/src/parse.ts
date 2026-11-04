@@ -27,6 +27,24 @@ export function* parseAsObjectList(
   }
 }
 
+/** An object item, with the line number where its paragraph's first field starts. */
+export type XHF_ObjectWithLineno = {
+  lineno: number
+  value: {[k: string]: XHF_Item}
+}
+
+export function* parseAsObjectListWithLineno(
+  str: string, options?: XHF_Options
+): Generator<XHF_ObjectWithLineno> {
+  for (const {lineno, items} of parseBlocks(str, options)) {
+    if (items.length % 2 == 0) {
+      yield {lineno, value: makeObjectFromKeyValueList(items) as {[k: string]: XHF_Item}}
+    } else {
+      throw new Error(`Invalid XHF: Odd number of items: ${JSON.stringify(items)}`)
+    }
+  }
+}
+
 export function makeObjectFromKeyValueList<T>(array: T[]): {[k: string]: T} {
   return Object.fromEntries(makeEntries(array))
 }
@@ -44,10 +62,19 @@ export function makeEntries<T>(array: T[]): [T, T][] {
 export function* parser(
   str: string, options?: XHF_Options
 ): Generator<XHF_Item[]> {
+  for (const {items} of parseBlocks(str, options)) {
+    yield items
+  }
+}
+
+function* parseBlocks(
+  str: string, options?: XHF_Options
+): Generator<{lineno: number, items: XHF_Item[]}> {
 
   const lexer = tokenizer(str, options)
   let chunk
   while (!(chunk = lexer.next()).done) {
+    const lineno = chunk.value[0]?.lineno ?? 1
     const result = []
     const chunkLexer = (function*(chunk) { for (const item of chunk) { yield item }})(chunk.value)
     let item
@@ -61,7 +88,7 @@ export function* parser(
       }
       result.push(parse_by_sigil(token, chunkLexer))
     }
-    yield result
+    yield {lineno, items: result}
   }
 }
 
