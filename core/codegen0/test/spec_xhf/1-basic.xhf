@@ -616,7 +616,7 @@ OUT:
 
 
 TITLE: nested array subscript
-SKIP: 1
+SKIP: ls[-1] がJSでは困る← ecma2022 の at() を生成すべき
 IN:
  <!yatt:args ls=list>
  (&yatt:ls[-1][:ls[0]];)
