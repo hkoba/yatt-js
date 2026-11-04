@@ -2,7 +2,7 @@ import {type LrxmlParams, lrxmlParams, IsLrxmlParams} from './deps.ts'
 
 import {type YattProjectParams, applyProjectStyle} from "./project/layout.ts"
 
-import type {CGenMacro} from "./codegen0/macro.ts"
+import type {MacroDict} from "./codegen0/macro.ts"
 
 export type YattParams = LrxmlParams & YattProjectParams & {
   projectStyle?: string
@@ -12,7 +12,7 @@ export type YattParams = LrxmlParams & YattProjectParams & {
   noEmit: boolean;
   body_argument_name: string
   entityDefinitionsFile?: string
-  macro?: Partial<CGenMacro>
+  macro?: MacroDict
   es?: boolean
   genFileSuffix?: string
   allowedRouteMethods: readonly string[]
