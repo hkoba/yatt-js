@@ -8,7 +8,7 @@ export type {
 
 export {
   parserContext, parserSession, ParserContext, ScanningContext,
-  TokenError,
+  TokenError, NimplError,
   range_text,
 } from './context.ts'
 

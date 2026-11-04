@@ -16,6 +16,7 @@ Populator,
   refresh_populator, textToBase64, type Connection, type $yattType
 } from "./codegen0/populator/loader.ts"
 import type { OutputRecord } from "./declaration/index.ts"
+import { NimplError } from "./deps.ts"
 import { SourceRegistry, type SourceConfig } from "./declaration/registry.ts"
 import { runtime } from "./yatt.ts"
 
@@ -86,16 +87,32 @@ export type TestItemError = TestItemBase & {
   CON_CLASS?: string
  */
 
-export type Failure = {item: TestItem, message: string}
+export type Failure = {
+  item: TestItem
+  message: string
+  // Set if the cause is a ctx.NIMPL(): its place in the source of this project.
+  nimpl?: string
+}
 
-type CompileFailure = {item: TestItem, message: string}
+/** Outcome of all the xhf files. */
+export type Results = {
+  passed: number
+  skipped: number
+  failures: Failure[]
+}
+
+export function emptyResults(): Results {
+  return {passed: 0, skipped: 0, failures: []}
+}
+
+type CompileFailure = {item: TestItem, error: unknown}
 
 /** What runItem needs for the items of one xhf file. */
 export type RunContext = {
   $yatt: $yattType
   baseCgen: CGenSettings
-  // Failures of every xhf file. Shared across RunContexts for the summary.
-  failures: Failure[]
+  // Shared across RunContexts for the summary.
+  results: Results
   // realfile -> the failure which left it without a loaded handler.
   compileFailures: Map<string, CompileFailure>
 }
@@ -107,12 +124,12 @@ type RunHooks = {
 
 export function runtests(files: string[], baseConfig: YattConfig): void {
 
-  const failures: Failure[] = []
+  const results = emptyResults()
 
   for (const fn of files) {
     // console.log('=====', fn)
 
-    const {testItems, ctx} = prepareFile(fn, baseConfig, failures)
+    const {testItems, ctx} = prepareFile(fn, baseConfig, results)
 
     // console.log(`testItems: `, testItems);
 
@@ -127,18 +144,17 @@ export function runtests(files: string[], baseConfig: YattConfig): void {
 
   // Tests run in registration order, so this sees the result of all of them
   // and its output lands right before deno's ERRORS section.
-  test('xhf failure summary', () => {
-    const summary = formatSummary(failures)
-    if (summary) {
-      console.log(summary)
-    }
+  test('xhf spec coverage', () => {
+    console.log(formatSummary(results))
   })
 }
 
-export function prepareFile(fn: string, baseConfig: YattConfig, failures: Failure[]): {
+export function prepareFile(fn: string, baseConfig: YattConfig, results: Results): {
   testItems: TestItem[], ctx: RunContext
 } {
-  const {header, sourceCache, testItems} = loadTestItems(fn, {})
+  const {header, sourceCache, testItems, skipped} = loadTestItems(fn, {})
+
+  results.skipped += skipped
 
   const baseCgen = cgenSettings('populator', {
     ...header,
@@ -152,7 +168,7 @@ export function prepareFile(fn: string, baseConfig: YattConfig, failures: Failur
 
   return {
     testItems,
-    ctx: {$yatt, baseCgen, failures, compileFailures: new Map()}
+    ctx: {$yatt, baseCgen, results, compileFailures: new Map()}
   }
 }
 
@@ -172,7 +188,7 @@ export async function runItem(item: TestItem, ctx: RunContext): Promise<void> {
       outputs.push(output)
     },
     onCompileError(error) {
-      ctx.compileFailures.set(item.realfile, {item, message: errorMessage(error)})
+      ctx.compileFailures.set(item.realfile, {item, error})
     }
   }
 
@@ -194,9 +210,25 @@ export async function runItem(item: TestItem, ctx: RunContext): Promise<void> {
       }
     }
   } catch (error) {
-    const message = failureMessage(item, error, ctx)
-    ctx.failures.push({item, message})
-    throw new Error(formatReport(item, message, error, outputs, debugCgen(ctx)))
+    const failure = describeFailure(item, error, ctx)
+    ctx.results.failures.push(failure)
+    throw errorWithoutStack(
+      formatReport(failure, error, outputs, debugCgen(ctx))
+    )
+  }
+
+  ctx.results.passed++
+}
+
+// The frames of the thrown error would only point here. The report has the
+// stack of the original error if it is worth showing.
+function errorWithoutStack(message: string): Error {
+  const limit = Error.stackTraceLimit
+  Error.stackTraceLimit = 0
+  try {
+    return new Error(message)
+  } finally {
+    Error.stackTraceLimit = limit
   }
 }
 
@@ -206,18 +238,40 @@ function debugCgen(ctx: RunContext): number {
 
 class MissingEntryError extends Error {}
 
-function failureMessage(item: TestItem, error: unknown, ctx: RunContext): string {
+function describeFailure(item: TestItem, error: unknown, ctx: RunContext): Failure {
   const prior = ctx.compileFailures.get(item.realfile)
   if (error instanceof MissingEntryError && prior && prior.item !== item) {
-    return `${FOLLOW_ON}: caused by ${itemLocation(prior.item)}: ${prior.message}`
+    return {
+      item,
+      message: `${FOLLOW_ON}: caused by ${itemLocation(prior.item)}: ${errorMessage(prior.error)}`,
+      nimpl: nimplSite(prior.error)
+    }
   }
-  return errorMessage(error)
+  return {item, message: errorMessage(error), nimpl: nimplSite(error)}
 }
 
 const FOLLOW_ON = 'follow-on failure'
 
 function errorMessage(error: unknown): string {
+  if (error instanceof NimplError) {
+    const kind = error.itemKind ? ` [${error.itemKind}]` : ''
+    return `NIMPL: ${nimplSite(error)}${kind}${error.location}`
+  }
   return error instanceof Error ? error.message : String(error)
+}
+
+const projectRoot = new URL('../../../', import.meta.url).pathname
+
+function nimplSite(error: unknown): string | undefined {
+  if (! (error instanceof NimplError)) {
+    return undefined
+  }
+  if (! error.site) {
+    return error.message
+  }
+  const {functionName, scriptName, lineNumber} = error.site
+  const script = scriptName.replace(/^file:\/\//, '').replace(projectRoot, '')
+  return `${functionName} (${script}:${lineNumber})`
 }
 
 function itemLocation(item: TestItemBase): string {
@@ -227,8 +281,7 @@ function itemLocation(item: TestItemBase): string {
 // The report replaces the original error rather than wrapping it as `cause`,
 // because deno prints a cause's stack frames with their data: urls intact.
 function formatReport(
-  item: TestItem,
-  message: string,
+  {item, message, nimpl}: Failure,
   error: unknown,
   outputs: OutputRecord[],
   debugLevel: number
@@ -252,7 +305,8 @@ function formatReport(
     }
   }
 
-  const frames = stackFrames(error)
+  // nimpl already tells where it is. The rest is just the generator's call chain.
+  const frames = nimpl && debugLevel < 2 ? [] : stackFrames(error)
   if (frames.length) {
     report.push(`  --- stack ---`, ...frames)
   }
@@ -288,20 +342,40 @@ function hideGeneratedModules(text: string, outputs: OutputRecord[]): string {
   return text.replaceAll(/data:text\/typescript;base64,[A-Za-z0-9+\/=.]+/g, '<generated>')
 }
 
-/** Groups failures by cause, to show which fix would resolve how many items. */
-export function formatSummary(failures: Failure[]): string {
+/**
+ * Coverage of the spec, followed by the failures grouped by cause to show
+ * which fix would resolve how many items.
+ */
+export function formatSummary({passed, skipped, failures}: Results): string {
+  const nimpl = failures.filter((f) => f.nimpl != null)
+  const others = failures.filter((f) => f.nimpl == null)
+  const total = passed + skipped + failures.length
+  const percent = total ? (passed / total * 100).toFixed(1) : '0.0'
+
+  return [
+    `spec coverage: ${percent}% (${passed} passed / ${total} items)`
+      + `: ${nimpl.length} nimpl, ${others.length} other failures, ${skipped} skipped`,
+    ...formatGroups('NIMPL:', nimpl, (f) => f.nimpl!),
+    ...formatGroups('Other failures:', others, (f) => failureCause(f.message)),
+  ].join('\n')
+}
+
+function formatGroups(
+  heading: string, failures: Failure[], causeOf: (failure: Failure) => string
+): string[] {
   const groups = new Map<string, TestItem[]>()
-  for (const {item, message} of failures) {
-    const cause = failureCause(message)
-    groups.set(cause, [...groups.get(cause) ?? [], item])
+  for (const failure of failures) {
+    const cause = causeOf(failure)
+    groups.set(cause, [...groups.get(cause) ?? [], failure.item])
   }
 
-  return [...groups.entries()]
+  const lines = [...groups.entries()]
     .sort(([, a], [, b]) => b.length - a.length)
     .map(([cause, items]) =>
       `${String(items.length).padStart(4)}  ${cause}\n` +
         `      ${items.map(itemLocation).join(', ')}`
-    ).join('\n')
+    )
+  return lines.length ? [heading, ...lines] : []
 }
 
 function failureCause(message: string): string {
@@ -353,7 +427,7 @@ export async function doErrorTest(
   try {
     entry = await compileItem(item, $yatt, baseCgen, hooks)
   } catch (error) {
-    if (! (error instanceof Error)) {
+    if (! isExpectedError(error)) {
       throw error
     }
     return error.message
@@ -366,13 +440,18 @@ export async function doErrorTest(
   try {
     await runCompiledWidget(item, $yatt, entry)
   } catch (error) {
-    if (! (error instanceof Error)) {
+    if (! isExpectedError(error)) {
       throw error
     }
     return error.message
   }
 
   fail(`Failed to detect error: ${item.TITLE}`)
+}
+
+// NIMPL is not the error the item expects, whatever ERROR says.
+function isExpectedError(error: unknown): error is Error {
+  return error instanceof Error && ! (error instanceof NimplError)
 }
 
 export async function doOutputTest(
@@ -433,7 +512,8 @@ async function runCompiledWidget(
 export function loadTestItems(fn: string, config: SourceConfig): {
   header: Header,
   testItems: TestItem[],
-  sourceCache: SourceRegistry
+  sourceCache: SourceRegistry,
+  skipped: number
 } {
   
   config.sourceLoader = undefined;
@@ -448,6 +528,7 @@ export function loadTestItems(fn: string, config: SourceConfig): {
 
   const now = Date.now()
   let fileNo = 0
+  let skipped = 0
   const testItems: TestItem[] = []
   for (const {lineno, value} of xhf_stream) {
     const item = value as ItemSpec
@@ -462,6 +543,7 @@ export function loadTestItems(fn: string, config: SourceConfig): {
         title += ": " + item.SKIP
       }
       console.warn(`SKIP: ${basename(fn)}:${lineno} ${title}`)
+      skipped++
       continue
     }
 
@@ -478,7 +560,7 @@ export function loadTestItems(fn: string, config: SourceConfig): {
     }
   }
 
-  return {header, testItems, sourceCache}
+  return {header, testItems, sourceCache, skipped}
 }
 
 export function parseTestItemSpec(
@@ -552,7 +634,7 @@ if (import.meta.main) {
   }
 
   for (const fn of args) {
-    const {testItems, ctx} = prepareFile(fn, baseConfig, [])
+    const {testItems, ctx} = prepareFile(fn, baseConfig, emptyResults())
 
     for (const item of testItems) {
       console.log(item)

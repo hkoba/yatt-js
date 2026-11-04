@@ -53,7 +53,7 @@ cd core/codegen0 && deno test -RE     # 同様に core/lrxml, util/xhf でも
 
 ```sh
 cd core/codegen0
-deno test -RE test/spec_xhf.test.ts                                   # 全件。ERRORS の直前に原因別の集計
+deno test -RE test/spec_xhf.test.ts                                   # 全件。ERRORS の直前にカバー率と原因別の集計
 DEBUG_CGEN=1 deno test -RE --filter 'xhf:456 ' test/spec_xhf.test.ts  # 1件を詳しく（末尾の空白は :4567 等の除外用）
 deno test -RE test/spec_xhf.test.ts -- path/to/other.xhf              # 別の .xhf を指定
 ```
@@ -65,6 +65,12 @@ deno test -RE test/spec_xhf.test.ts -- path/to/other.xhf              # 別の .
 | `2` | 全 item の生成コードを実行中に出力（従来の動作） |
 
 コード生成の途中で失敗した item には生成コードがないので、`(none: ...)` と表示される。
+
+`ctx.NIMPL()` は `NimplError` を投げ、テスト出力では `NIMPL: 関数名 (ファイル:行)` と
+表示される（スタックは `DEBUG_CGEN=2` のときのみ）。
+
+カバー率は `passed / (passed + 失敗 + SKIP)` で、集計の先頭行に出る。
+NIMPL によるコンパイル失敗の後続 item も、同じ NIMPL の件数に含める。
 
 > 補足: ジェネレータを `.xhf` に対して直接 `xhftest.ts` で流すと、未実装機能を含む item
 > （例: 一部の `<yatt:body/>`）でエラーになることがある。網羅的な合否は `deno test` を正とする。

@@ -34,3 +34,26 @@ OUT: two
 TITLE: wrong output
 IN: aaa
 OUT: bbb
+
+TITLE: nimpl
+IN:
+ <yatt:foo x/>
+ <!yatt:widget foo x=bool>
+ &yatt:x;
+PARAM[
+- 1
+]
+OUT: one
+
+TITLE: nimpl, next param
+PARAM[
+- 2
+]
+OUT: two
+
+TITLE: nimpl where an error is expected
+IN:
+ <yatt:foo x/>
+ <!yatt:widget foo x=bool>
+ &yatt:x;
+ERROR: never matches

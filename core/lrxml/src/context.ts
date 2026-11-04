@@ -16,13 +16,26 @@ let getCallSites: undefined | ((level?:number) => CallSiteObject[]);
   getCallSites = util.getCallSites
 })()
 
-export function getCallerInfo(level: number = 0): string | undefined {
+export type CallerSite = {
+  functionName: string
+  scriptName: string
+  lineNumber: number
+}
+
+export function getCallerSite(level: number = 0): CallerSite | undefined {
   if (getCallSites == null) {
     return undefined
   }
   const callSites = getCallSites(level + 3);
   // console.log(callSites);
-  const callSite = callSites[callSites.length-1];
+  return callSites[callSites.length-1];
+}
+
+export function getCallerInfo(level: number = 0): string | undefined {
+  const callSite = getCallerSite(level + 1)
+  if (callSite == null) {
+    return undefined
+  }
   return `${callSite.functionName} file ${callSite.scriptName} line ${callSite.lineNumber}`;
 }
 
@@ -78,6 +91,23 @@ export class TokenError extends Error {
 export type GlobalMatch = {
   match: RegExpExecArray
   lastIndex: number
+}
+
+/** Raised by ctx.NIMPL(): the input is valid but the feature is not implemented. */
+export class NimplError extends Error {
+  override name = 'NimplError'
+
+  constructor(
+    message: string,
+    // Where in this project the NIMPL is
+    public readonly site: CallerSite | undefined,
+    // Where in the template it was hit, like " at f1.yatt line 2 column 3"
+    public readonly location: string,
+    // kind of the unhandled item, if any
+    public readonly itemKind?: string
+  ) {
+    super(message)
+  }
 }
 
 export class ScanningContext<S extends ParserBaseSession> {
@@ -140,14 +170,17 @@ export class ScanningContext<S extends ParserBaseSession> {
   }
 
   throw_error(message: string, options?: {index?: number, start?: number}): never {
+    throw new Error(`${message}${this.error_location(options)}`)
+  }
+
+  private error_location(options?: {index?: number, start?: number}): string {
     const index = (options?.start ?? this.start) +
       (options?.index ?? this.index);
     const [_lastNl, lineNo, colNo] = extract_prefix_spec(
       this.session.source, index
     )
     const fileInfo = this.session.filename ? ` at ${this.session.filename}` : ""
-    const longMessage = `${message}${fileInfo} line ${lineNo} column ${colNo}`
-    throw new Error(longMessage)
+    return `${fileInfo} line ${lineNo} column ${colNo}`
   }
 
   maybe_token_error(
@@ -206,6 +239,7 @@ export class ScanningContext<S extends ParserBaseSession> {
   }
 
   NIMPL(item?: any): never {
+    const site = getCallerSite()
     const callerInfo = getCallerInfo() ?? ""
     if (item !== undefined) {
       let options
@@ -213,9 +247,16 @@ export class ScanningContext<S extends ParserBaseSession> {
         options = {start: item.start}
       }
       const json = JSON.stringify(item)
-      this.throw_error(`Unhandled element(${callerInfo}): ${json}`, options)
+      const location = this.error_location(options)
+      throw new NimplError(
+        `Unhandled element(${callerInfo}): ${json}${location}`,
+        site, location, item.kind
+      )
     } else {
-      this.throw_error(`Not yet implemented(${callerInfo})`)
+      const location = this.error_location()
+      throw new NimplError(
+        `Not yet implemented(${callerInfo})${location}`, site, location
+      )
     }
   }
 }
